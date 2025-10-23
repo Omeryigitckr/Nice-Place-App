@@ -1,288 +1,203 @@
 /* --- 1. GENEL AYARLAR VE DEĞİŞKENLER --- */
 :root {
-    --primary-color: #28B4A4; /* Tasarımdaki yeşil tonu */
-    --dark-color: #333;
-    --light-gray: #f7f7f7;
-    --white-color: #fff;
-    --text-color-dark: #4A4A4A;
-    --text-color-light: #fff;
-    --font-family: 'Poppins', sans-serif;
+    --primary-color: #28B4A4;
     --shadow: 0px 8px 25px rgba(0, 0, 0, 0.1);
+    --font-family: 'Poppins', sans-serif;
+    
+    --background-color: #f7f7f7;
+    --card-background: #fff;
+    --text-color: #4A4A4A;
+    --header-background: rgba(255, 255, 255, 0.6);
+    --footer-background: #222;
+    --footer-text: #aaa;
+    --nav-link-color: #333;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+body.dark-theme {
+    --background-color: #1a1a1a;
+    --card-background: #2c2c2c;
+    --text-color: #e0e0e0;
+    --header-background: rgba(26, 26, 26, 0.7);
+    --footer-background: #111;
+    --footer-text: #888;
+    --nav-link-color: #e0e0e0;
 }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     font-family: var(--font-family);
-    color: var(--text-color-dark);
-    background-color: var(--light-gray);
+    color: var(--text-color);
+    background-color: var(--background-color);
+    transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-.container {
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 0 20px;
+.container { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
+.page-wrapper { min-height: 100vh; display: flex; flex-direction: column; }
+main { flex-grow: 1; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-
-.page-wrapper {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-main {
-    flex-grow: 1; /* Main etiketinin footer'ı aşağı itmesini sağlar */
-}
+.main-content { animation: fadeIn 0.6s ease-in-out; }
 
 
-/* --- 2. HEADER VE NAVİGASYON --- */
+/* --- 2. HEADER VE NAVİGASYON (NİHAİ ÇÖZÜM) --- */
 header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 25px 0;
+    position: fixed; top: 0; left: 0; width: 100%;
+    padding: 10px 0;
+    background-color: var(--header-background);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
     z-index: 100;
 }
 
 header nav {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    /* Yapı: Sol(esnek), Orta(otomatik), Sağ(esnek) */
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
+    width: 100%;
 }
 
-.logo {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-color-light);
-    text-decoration: none;
+.logo-link {
+    grid-column: 1 / 2; /* 1. sütun */
+    justify-self: start; /* Sola yasla */
 }
+.txtlogo { max-width: 120px; height: auto; }
 
 .nav-links {
+    grid-column: 2 / 3; /* 2. sütun (Merkez) */
+    justify-self: center; /* Her zaman ortada kalmasını garantile */
     display: flex;
     list-style: none;
-    gap: 40px;
+    gap: 30px;
+    margin: 0; padding: 0;
+}
+
+.header-controls {
+    grid-column: 3 / 4; /* 3. sütun */
+    justify-self: end; /* Sağa yasla */
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .nav-links a {
-    color: var(--text-color-light);
-    text-decoration: none;
-    font-weight: 600;
-    padding-bottom: 5px;
+    color: var(--nav-link-color); text-decoration: none;
+    font-weight: 600; padding-bottom: 5px;
     border-bottom: 2px solid transparent;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s, color 0.3s;
 }
 
-.nav-links a:hover,
-.nav-links a.active {
+.nav-links a:not(.btn):hover, .nav-links a.active:not(.btn) {
     border-bottom-color: var(--primary-color);
+    color: var(--primary-color);
 }
 
 .btn {
-    padding: 10px 25px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    padding: 8px 20px; border-radius: 50px; text-decoration: none;
+    font-weight: 600; transition: all 0.3s ease;
+    color: #fff !important; 
+    border-bottom: 2px solid transparent !important;
 }
+.btn:hover { border-bottom-color: transparent !important; }
 
-.btn-primary {
-    background-color: var(--primary-color);
-    color: var(--white-color);
-}
+.btn-primary { background-color: var(--primary-color); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-
-/* --- 3. ANA SAYFA (HERO SECTION) --- */
-.hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('images/background.webp') no-repeat center center/cover;
-    color: var(--text-color-light);
-}
-
-.hero-container {
-    /* Bu kısım sihrin gerçekleştiği yer */
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* İçerikleri dikeyde ayırır */
-    padding-top: 120px; /* Header için boşluk */
-    padding-bottom: 60px;
-}
-
-.hero-main-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 40px;
-}
-
-.hero-text h1 {
-    font-size: 4rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-}
-
-.hero-text p {
-    font-size: 1.5rem;
-    line-height: 1.4;
-}
-
-.hero-image img {
-    max-width: 320px;
-    border-radius: 6%;
-}
+/* Masaüstünde buton ve menülerin görünürlük ayarları */
+.desktop-btn { display: block; }
+.hamburger-menu { display: none; }
+.nav-button-container { display: none; }
 
 
-/* --- 4. "HOW IT WORKS" KARTLARI --- */
-.how-it-works {
-    text-align: center;
-}
-
-.how-it-works-title {
-    color: var(--text-color-light);
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 20px;
-}
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-}
-
-.feature-card {
-    background-color: var(--white-color);
-    color: var(--text-color-dark);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    text-align: center;
-}
-
-.feature-icon {
-    width: 30px;
-    margin-bottom: 20px;
-   
-}
-
-.feature-card h3 {
-    margin-bottom: 10px;
-    font-size: 1.25rem;
-}
-
-/* --- 5. HAKKIMIZDA SAYFASI --- */
-.about-page {
-    padding: 150px 0 80px 0; /* Header'ın altında başlaması için */
-    background-color: #f7f7f7b6; /* Ana arka plan rengiyle uyumlu olsun */
-}
-
-.about-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: center;
-}
-
-.about-image img {
-    width: 100%;
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-}
-
-.about-text h1 {
-    font-size: 3rem;
-    margin-bottom: 25px;
-}
-
-.about-text p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    margin-bottom: 20px;
-}
-
-/* --- 6. FOOTER --- */
-footer {
-    background-color: #222;
-    color: #aaa;
-    padding: 25px 0;
-}
-
-footer .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-footer a {
-    color: #aaa;
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-footer a:hover {
-    color: var(--primary-color);
-}
+/* --- DİĞER STİLLER (DEĞİŞİKLİK YOK) --- */
+.hero { background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('images/background.webp') no-repeat center center/cover; color: #fff; }
+.hero-container { min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding-top: 110px; padding-bottom: 60px; }
+.hero-main-content { display: flex; justify-content: space-between; align-items: center; gap: 40px; }
+.hero-text h1 { font-size: 3.5rem; font-weight: 700; margin-bottom: 1rem; }
+.hero-text p { font-size: 1.4rem; line-height: 1.4; }
+.hero-image img { max-width: 100%; height: auto; max-width: 400px; }
+.how-it-works { text-align: center; }
+.how-it-works-title { color: #fff; font-size: 1.8rem; font-weight: 600; margin-bottom: 20px; }
+.dark-theme .how-it-works-title { color: var(--text-color); }
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+.feature-card { background-color: var(--card-background); color: var(--text-color); padding: 30px; border-radius: 12px; box-shadow: var(--shadow); text-align: center; transition: background-color 0.4s ease; }
+.feature-icon { width: 50px; height: 50px; margin-bottom: 20px; }
+.dark-theme .feature-icon { filter: invert(1); }
+.feature-card h3 { margin-bottom: 10px; font-size: 1.25rem; }
+.about-page { padding: 130px 0 80px 0; width: 100%; }
+.about-text h1 { font-size: 2.5rem; margin-bottom: 25px; text-align: center; }
+.about-text p { font-size: 1.1rem; line-height: 1.8; margin-bottom: 20px; text-align: center; max-width: 800px; margin-left: auto; margin-right: auto; }
+footer { background-color: var(--footer-background); color: var(--footer-text); padding: 25px 0; transition: background-color 0.4s ease, color 0.4s ease; }
+footer .container { display: flex; justify-content: space-between; align-items: center; }
+footer a { color: var(--footer-text); text-decoration: none; transition: color 0.3s; }
+footer a:hover { color: var(--primary-color); }
+.theme-toggle { position: fixed; bottom: 25px; right: 25px; width: 50px; height: 50px; background-color: var(--card-background); color: var(--text-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: var(--shadow); z-index: 101; font-size: 20px; transition: background-color 0.4s ease, color 0.4s ease, transform 0.3s ease; }
+.theme-toggle:hover { transform: scale(1.1); }
+.theme-toggle .fa-sun { display: none; }
+.theme-toggle .fa-moon { display: block; }
+.dark-theme .theme-toggle .fa-sun { display: block; }
+.dark-theme .theme-toggle .fa-moon { display: none; }
 
 
-/* --- 7. MOBİL UYUMLULUK (RESPONSIVE) --- */
+/* --- 8. MOBİL UYUMLULUK (RESPONSIVE) --- */
 @media (max-width: 992px) {
-    .hero-main-content {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .hero-image {
-        margin-top: 40px;
-    }
-
-    .about-container {
-        grid-template-columns: 1fr;
-    }
+    .hero-main-content { flex-direction: column; text-align: center; }
+    .hero-image { margin-top: 40px; }
 }
 
 @media (max-width: 768px) {
+    header nav {
+        /* Grid'i iptal et, basit flex yapıya geç */
+        display: flex;
+        justify-content: space-between;
+    }
+
     .nav-links {
-        display: none; /* Basitlik için mobil menüyü gizliyoruz */
-    }
-
-    .hero-text h1 { font-size: 3rem; }
-    .hero-text p { font-size: 1.2rem; }
-    
-    .hero-container {
+        /* Mobil menü tam ekran yapısı */
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100vh;
+        background-color: var(--background-color);
+        flex-direction: column;
         justify-content: center;
-        padding-top: 100px;
-        padding-bottom: 40px;
+        align-items: center;
+        gap: 40px;
+        transform: translateX(100%);
+        transition: transform 0.4s ease-in-out;
+        z-index: 1000;
+        display: none; /* Başlangıçta gizli */
     }
-
-    .how-it-works {
-        margin-top: 60px;
+    .nav-links.active {
+        display: flex; /* Tıklanınca görünür yap */
+        transform: translateX(0);
     }
+    .nav-links a:not(.btn) { font-size: 1.5rem; }
 
-    .features-grid {
-        grid-template-columns: 1fr;
+    /* Mobil menü için butonu göster */
+    .nav-button-container { display: block; }
+
+    /* Masaüstü butonunu mobilde gizle */
+    .desktop-btn { display: none; }
+
+    .hamburger-menu {
+        display: block;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: var(--text-color);
+        z-index: 1001;
     }
-}
-/* --- 8. AÇIK TEMA DÜZELTMESİ (ABOUT US SAYFASI İÇİN) --- */
-
-.light-theme .logo,
-.light-theme .nav-links a {
-    color: var(--dark-color);
-}
-
-.light-theme .nav-links a:hover {
-    color: var(--primary-color);
-}
-
-.light-theme .nav-links a.active {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
+    .hamburger-menu.active i:before { content: '\f00d'; }
+    
+    .hero-text h1 { font-size: 2.6rem; }
+    .hero-text p { font-size: 1.2rem; }
+    .hero-container { justify-content: center; padding-top: 100px; padding-bottom: 40px; }
+    .how-it-works { margin-top: 60px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .about-page { padding: 100px 0 60px 0; }
+    footer .container { flex-direction: column; gap: 10px; }
+    .theme-toggle { bottom: 20px; right: 20px; }
 }

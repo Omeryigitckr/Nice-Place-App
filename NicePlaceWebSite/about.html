@@ -3,47 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hakkımda - Nice Place</title>
+    <title>Hakkında - Nice Place</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 </head>
-<body class="light-theme">
+<body>
 
     <div class="page-wrapper">
-        <header>
-            <nav class="container">
-                <a href="index.html" class="logo">Nice Place</a>
-                <ul class="nav-links">
-                    <li><a href="index.html">Nice Place</a></li>
-                    <li><a href="about.html" class="active">Hakkımda</a></li>
-                </ul>
-                <a href="#" class="btn btn-primary">Download</a>
-            </nav>
-        </header>
+         <div class="main-content">
+            <header>
+                <nav class="container">
+                    <a href="index.html"><img src="images/niceplacetextlogo.webp" alt="logotext" class="txtlogo"></a>
+                    <ul class="nav-links" id="nav-links">
+                        <li><a href="index.html">Nice Place</a></li>
+                        <li><a href="about.html" class="active">Proje Hakkında</a></li>
+                        <li class="nav-button-container"><a href="#" class="btn btn-primary">Yükle</a></li>
+                    </ul>
+                    <div class="hamburger-menu" id="hamburger-menu">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </nav>
+            </header>
 
-        <main class="about-page">
-            <div class="container about-container">
-                <div class="about-image">
-                    <img src="images/about-us.webp" alt="Geliştirici portresi">
+            <main class="about-page">
+                <div class="container about-container">
+                    <div class="about-text">
+                        <h1>Hakkında</h1>
+                        <p> <strong>Amacımız:</strong> "Nice Place"in amacı basit ve nettir: Sizi, gerçekten "güzel" olan mekanlarla buluşturmak. Gürültülü, abartılmış yorumlar ve reklamlarla dolu platformların aksine, biz sadece kullanıcılarımızın bizzat  deneyimleyip sevdiği, huzurlu, estetik ve pozitif enerjiye sahip yerleri bir araya getiriyoruz. 
+                        Amacımız, "Bugün nereye gitsem?" diye düşündüğünüzde, size kalabalıktan uzak o saklı kalmış kahve dükkanını, şehrin en iyi gün batımı manzarasını sunan o tepeyi veya kimsenin bilmediği o sakin parkı göstermektir. <br> <i>"Nice Place", iyi zevklere sahip insanların, keşfettikleri güzel yerleri birbirleriyle paylaştığı pozitif bir keşif topluluğudur.</i> </p>
+                    </div>
                 </div>
-                <div class="about-text">
-                    <h1>Hakkımda</h1>
-                    <p>Merhaba! Alanya Alaaddin Keykubat Üniversitesi'nde Bilgisayar
-                         Programcılığı okuyan birisi olarak yaptığım ilk proje.</p>
-                    <p>Amacım, insanların etraflarındaki harika yerleri kolayca bulmalarını 
-                        ve unutulmaz anılar biriktirmelerini sağlamak.
-                        </p>
-                </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <footer>
         <div class="container">
             <span>© 2025 Nice Place. Tüm hakları saklıdır.</span>
-            <a href="#">Gizlilik Politikası</a>
+            <a href="#">Ömer Yiğit Çakır</a>
         </div>
     </footer>
 
+    <div id="theme-toggle" class="theme-toggle">
+        <i class="fas fa-sun"></i>
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

@@ -6,65 +6,76 @@
     <title>Nice Place - Keşfetmeye Başla</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 </head>
 <body>
 
     <div class="page-wrapper">
-        <header>
-            <nav class="container">
-                <a href="index.html" class="logo">Nice Place</a>
-                <ul class="nav-links">
-                    <li><a href="index.html" class="active">Nice Place</a></li>
-                    <li><a href="about.html">Hakkımda</a></li>
-                </ul>
-                <a href="#" class="btn btn-primary">Download</a>
-            </nav>
-        </header>
-
-        <main class="hero">
-            <div class="container hero-container">
-                
-                <div class="hero-main-content">
-                    <div class="hero-text">
-                        <h1>Nice Place</h1>
-                        <p>Huzuru keşfet.<br>Nefes kesen yerleri keşfet.<br>Mükemmel kaçışın seni bekliyor.</p>
+        <div class="main-content">
+            <header>
+                <nav class="container">
+                    <a href="index.html"><img src="images/niceplacetextlogo.webp" alt="logotext" class="txtlogo"></a>
+                    <ul class="nav-links" id="nav-links">
+                        <li><a href="index.html" class="active">Nice Place</a></li>
+                        <li><a href="about.html">Hakkında</a></li>
+                        <li class="nav-button-container"><a href="#" class="btn btn-primary">Yükle</a></li>
+                    </ul>
+                    <div class="hamburger-menu" id="hamburger-menu">
+                        <i class="fas fa-bars"></i>
                     </div>
-                    <div class="hero-image">
-                        <img src="images/phone-mockup.webp" alt="Nice Place uygulamasının yeni arayüzü">
+                </nav>
+            </header>
+
+            <main class="hero">
+                <div class="container hero-container">
+                    <div class="hero-main-content">
+                        <div class="hero-text">
+                            <h1>Nice Place</h1>
+                            <p><strong>Keşfet,</strong><br><strong>Paylaş,</strong><br><strong>Hayatını Yaşa,</strong></p>
+                        </div>
+                        <div class="hero-image">
+                            <img src="images/phone-mockup.webp" alt="Nice Place uygulamasının yeni arayüzü">
+                        </div>
+                    </div>
+                    <div class="how-it-works">
+                        <h1 class="how-it-works-title">Nasıl Çalışır?</h1>
+                        <div class="features-grid">
+                            <div class="feature-card">
+                                <img src="images/map.svg" alt="Keşfet ikonu" class="feature-icon">
+                                <h3>Harika Yerler Keşfet</h3>
+                                <p>Filtreleri kullanarak ruh haline veya aktiviteye en uygun mekanları (parklar, kafeler, manzara noktaları) anında bul.</p>
+                            </div>
+                            <div class="feature-card">
+                                <img src="images/note.svg" alt="Liste ikonu" class="feature-icon">
+                                <h3>Listeler Oluştur</h3>
+                                <p>Beğendiğin yerleri 'Gidilecekler' veya 'Favoriler' gibi özel listelere ekleyerek kendi seyahat planını oluştur.</p>
+                            </div>
+                            <div class="feature-card">
+                                <img src="images/share.svg" alt="Paylaş ikonu" class="feature-icon">
+                                <h3>Yol Tarifi Al ve Paylaş</h3>
+                                <p>Tek tıkla seçtiğin yere yol tarifi al. Beğendiğin mekanları arkadaşlarınla kolayca paylaşarak ortak planlar yap.</p>
+                            </div>
+                        </div>
+                        <br><br>
+                        <a href="#" class="btn btn-primary">Yükle</a>
                     </div>
                 </div>
-
-                <div class="how-it-works">
-                    <h1 class="how-it-works-title">Nasıl Çalışır?</h1>
-                    <div class="features-grid">
-                        <div class="feature-card">
-                            <img src="images/map.svg" alt="Keşfet ikonu" class="feature-icon">
-                            <h3>Harika Yerler Keşfet</h3>
-                            <p>Filtreleri kullanarak ruh haline veya aktiviteye en uygun mekanları (parklar, kafeler, manzara noktaları) anında bul.</p>
-                        </div>
-                        <div class="feature-card">
-                            <img src="images/note.svg" alt="Liste ikonu" class="feature-icon">
-                            <h3>Listeler Oluştur</h3>
-                            <p>Beğendiğin yerleri 'Gidilecekler' veya 'Favoriler' gibi özel listelere ekleyerek kendi seyahat planını oluştur.</p>
-                        </div>
-                        <div class="feature-card">
-                            <img src="images/share.svg" alt="Paylaş ikonu" class="feature-icon">
-                            <h3>Yol Tarifi Al ve Paylaş</h3>
-                            <p>Tek tıkla seçtiğin yere yol tarifi al. Beğendiğin mekanları arkadaşlarınla kolayca paylaşarak ortak planlar yap.</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <footer>
         <div class="container">
             <span>© 2025 Nice Place. Tüm hakları saklıdır.</span>
-            <a href="#">Gizlilik Politikası</a>
+            <a href="#">Ömer Yiğit Çakır</a>
         </div>
     </footer>
 
+    <div id="theme-toggle" class="theme-toggle">
+        <i class="fas fa-sun"></i>
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
