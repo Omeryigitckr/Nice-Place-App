@@ -38,11 +38,20 @@ export interface AdminActionResult {
   error?: string;
 }
 
-/** Pending place submissions awaiting admin approval (places.status = 'pending'). */
-export async function getPendingPlaces(): Promise<{
-  places: DbPlace[];
-  error?: string;
-}> {
+function isMissingAdminListPlacesRpc(error: { message?: string; code?: string }): boolean {
+  const message = (error.message ?? '').toLowerCase();
+  return (
+    error.code === 'PGRST202' ||
+    message.includes('admin_list_places') ||
+    message.includes('could not find the function')
+  );
+}
+
+/** Load places for admin review — RPC first, then direct table query. */
+async function loadAdminPlacesByStatus(
+  status: PlaceStatus,
+  orderColumn: 'created_at' | 'updated_at',
+): Promise<{ places: DbPlace[]; error?: string }> {
   const access = await assertAdminAccess();
   if (!access.ok) {
     return { places: [], error: access.error };
@@ -54,24 +63,54 @@ export async function getPendingPlaces(): Promise<{
   }
 
   try {
+    const { data: rpcData, error: rpcError } = await supabase.rpc('admin_list_places', {
+      p_status: status,
+    });
+
+    if (!rpcError && rpcData) {
+      const places = (rpcData as DbPlace[]).slice().sort((a, b) => {
+        const aTime = new Date(
+          orderColumn === 'updated_at' ? (a.updated_at ?? a.created_at) : a.created_at,
+        ).getTime();
+        const bTime = new Date(
+          orderColumn === 'updated_at' ? (b.updated_at ?? b.created_at) : b.created_at,
+        ).getTime();
+        return bTime - aTime;
+      });
+      devLog('[Nice Place Admin] places loaded via rpc', status, places.length);
+      return { places };
+    }
+
+    if (rpcError && !isMissingAdminListPlacesRpc(rpcError)) {
+      devWarn('[Nice Place Admin] admin_list_places rpc failed:', rpcError.message);
+    }
+
     const { data, error } = await supabase
       .from('places')
       .select(PLACE_SELECT)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
+      .eq('status', status)
+      .order(orderColumn, { ascending: false });
 
     if (error) {
-      devError('[Nice Place Admin] pending places load failed:', error.message);
+      devError('[Nice Place Admin] places load failed:', status, error.message);
       return { places: [], error: error.message };
     }
 
     const places = (data ?? []) as DbPlace[];
-    devLog('[Nice Place Admin] pending places loaded', places.length);
+    devLog('[Nice Place Admin] places loaded via table query', status, places.length);
     return { places };
   } catch (error: unknown) {
-    devError('[Nice Place Admin] pending places exception:', error);
-    return { places: [], error: 'Could not load pending places.' };
+    devError('[Nice Place Admin] places load exception:', status, error);
+    return { places: [], error: `Could not load ${status} places.` };
   }
+}
+
+/** Pending place submissions awaiting admin approval (places.status = 'pending'). */
+export async function getPendingPlaces(): Promise<{
+  places: DbPlace[];
+  error?: string;
+}> {
+  return loadAdminPlacesByStatus('pending', 'created_at');
 }
 
 const APPROVE_PLACE_ERROR = "Couldn't approve the place. Please try again.";
@@ -194,6 +233,28 @@ async function updatePendingPlaceStatus(
 
       if (photoError) {
         devWarn('[Nice Place Admin] approve place photos failed:', photoError.message);
+      }
+
+      const { data: coverPhoto } = await supabase
+        .from('place_photos')
+        .select('image_url')
+        .eq('place_id', id)
+        .order('is_cover', { ascending: false })
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      const coverUrl = (coverPhoto as { image_url?: string } | null)?.image_url;
+
+      if (coverUrl) {
+        const { error: coverSyncError } = await supabase
+          .from('places')
+          .update({ cover_photo_url: coverUrl })
+          .eq('id', id);
+
+        if (coverSyncError) {
+          devWarn('[Nice Place Admin] cover_photo_url sync failed:', coverSyncError.message);
+        }
       }
     }
 
@@ -800,35 +861,7 @@ export async function getRejectedPlaces(): Promise<{
   places: DbPlace[];
   error?: string;
 }> {
-  const access = await assertAdminAccess();
-  if (!access.ok) {
-    return { places: [], error: access.error };
-  }
-
-  const supabase = getSupabase();
-  if (!supabase) {
-    return { places: [], error: 'Supabase is not configured.' };
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('places')
-      .select(PLACE_SELECT)
-      .eq('status', 'rejected')
-      .order('updated_at', { ascending: false });
-
-    if (error) {
-      devError('[Nice Place Admin] rejected places load failed:', error.message);
-      return { places: [], error: error.message };
-    }
-
-    const places = (data ?? []) as DbPlace[];
-    devLog('[Nice Place Admin] rejected places loaded', places.length);
-    return { places };
-  } catch (error: unknown) {
-    devError('[Nice Place Admin] rejected places exception:', error);
-    return { places: [], error: 'Could not load rejected places.' };
-  }
+  return loadAdminPlacesByStatus('rejected', 'updated_at');
 }
 
 export async function getRejectedPlaceUpdateRequests(): Promise<{

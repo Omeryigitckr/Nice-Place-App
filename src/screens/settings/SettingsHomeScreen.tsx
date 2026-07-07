@@ -31,8 +31,6 @@ import { resetToMain } from '../../navigation/navigationHelpers';
 import { deleteUserAccount, signOut } from '../../services';
 import {
   notificationStatusLabel,
-  requestNotificationPermission,
-  type NotificationPermissionStatus,
 } from '../../services/notificationSettingsService';
 import {
   DistanceUnit,
@@ -97,8 +95,6 @@ export function SettingsHomeScreen({ navigation }: Props) {
   const [legalContent, setLegalContent] = useState<LegalInfoContent | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const [acting, setActing] = useState(false);
-  const [permissionStatus, setPermissionStatus] =
-    useState<NotificationPermissionStatus>('undetermined');
 
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
@@ -128,14 +124,6 @@ export function SettingsHomeScreen({ navigation }: Props) {
   }, [deletePassword, deletePasswordConfirm, deleteConfirmText]);
 
   useEffect(() => {
-    const anyEnabled =
-      settings.notifications.updateRequestStatus ||
-      settings.notifications.newNearbyPlaces ||
-      settings.notifications.savedPlaceReminders;
-    setPermissionStatus(anyEnabled ? 'enabled' : 'disabled');
-  }, [settings.notifications]);
-
-  useEffect(() => {
     themeFade.setValue(0.88);
     Animated.timing(themeFade, {
       toValue: 1,
@@ -152,34 +140,6 @@ export function SettingsHomeScreen({ navigation }: Props) {
       easing: motionEasing.out,
       useNativeDriver: true,
     }).start();
-  };
-
-  const handleNotificationToggle = async (
-    key: keyof typeof settings.notifications,
-    value: boolean,
-  ) => {
-    if (value) {
-      const status = await requestNotificationPermission();
-      setPermissionStatus(status === 'denied' ? 'denied' : 'enabled');
-    } else {
-      const next = {
-        ...settings.notifications,
-        [key]: false,
-      };
-      const stillEnabled =
-        next.updateRequestStatus || next.newNearbyPlaces || next.savedPlaceReminders;
-      setPermissionStatus(stillEnabled ? 'enabled' : 'disabled');
-    }
-
-    await updateSettings((current) => ({
-      ...current,
-      notifications: {
-        ...current.notifications,
-        [key]: value,
-      },
-    }));
-
-    devLog('[Nice Place Notifications] setting changed:', key, value);
   };
 
   const handleLogout = async () => {
@@ -268,8 +228,11 @@ export function SettingsHomeScreen({ navigation }: Props) {
     }
 
     setDeleteVisible(false);
+    resetPlaceLikesMemory();
+    resetSavedPlacesMemory();
     await refresh();
     resetToMain(navigation);
+    showToast('Your account has been deleted.');
   };
 
   const openMail = (subject: string) => {
@@ -390,26 +353,29 @@ export function SettingsHomeScreen({ navigation }: Props) {
       </SettingsSection>
 
       <SettingsSection title="Notifications" entranceIndex={4}>
+        <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
+          Push notifications are coming soon in a future beta update.
+        </Text>
         <Text style={[settingsStyles.statusLabel, { color: colors.textSecondary }]}>
-          Status: {notificationStatusLabel(permissionStatus)}
+          Status: {notificationStatusLabel('disabled')}
         </Text>
         <PreferenceToggle
           label="Update request status notifications"
-          value={settings.notifications.updateRequestStatus}
-          disabled={settingsLoading}
-          onValueChange={(value) => void handleNotificationToggle('updateRequestStatus', value)}
+          value={false}
+          disabled
+          onValueChange={() => undefined}
         />
         <PreferenceToggle
           label="New nearby places notifications"
-          value={settings.notifications.newNearbyPlaces}
-          disabled={settingsLoading}
-          onValueChange={(value) => void handleNotificationToggle('newNearbyPlaces', value)}
+          value={false}
+          disabled
+          onValueChange={() => undefined}
         />
         <PreferenceToggle
           label="Saved place reminders"
-          value={settings.notifications.savedPlaceReminders}
-          disabled={settingsLoading}
-          onValueChange={(value) => void handleNotificationToggle('savedPlaceReminders', value)}
+          value={false}
+          disabled
+          onValueChange={() => undefined}
         />
       </SettingsSection>
 

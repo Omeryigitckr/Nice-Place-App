@@ -173,8 +173,8 @@ export async function enrichPlacesWithEngagement<T extends Place>(
       const stats = engagement[place.id] ?? emptyEngagement();
       return {
         ...place,
-        likeCount: stats.likeCount,
-        saveCount: stats.saveCount,
+        likeCount: Math.max(clampCount(place.likeCount), stats.likeCount),
+        saveCount: Math.max(clampCount(place.saveCount), stats.saveCount),
         isLikedByCurrentUser: stats.isLikedByCurrentUser,
         isSavedByCurrentUser: stats.isSavedByCurrentUser,
       };

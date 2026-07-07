@@ -2,6 +2,7 @@ export { PlaceDetailHero, PLACE_DETAIL_HERO_HEIGHT } from './PlaceDetailHero';
 export { PlaceQuickInfoCard } from './PlaceQuickInfoCard';
 export type { QuickInfoItem } from './PlaceQuickInfoCard';
 export { PlaceDescriptionBlock } from './PlaceDescriptionBlock';
+export { PlaceSafetyBlock } from './PlaceSafetyBlock';
 export { PlaceTagPill } from './PlaceTagPill';
 export { PlacePhotoGallery, PlacePhotoViewer } from './PlacePhotoGallery';
 export {

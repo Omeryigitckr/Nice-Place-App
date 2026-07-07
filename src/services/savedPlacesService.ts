@@ -9,6 +9,7 @@ import { markNetworkFailure, markNetworkSuccess } from '../network';
 import { DbPlace } from '../types/database';
 import { Place } from '../types/place';
 import { devLog, devWarn } from '../utils/devLog';
+import { isOfflineOrNetworkError } from '../utils/networkErrors';
 
 import { enrichPlacesWithEngagement } from './placeEngagementService';
 import { mapDbRowsToPlaces, PLACE_SELECT } from './placesService';
@@ -182,6 +183,9 @@ export async function savePlace(
       return { success: true, saved: true, saveCount };
     }
     devWarn('[Nice Place Saves] error', error.message);
+    if (isOfflineOrNetworkError(error.message)) {
+      markNetworkFailure();
+    }
     return { success: false, error: error.message };
   }
 
@@ -216,6 +220,9 @@ export async function unsavePlace(
 
   if (error) {
     devWarn('[Nice Place Saves] error', error.message);
+    if (isOfflineOrNetworkError(error.message)) {
+      markNetworkFailure();
+    }
     return { success: false, error: error.message };
   }
 

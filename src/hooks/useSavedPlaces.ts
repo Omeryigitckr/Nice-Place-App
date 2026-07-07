@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { devWarn } from '../utils/devLog';
+import { toUserFacingNetworkError } from '../utils/networkErrors';
 
 import { readSavedIdsCache, writeSavedIdsCache } from '../cache';
 import { hapticError, hapticLight, showAppToast } from '../feedback';
@@ -215,7 +216,7 @@ export function useSavedPlaces(): UseSavedPlacesResult {
         devWarn('[Nice Place Saves] error', result.error);
         hapticError();
         if (result.error && !result.requiresAuth) {
-          showAppToast(result.error, { tone: 'error' });
+          showAppToast(toUserFacingNetworkError(result.error), { tone: 'error' });
         }
         return result;
       }

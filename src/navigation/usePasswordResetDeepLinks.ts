@@ -1,23 +1,26 @@
 import { useEffect } from 'react';
 import { Linking } from 'react-native';
 
-import { createSessionFromDeepLink, getSupabase, isPasswordResetDeepLink } from '../services';
+import { isAuthCallbackUrl, processAuthCallbackUrl } from '../services/authCallbackService';
+import { getSupabase } from '../services/supabase';
 import { devWarn } from '../utils/devLog';
 
 import { navigateToResetPasswordScreen } from './navigationRef';
 
 async function handlePasswordResetUrl(url: string | null) {
-  if (!url || !isPasswordResetDeepLink(url)) {
+  if (!url || !isAuthCallbackUrl(url)) {
     return;
   }
 
-  const result = await createSessionFromDeepLink(url);
+  const result = await processAuthCallbackUrl(url);
   if (!result.success) {
     devWarn('[Nice Place Auth] password reset deep link failed:', result.error);
     return;
   }
 
-  navigateToResetPasswordScreen();
+  if (result.flow === 'recovery') {
+    navigateToResetPasswordScreen();
+  }
 }
 
 export function usePasswordResetDeepLinks() {

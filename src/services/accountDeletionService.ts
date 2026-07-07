@@ -14,9 +14,8 @@ export interface DeleteAccountResult {
 }
 
 /**
- * Client-side account deletion is intentionally limited.
- * Supabase does not allow end-users to delete auth.users from the anon key.
- * A secure Edge Function / admin API is required for full deletion.
+ * Deletes the Supabase Auth user via the delete-account Edge Function.
+ * Requires the function to be deployed on the Supabase project.
  */
 export async function deleteUserAccount(input: DeleteAccountInput): Promise<DeleteAccountResult> {
   const supabase = getSupabase();
@@ -31,57 +30,48 @@ export async function deleteUserAccount(input: DeleteAccountInput): Promise<Dele
     return { success: false, error: 'Email and password are required.' };
   }
 
-  // Re-authenticate to prove password ownership.
-  const { error: authError } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  const { data: sessionData } = await supabase.auth.getSession();
+  const sessionUser = sessionData.session?.user;
 
-  if (authError) {
-    return { success: false, error: authError.message || 'Password verification failed.' };
-  }
-
-  const { data: userData } = await supabase.auth.getUser();
-  const user = userData.user;
-  if (!user) {
+  if (!sessionUser) {
     return { success: false, error: 'Could not verify your session.' };
   }
 
-  // Best-effort anonymize profile data the client is allowed to update.
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .update({
-      full_name: 'Deleted User',
-      username: `deleted_${user.id.slice(0, 8)}`,
-      bio: null,
-      avatar_url: null,
-      avatar_storage_path: null,
-    })
-    .eq('auth_user_id', user.id);
+  const { data, error } = await supabase.functions.invoke('delete-account', {
+    body: { password },
+  });
 
-  if (profileError) {
-    devWarn('[Nice Place Settings] profile anonymize failed:', profileError.message);
+  if (error) {
+    devWarn('[Nice Place Settings] delete-account invoke failed:', error.message);
+    const message = error.message.toLowerCase();
+    if (message.includes('function') || message.includes('404') || message.includes('not found')) {
+      return {
+        success: false,
+        error: 'Account deletion is not available yet. Contact support@niceplace.site.',
+      };
+    }
+    return { success: false, error: 'Could not delete account. Please try again.' };
   }
 
-  // Auth user deletion requires a privileged server function.
-  devWarn(
-    '[Nice Place Settings] auth.users delete is not available from the client. Needs Edge Function.',
-  );
+  const payload = data as { success?: boolean; error?: string } | null;
 
-  // Best-effort local logout so private cache is not left behind.
+  if (!payload?.success) {
+    return {
+      success: false,
+      error: payload?.error ?? 'Could not delete account. Please try again.',
+    };
+  }
+
   const { data: profileRow } = await supabase
     .from('profiles')
     .select('id')
-    .eq('auth_user_id', user.id)
+    .eq('auth_user_id', sessionUser.id)
     .maybeSingle();
 
   await signOut({
     profileId: (profileRow?.id as string | undefined) ?? null,
-    authUserId: user.id,
+    authUserId: sessionUser.id,
   });
 
-  return {
-    success: false,
-    error: 'Account deletion requires server function',
-  };
+  return { success: true };
 }

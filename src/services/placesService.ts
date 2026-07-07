@@ -279,10 +279,20 @@ async function fetchCoverPhotos(
 
   const photos = (data ?? []) as Pick<DbPlacePhoto, 'place_id' | 'image_url' | 'is_cover'>[];
   const coverMap: Record<string, string> = {};
+  const fallbackMap: Record<string, string> = {};
 
   for (const photo of photos) {
-    if (!coverMap[photo.place_id]) {
+    if (photo.is_cover && !coverMap[photo.place_id]) {
       coverMap[photo.place_id] = photo.image_url;
+    }
+    if (!fallbackMap[photo.place_id]) {
+      fallbackMap[photo.place_id] = photo.image_url;
+    }
+  }
+
+  for (const placeId of placeIds) {
+    if (!coverMap[placeId] && fallbackMap[placeId]) {
+      coverMap[placeId] = fallbackMap[placeId];
     }
   }
 
@@ -312,6 +322,7 @@ function mapDbPlaceToPlace(row: DbPlace, coverImage?: string): Place {
     isCarAccessible: row.is_car_accessible ?? false,
     isCampAllowed: row.is_camp_allowed ?? false,
     isPicnicSuitable: row.is_picnic_suitable ?? false,
+    safetyNote: row.safety_note?.trim() || null,
     likeCount: Math.max(0, row.like_count ?? 0),
     saveCount: Math.max(0, row.save_count ?? 0),
     latitude: row.latitude,

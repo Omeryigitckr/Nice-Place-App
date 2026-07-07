@@ -12,6 +12,7 @@ type MockPlaceInput = Omit<
   | 'isCarAccessible'
   | 'isCampAllowed'
   | 'isPicnicSuitable'
+  | 'safetyNote'
 > & {
   accessTypeSlug?: string;
   difficultySlug?: string;
@@ -21,6 +22,7 @@ type MockPlaceInput = Omit<
   isCarAccessible?: boolean;
   isCampAllowed?: boolean;
   isPicnicSuitable?: boolean;
+  safetyNote?: string | null;
 };
 
 function mockPlace(input: MockPlaceInput): Place {
@@ -35,6 +37,7 @@ function mockPlace(input: MockPlaceInput): Place {
     isCarAccessible: input.isCarAccessible ?? false,
     isCampAllowed: input.isCampAllowed ?? false,
     isPicnicSuitable: input.isPicnicSuitable ?? false,
+    safetyNote: input.safetyNote ?? null,
   };
 }
 

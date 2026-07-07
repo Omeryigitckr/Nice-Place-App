@@ -51,7 +51,7 @@ export function OfflineBanner() {
     }
   }, [isOffline, translateY]);
 
-  if (!visible || !isOffline) {
+  if (!visible) {
     return null;
   }
 

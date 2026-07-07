@@ -29,8 +29,8 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   mapStyle: 'outdoors',
   distanceUnit: 'km',
   notifications: {
-    updateRequestStatus: true,
-    newNearbyPlaces: true,
+    updateRequestStatus: false,
+    newNearbyPlaces: false,
     savedPlaceReminders: false,
   },
 };

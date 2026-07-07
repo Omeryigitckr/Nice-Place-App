@@ -20,6 +20,7 @@ import {
   PlacePhotoGallery,
   PlacePhotoViewer,
   PlaceQuickInfoCard,
+  PlaceSafetyBlock,
   PlaceTagPill,
   QuickInfoItem,
   SimilarPlaceHorizontalCard,
@@ -459,6 +460,10 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
 
             <PlaceQuickInfoCard items={quickInfoItems} />
             <PlaceDescriptionBlock description={displayPlace.description} />
+
+            {displayPlace.safetyNote ? (
+              <PlaceSafetyBlock safetyNote={displayPlace.safetyNote} />
+            ) : null}
 
             {displayTags.length > 0 ? (
               <View style={styles.tagsSection}>

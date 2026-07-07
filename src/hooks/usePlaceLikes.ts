@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { devWarn } from '../utils/devLog';
+import { toUserFacingNetworkError } from '../utils/networkErrors';
 
 import { readLikedIdsCache, writeLikedIdsCache } from '../cache';
 import { hapticError, hapticLight, showAppToast } from '../feedback';
@@ -130,7 +131,7 @@ export function usePlaceLikes(): UsePlaceLikesResult {
 
   const getLikeCount = useCallback(
     (placeId: string, fallback = 0) => {
-      if (Object.prototype.hasOwnProperty.call(likeCounts, placeId)) {
+      if (pendingPlaceIds.has(placeId) && Object.prototype.hasOwnProperty.call(likeCounts, placeId)) {
         return clampCount(likeCounts[placeId]);
       }
       return clampCount(fallback);
@@ -199,7 +200,7 @@ export function usePlaceLikes(): UsePlaceLikesResult {
         devWarn('[Nice Place Likes] error', result.error);
         hapticError();
         if (result.error && !result.requiresAuth) {
-          showAppToast(result.error, { tone: 'error' });
+          showAppToast(toUserFacingNetworkError(result.error), { tone: 'error' });
         }
         return result;
       }

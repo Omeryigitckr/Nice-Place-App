@@ -60,6 +60,7 @@ export {
   PLACE_DETAIL_HERO_HEIGHT,
   PlaceQuickInfoCard,
   PlaceDescriptionBlock,
+  PlaceSafetyBlock,
   PlaceTagPill,
   PlacePhotoGallery,
   PlacePhotoViewer,

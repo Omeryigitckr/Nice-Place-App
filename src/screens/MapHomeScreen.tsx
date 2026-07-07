@@ -35,6 +35,7 @@ import {
 import { AuthRequiredModal } from '../components/AuthRequiredModal';
 import { readMapPlacesCache } from '../cache';
 import { MAP_ROUTES } from '../constants';
+import { subscribeNetworkStatus, getNetworkStatus } from '../network';
 import {
   useAppSettings,
   useAuth,
@@ -253,7 +254,7 @@ export function MapHomeScreen({ navigation }: Props) {
         return;
       }
 
-      applyPlacesResult(result.places, result.error);
+      applyPlacesResult(result.places, result.fromCache ? (result.error ?? null) : null);
     } catch {
       const cached = await readMapPlacesCache({ allowExpired: true });
       if (cached?.length) {
@@ -270,6 +271,18 @@ export function MapHomeScreen({ navigation }: Props) {
 
   useEffect(() => {
     void loadPlaces();
+  }, [loadPlaces]);
+
+  useEffect(() => {
+    let wasOffline = getNetworkStatus().isOffline;
+
+    return subscribeNetworkStatus((status) => {
+      if (wasOffline && !status.isOffline) {
+        setLoadError(null);
+        void loadPlaces({ background: true });
+      }
+      wasOffline = status.isOffline;
+    });
   }, [loadPlaces]);
 
   useEffect(() => {

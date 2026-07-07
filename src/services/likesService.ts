@@ -1,6 +1,7 @@
 import { dedupeRequest, readLikedIdsCache, writeLikedIdsCache } from '../cache';
 import { markNetworkFailure, markNetworkSuccess } from '../network';
 import { devLog, devWarn } from '../utils/devLog';
+import { isOfflineOrNetworkError } from '../utils/networkErrors';
 
 import { getSupabase } from './supabase';
 
@@ -38,6 +39,25 @@ async function getProfileCreatedByKeys(profileId: string): Promise<string[]> {
 
 function clampCount(value: number): number {
   return Math.max(0, value);
+}
+
+async function fetchPlaceLikeCountFromDb(placeId: string): Promise<number | null> {
+  const supabase = getSupabase();
+  if (!supabase || !placeId) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('places')
+    .select('like_count')
+    .eq('id', placeId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return clampCount((data.like_count as number | null) ?? 0);
 }
 
 /** Place IDs the profile has liked. */
@@ -178,15 +198,19 @@ export async function likePlace(
 
   if (error) {
     if (error.code === '23505') {
-      const likeCount = await getPlaceLikeCount(placeId);
+      const likeCount = (await fetchPlaceLikeCountFromDb(placeId)) ?? (await getPlaceLikeCount(placeId));
       devLog('[Nice Place Likes] liked', placeId);
       return { success: true, liked: true, likeCount };
     }
     devWarn('[Nice Place Likes] error', error.message);
+    if (isOfflineOrNetworkError(error.message)) {
+      markNetworkFailure();
+    }
     return { success: false, error: error.message };
   }
 
-  const likeCount = clampCount(currentCount + 1);
+  const likeCount =
+    (await fetchPlaceLikeCountFromDb(placeId)) ?? clampCount(currentCount + 1);
   devLog('[Nice Place Likes] liked', placeId);
   return { success: true, liked: true, likeCount };
 }
@@ -217,10 +241,14 @@ export async function unlikePlace(
 
   if (error) {
     devWarn('[Nice Place Likes] error', error.message);
+    if (isOfflineOrNetworkError(error.message)) {
+      markNetworkFailure();
+    }
     return { success: false, error: error.message };
   }
 
-  const likeCount = clampCount(currentCount - 1);
+  const likeCount =
+    (await fetchPlaceLikeCountFromDb(placeId)) ?? clampCount(currentCount - 1);
   devLog('[Nice Place Likes] unliked', placeId);
   return { success: true, liked: false, likeCount };
 }

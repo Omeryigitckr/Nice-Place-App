@@ -33,6 +33,7 @@ export interface Place {
   isCarAccessible: boolean;
   isCampAllowed: boolean;
   isPicnicSuitable: boolean;
+  safetyNote: string | null;
   likeCount: number;
   saveCount: number;
   /** Present when engagement was loaded from place_likes / saved_places. */

@@ -107,6 +107,15 @@ export async function uploadPlaceCoverPhoto(
       );
     }
 
+    const { error: coverUpdateError } = await supabase
+      .from('places')
+      .update({ cover_photo_url: imageUrl })
+      .eq('id', input.placeId);
+
+    if (coverUpdateError) {
+      devWarn('[Nice Place] cover_photo_url update failed:', coverUpdateError.message);
+    }
+
     return { success: true, imageUrl };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Photo upload failed.';
