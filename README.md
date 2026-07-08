@@ -1,75 +1,169 @@
-### Turkish,
-# Nice Place
+<p align="center">
+  <img src="assets/icon.png" width="140" alt="Nice Place Logo" />
+</p>
 
-_Şehrinin gizli kalmış ruhunu keşfet._
+<h1 align="center">Nice Place</h1>
 
-## Projenin Özeti
+<p align="center">
+  <strong>Discover • Share • Remember</strong>
+</p>
 
-Bu projenin amacı, kullanıcıların yaşadıkları şehirlerdeki ticari olmayan, manevi değeri yüksek ve "gizli kalmış" güzel yerleri keşfedip paylaştığı bir mobil topluluk platformu oluşturmaktır.
+<p align="center">
+A community-driven mobile application for discovering and sharing beautiful non-commercial places.
+</p>
 
-## Proje Durumu
-
-- 💡 **Fikir ve Planlama Aşaması:** Projenin konsepti, temel özellikleri ve teknik stratejisi belirlenmiştir. Arayüz (UI/UX) wireframe'leri ve web sitesi planı tamamlanmıştır.
-
----
-
-### Problem
-
-Mevcut keşif uygulamaları ticari işletmelere odaklanarak şu sorunları yaratmaktadır:
-- Otantik ve doğal yerleri bulma zorluğu.
-- Mekanlarla duygusal bağ kurulamaması.
-- Bilgilerin farklı platformlarda dağınık olması.
-
-### Çözüm ve Temel Özellikler
-
-Önerilen çözüm, "Nice Place" adında, kullanıcıların içerik ürettiği bir sosyal keşif uygulamasıdır. Temel özellikleri şunlardır:
-
-- **Ticari Olmayan Odak:** Sadece kamusal ve doğal güzelliklerin paylaşılması.
-- **Duygu Odaklı Kategoriler:** Mekanların "huzurlu", "romantik" gibi ruh hallerine göre filtrelenmesi.
-- **Kaliteli Yorum Sistemi:** Her kullanıcının bir yer için tek bir yorum hakkı olmasıyla samimi paylaşımların teşvik edilmesi.
-
-### Hedef Kitle
-
-Uygulama, şehrini yeniden keşfetmek isteyen yerel halk ile otantik deneyim arayan turistleri hedeflemektedir.
-
-### Beklenen Etki
-
-Projenin, yerel güzelliklere olan farkındalığı artırması ve pozitif bir dijital topluluk oluşturması hedeflenmektedir.
-
-### English,
-# Nice Place
-
-_Discover the hidden soul of your city._
-
-## Project Summary
-
-This project aims to create a mobile community platform for discovering and sharing non-commercial, "hidden gem" locations with sentimental value. It's a space for experiences beyond the usual restaurants and tourist spots.
-
-## Project Status
-
-- 💡 **Idea & Planning Phase:** The project concept, core features, and technical strategy have been defined. UI/UX wireframes for the mobile app and its supporting website are complete.
+<p align="center">
+<img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white"/>
+<img src="https://img.shields.io/badge/React%20Native-0.85-61DAFB?style=for-the-badge&logo=react"/>
+<img src="https://img.shields.io/badge/Expo-SDK%2056-000020?style=for-the-badge&logo=expo"/>
+<img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?style=for-the-badge&logo=supabase"/>
+<img src="https://img.shields.io/badge/Mapbox-Maps-000000?style=for-the-badge&logo=mapbox"/>
+<img src="https://img.shields.io/badge/Status-Beta%201.0-success?style=for-the-badge"/>
+</p>
 
 ---
 
-### The Problem
+# 🌍 About
 
-Current discovery apps are heavily focused on commercial businesses, which leads to several issues:
-- Difficulty in finding authentic, non-commercial, and natural places.
-- A lack of emotional connection to locations, which are often reduced to simple ratings.
-- Information about these unique spots is scattered across social media and blogs, making it hard to access.
+**Nice Place** is a community-powered location discovery platform designed for people who love exploring beautiful places beyond restaurants and commercial businesses.
 
-### The Solution & Core Features
+Instead of focusing on businesses, Nice Place helps users discover and share:
 
-The proposed solution is "Nice Place," a social discovery application driven by user-generated content. Its core features include:
+- 🌅 Scenic viewpoints
+- 🌲 Forests
+- 🏖 Hidden beaches
+- 🌄 Sunset spots
+- 🧺 Picnic areas
+- 🌊 Lakes
+- 🪨 Natural attractions
+- 📍 Hidden gems
 
-- **Non-Commercial Focus:** A platform exclusively for sharing public spaces, scenic views, and natural beauty.
-- **Emotion-Driven Categories:** Allows users to filter places based on moods and vibes like "peaceful," "romantic," or "a good place for deep thoughts."
-- **Quality-Oriented Comment System:** Encourages genuine storytelling by allowing only one, editable review per user per location, preventing spam and low-effort comments.
+Our goal is simple:
 
-### Target Audience 
+> **Help people discover unforgettable places shared by real people.**
 
-The app targets locals who want to rediscover their city and tourists seeking authentic, off-the-beaten-path experiences. 
+---
 
-### Expected Impact
+# ✨ Features
 
-The project is expected to increase awareness of local gems and foster a positive digital community built on authentic, shared experiences.
+### 🗺 Discovery
+
+- Interactive Mapbox map
+- Nearby places
+- Search
+- Category filters
+- Beautiful place pages
+
+### 👥 Community
+
+- User profiles
+- Guest mode
+- Google Sign In
+- Apple Sign In (iOS ready)
+- Save places
+- Like places
+- Share places
+
+### 📍 Place Management
+
+- Add new places
+- Edit existing places
+- Photo uploads
+- Moderation workflow
+- Admin approval system
+
+### ⚙️ Settings
+
+- Light / Dark mode
+- Distance units
+- Map preferences
+- Password reset
+- Email change
+- Secure account deletion
+
+---
+
+# 🛠 Tech Stack
+
+## Mobile
+
+- React Native
+- Expo SDK 56
+- TypeScript
+
+## Backend
+
+- Supabase
+- PostgreSQL
+- Supabase Storage
+- Edge Functions
+
+## Maps
+
+- Mapbox
+
+## Authentication
+
+- Supabase Auth
+- Google OAuth
+- Apple Authentication
+
+## Infrastructure
+
+- Cloudflare
+- GitHub
+
+---
+
+# 📱 Screenshots
+
+<p align="center">
+Coming soon after Closed Testing 🚀
+</p>
+
+---
+
+# 🚀 Current Status
+
+## 🟢 Beta 1.0
+
+Nice Place has reached its first production-ready milestone.
+
+The application is currently entering **Google Play Closed Testing** before the public release.
+
+Upcoming roadmap:
+
+- 👥 Closed Testing
+- 🐞 Bug fixes
+- ✨ Community feedback
+- 🚀 Nice Place v1.0
+
+---
+
+# 💡 Why Nice Place?
+
+Most map applications are designed around businesses.
+
+Nice Place is designed around **memories**.
+
+Whether it's a peaceful hill, a hidden waterfall, a quiet beach, or your favorite sunset viewpoint, Nice Place gives people a platform to share places that deserve to be remembered.
+
+---
+
+# 🤝 Contributing
+
+Feedback, bug reports and suggestions are always welcome.
+
+If you discover an issue or have an idea that could improve Nice Place, feel free to open an issue or start a discussion.
+
+---
+
+# 📬 Contact
+
+📧 **support@niceplace.site**
+
+---
+
+<p align="center">
+Made with ❤️ using React Native, Expo & Supabase.
+</p>
