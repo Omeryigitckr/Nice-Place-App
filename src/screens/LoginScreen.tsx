@@ -8,12 +8,15 @@ import {
   AppTextInput,
   AuthErrorMessage,
   AuthLegalFooter,
+  AuthOrDivider,
   AuthScreenLayout,
+  AuthSocialButtons,
   AuthStaggerItem,
 } from '../components';
 import { AUTH_ROUTES } from '../constants';
 import { resetToMain } from '../navigation/navigationHelpers';
 import { signInWithEmail } from '../services';
+import { signInWithApple, signInWithGoogle } from '../services/socialAuthService';
 import { spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { AuthStackParamList } from '../types';
@@ -26,6 +29,9 @@ export function LoginScreen({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
+
+  const isBusy = loading || socialLoading !== null;
 
   const handleSignIn = async () => {
     setError(null);
@@ -41,6 +47,38 @@ export function LoginScreen({ navigation }: Props) {
 
     if (!result.success) {
       setError(result.error ?? 'Sign in failed.');
+      return;
+    }
+
+    resetToMain(navigation);
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setSocialLoading('google');
+    const result = await signInWithGoogle();
+    setSocialLoading(null);
+
+    if (!result.success) {
+      if (result.error && !result.error.toLowerCase().includes('cancelled')) {
+        setError(result.error);
+      }
+      return;
+    }
+
+    resetToMain(navigation);
+  };
+
+  const handleAppleSignIn = async () => {
+    setError(null);
+    setSocialLoading('apple');
+    const result = await signInWithApple();
+    setSocialLoading(null);
+
+    if (!result.success) {
+      if (result.error && !result.error.toLowerCase().includes('cancelled')) {
+        setError(result.error);
+      }
       return;
     }
 
@@ -83,7 +121,7 @@ export function LoginScreen({ navigation }: Props) {
             />
             <Pressable
               onPress={() => navigation.navigate(AUTH_ROUTES.FORGOT_PASSWORD)}
-              disabled={loading}
+              disabled={isBusy}
               accessibilityRole="button"
               style={styles.forgotLinkWrap}
             >
@@ -103,26 +141,37 @@ export function LoginScreen({ navigation }: Props) {
             <AppButton
               title={loading ? 'Signing in…' : 'Sign In'}
               onPress={handleSignIn}
-              disabled={loading}
+              disabled={isBusy}
             />
           </AuthStaggerItem>
           <AuthStaggerItem index={6}>
+            <AuthOrDivider />
+          </AuthStaggerItem>
+          <AuthStaggerItem index={7}>
+            <AuthSocialButtons
+              onGooglePress={handleGoogleSignIn}
+              onApplePress={handleAppleSignIn}
+              disabled={isBusy}
+              loadingProvider={socialLoading}
+            />
+          </AuthStaggerItem>
+          <AuthStaggerItem index={8}>
             <AppButton
               title="Create account"
               variant="ghost"
               onPress={() => navigation.navigate(AUTH_ROUTES.REGISTER)}
-              disabled={loading}
+              disabled={isBusy}
             />
           </AuthStaggerItem>
-          <AuthStaggerItem index={7}>
+          <AuthStaggerItem index={9}>
             <AppButton
               title="Continue as guest"
               variant="secondary"
               onPress={() => resetToMain(navigation)}
-              disabled={loading}
+              disabled={isBusy}
             />
           </AuthStaggerItem>
-          <AuthStaggerItem index={8}>
+          <AuthStaggerItem index={10}>
             <AuthLegalFooter />
           </AuthStaggerItem>
         </View>

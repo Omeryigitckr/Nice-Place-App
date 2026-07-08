@@ -10,11 +10,13 @@
     "ios": {
       "bundleIdentifier": "com.niceplace.app",
       "supportsTablet": true,
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "com.niceplace.app",
       "versionCode": 1,
+      "allowBackup": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundColor": "#060A10",
@@ -50,6 +52,7 @@
     "plugins": [
       "expo-dev-client",
       "expo-font",
+      "expo-apple-authentication",
       [
         "@rnmapbox/maps",
         {
@@ -72,10 +75,16 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash-icon.png",
+          "image": "./assets/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#060A10"
+          "backgroundColor": "#060A10",
+          "android": {
+            "image": "./assets/android-icon-foreground.png",
+            "imageWidth": 200,
+            "resizeMode": "contain",
+            "backgroundColor": "#060A10"
+          }
         }
       ],
       "expo-image"

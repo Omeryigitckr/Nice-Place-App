@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
   TextInputProps,
   View,
 } from 'react-native';
+import { Eye, EyeOff } from 'lucide-react-native';
 
 import { duration, radius, spacing, typography } from '../theme';
 import { useThemeColors } from '../theme/ThemeContext';
@@ -19,13 +21,23 @@ interface AppTextInputProps extends TextInputProps {
 
 const calmEasing = Easing.out(Easing.cubic);
 
-export function AppTextInput({ label, error, style, onFocus, onBlur, ...props }: AppTextInputProps) {
+export function AppTextInput({
+  label,
+  error,
+  style,
+  onFocus,
+  onBlur,
+  secureTextEntry,
+  ...props
+}: AppTextInputProps) {
   const colors = useThemeColors();
   const [focused, setFocused] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const focusProgress = useRef(new Animated.Value(0)).current;
   const errorOpacity = useRef(new Animated.Value(error ? 1 : 0)).current;
   const errorTranslateY = useRef(new Animated.Value(error ? 0 : -4)).current;
   const [errorText, setErrorText] = useState(error ?? null);
+  const isPasswordField = secureTextEntry === true;
 
   useEffect(() => {
     Animated.timing(focusProgress, {
@@ -96,7 +108,13 @@ export function AppTextInput({ label, error, style, onFocus, onBlur, ...props }:
       <Animated.View style={[styles.inputWrap, { borderColor, backgroundColor }]}>
         <TextInput
           placeholderTextColor={colors.textMuted}
-          style={[styles.input, { color: colors.textPrimary }, style]}
+          style={[
+            styles.input,
+            isPasswordField && styles.inputWithToggle,
+            { color: colors.textPrimary },
+            style,
+          ]}
+          secureTextEntry={isPasswordField && !passwordVisible}
           onFocus={(event) => {
             setFocused(true);
             onFocus?.(event);
@@ -107,6 +125,21 @@ export function AppTextInput({ label, error, style, onFocus, onBlur, ...props }:
           }}
           {...props}
         />
+        {isPasswordField ? (
+          <Pressable
+            onPress={() => setPasswordVisible((visible) => !visible)}
+            accessibilityRole="button"
+            accessibilityLabel={passwordVisible ? 'Hide password' : 'Show password'}
+            hitSlop={8}
+            style={styles.toggleButton}
+          >
+            {passwordVisible ? (
+              <EyeOff size={20} color={colors.textMuted} />
+            ) : (
+              <Eye size={20} color={colors.textMuted} />
+            )}
+          </Pressable>
+        ) : null}
       </Animated.View>
       <Animated.View
         style={{
@@ -134,12 +167,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.md,
     overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   input: {
     ...typography.body,
+    flex: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     minHeight: 52,
+  },
+  inputWithToggle: {
+    paddingRight: spacing.xs,
+  },
+  toggleButton: {
+    paddingHorizontal: spacing.md,
+    minHeight: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   error: {
     ...typography.caption,

@@ -1,5 +1,5 @@
 import { PROFILE_AVATARS_BUCKET } from '../constants/storage';
-import { devLog, devError } from '../utils/devLog';
+import { devError } from '../utils/devLog';
 
 import { getSupabase } from './supabase';
 
@@ -48,10 +48,6 @@ export async function uploadProfileAvatar(
 
   const storagePath = buildAvatarStoragePath(input.authUserId);
 
-  devLog('[Nice Place Profile] avatar upload started');
-  devLog('[Nice Place Profile] using storage bucket:', PROFILE_AVATARS_BUCKET);
-  devLog('[Nice Place Profile] upload path:', storagePath);
-
   try {
     const fileData = await uriToArrayBuffer(input.imageUri);
 
@@ -80,9 +76,6 @@ export async function uploadProfileAvatar(
 
     // Cache-bust so the UI refreshes without an app restart.
     const avatarUrl = `${publicUrl}${publicUrl.includes('?') ? '&' : '?'}t=${Date.now()}`;
-    devLog('[Nice Place Profile] avatar upload success:', avatarUrl);
-
-    devLog('[Nice Place Profile] profile avatar update started');
 
     const { data: updatedProfile, error: updateError } = await supabase
       .from('profiles')
@@ -113,8 +106,6 @@ export async function uploadProfileAvatar(
         error: 'Could not save avatar to your profile. Please try again.',
       };
     }
-
-    devLog('[Nice Place Profile] profile avatar update success:', updatedProfile.avatar_url);
 
     if (input.previousStoragePath && input.previousStoragePath !== storagePath) {
       await supabase.storage.from(PROFILE_AVATARS_BUCKET).remove([input.previousStoragePath]);

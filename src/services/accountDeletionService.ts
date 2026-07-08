@@ -4,8 +4,8 @@ import { signOut } from './authService';
 import { getSupabase } from './supabase';
 
 export interface DeleteAccountInput {
-  email: string;
-  password: string;
+  password?: string;
+  oauthOnly?: boolean;
 }
 
 export interface DeleteAccountResult {
@@ -23,11 +23,11 @@ export async function deleteUserAccount(input: DeleteAccountInput): Promise<Dele
     return { success: false, error: 'Supabase is not configured.' };
   }
 
-  const email = input.email.trim();
-  const password = input.password;
+  const oauthOnly = input.oauthOnly === true;
+  const password = input.password ?? '';
 
-  if (!email || !password) {
-    return { success: false, error: 'Email and password are required.' };
+  if (!oauthOnly && !password) {
+    return { success: false, error: 'Password is required.' };
   }
 
   const { data: sessionData } = await supabase.auth.getSession();
@@ -38,7 +38,7 @@ export async function deleteUserAccount(input: DeleteAccountInput): Promise<Dele
   }
 
   const { data, error } = await supabase.functions.invoke('delete-account', {
-    body: { password },
+    body: oauthOnly ? { oauthOnly: true } : { password },
   });
 
   if (error) {

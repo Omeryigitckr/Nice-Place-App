@@ -1,6 +1,6 @@
 import { Place } from '../types/place';
 import { PublicProfileStats, PublicProfileSummary } from '../types/publicProfile';
-import { devLog, devWarn } from '../utils/devLog';
+import { devWarn } from '../utils/devLog';
 
 import { getLikesReceivedForProfile } from './likesService';
 import { getSavedPlaces } from './savedPlacesService';
@@ -108,10 +108,9 @@ export async function getProfileStats(profileId: string): Promise<ProfileStats> 
       likesReceived,
     };
 
-    devLog('[Nice Place Profile] stats loaded', profileId, stats);
     return stats;
-  } catch (error: unknown) {
-    devWarn('[Nice Place] Profile stats request failed:', error);
+  } catch {
+    devWarn('[Nice Place] Profile stats request failed');
     return empty;
   }
 }
@@ -170,8 +169,6 @@ export async function getPublicProfile(
     return null;
   }
 
-  devLog('[Nice Place PublicProfile] received profile id:', target);
-
   if (UUID_RE.test(target)) {
     const byId = await supabase
       .from('profiles')
@@ -182,9 +179,7 @@ export async function getPublicProfile(
     if (byId.error) {
       devWarn('[Nice Place PublicProfile] profile fetch error:', byId.error.message);
     } else if (byId.data) {
-      const profile = mapPublicProfileRow(byId.data as DbPublicProfileRow);
-      devLog('[Nice Place PublicProfile] profile loaded:', profile.id, profile.username);
-      return profile;
+      return mapPublicProfileRow(byId.data as DbPublicProfileRow);
     }
 
     // Legacy places may store auth.users.id in created_by.
@@ -200,12 +195,9 @@ export async function getPublicProfile(
     }
 
     if (byAuth.data) {
-      const profile = mapPublicProfileRow(byAuth.data as DbPublicProfileRow);
-      devLog('[Nice Place PublicProfile] profile loaded:', profile.id, profile.username);
-      return profile;
+      return mapPublicProfileRow(byAuth.data as DbPublicProfileRow);
     }
 
-    devLog('[Nice Place PublicProfile] profile not found:', target);
     return null;
   }
 
@@ -222,13 +214,10 @@ export async function getPublicProfile(
   }
 
   if (!byUsername.data) {
-    devLog('[Nice Place PublicProfile] profile not found:', target);
     return null;
   }
 
-  const profile = mapPublicProfileRow(byUsername.data as DbPublicProfileRow);
-  devLog('[Nice Place PublicProfile] profile loaded:', profile.id, profile.username);
-  return profile;
+  return mapPublicProfileRow(byUsername.data as DbPublicProfileRow);
 }
 
 export async function getPublicProfileStats(profileId: string): Promise<PublicProfileStats> {
@@ -258,6 +247,5 @@ export async function getPublicProfileStats(profileId: string): Promise<PublicPr
     likesReceived,
   };
 
-  devLog('[Nice Place Profile] stats loaded', profileId, stats);
   return stats;
 }

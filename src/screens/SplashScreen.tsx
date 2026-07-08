@@ -6,7 +6,7 @@ import { preloadAppData } from '../cache/preload';
 import { ROOT_ROUTES } from '../constants';
 import { colors } from '../theme';
 import { RootStackParamList } from '../types';
-import { resolveBootstrapRoute } from '../utils/appBootstrap';
+import { isOnboardingComplete } from '../utils/storage';
 import { warnMissingEnvOnce } from '../utils/env';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.SPLASH>;
@@ -19,16 +19,18 @@ export function SplashScreen({ navigation }: Props) {
     const bootstrap = async () => {
       warnMissingEnvOnce();
 
-      const nextRoute = await resolveBootstrapRoute();
-
-      // Warm caches without blocking navigation for long.
-      void preloadAppData();
+      const onboardingDone = await isOnboardingComplete();
+      const nextRoute = onboardingDone ? ROOT_ROUTES.MAIN : ROOT_ROUTES.ONBOARDING;
 
       if (cancelled) {
         return;
       }
 
       navigation.replace(nextRoute);
+
+      if (onboardingDone) {
+        void preloadAppData();
+      }
     };
 
     void bootstrap();

@@ -10,6 +10,7 @@ export { AuthLegalFooter } from './AuthLegalFooter';
 export { AuthScreenLayout } from './AuthScreenLayout';
 export { AuthStaggerItem } from './AuthStaggerItem';
 export { AuthErrorMessage } from './AuthErrorMessage';
+export { AuthOrDivider, AuthSocialButtons } from './AuthSocialButtons';
 export { ProfileEntranceBlock } from './ProfileEntranceBlock';
 export { ProfileTabs } from './ProfileTabs';
 export type { ProfileTabOption } from './ProfileTabs';

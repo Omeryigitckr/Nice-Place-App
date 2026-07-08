@@ -7,7 +7,7 @@ import { DbProfile } from '../types/database';
 import { getCurrentSession, getOrCreateProfileForUser } from '../services/authService';
 import { clearViewerProfileIdCache } from '../services/placeEngagementService';
 import { getSupabase, isSupabaseConfigured } from '../services/supabase';
-import { devLog, devWarn } from '../utils/devLog';
+import { devWarn } from '../utils/devLog';
 
 /** Runtime require avoids a circular import with usePlaceLikes / useSavedPlaces. */
 function resetPrivateEngagementMemory(): void {
@@ -18,8 +18,8 @@ function resetPrivateEngagementMemory(): void {
     const saves = require('./useSavedPlaces') as typeof import('./useSavedPlaces');
     likes.resetPlaceLikesMemory();
     saves.resetSavedPlacesMemory();
-  } catch (error: unknown) {
-    devWarn('[Nice Place Auth] engagement memory reset failed:', error);
+  } catch {
+    devWarn('[Nice Place Auth] engagement memory reset failed');
   }
 }
 
@@ -67,8 +67,7 @@ export function useAuth(): UseAuthResult {
       const nextProfile = await getOrCreateProfileForUser(user);
       clearViewerProfileIdCache();
       setProfile(nextProfile);
-    } catch (error: unknown) {
-      devLog('[Nice Place Auth] profile load failed', error);
+    } catch {
       setProfile(null);
     }
   }, [clearLocalUserState]);
@@ -120,9 +119,8 @@ export function useAuth(): UseAuthResult {
                 nextSession = null;
               }
             }
-          } catch (error: unknown) {
+          } catch {
             // Network failure — keep cached session and continue.
-            devLog('[Nice Place Auth] session validation skipped:', error);
           }
         }
       }
@@ -132,9 +130,7 @@ export function useAuth(): UseAuthResult {
       }
 
       setSession(nextSession);
-      devLog('[Nice Place Auth] session loaded', nextSession?.user?.id ?? null);
       if (!nextSession) {
-        devLog('[Nice Place Auth] guest mode enabled');
         resetPrivateEngagementMemory();
       }
       await loadProfile(nextSession?.user ?? null);

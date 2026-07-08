@@ -22,7 +22,6 @@ import { brand } from '../theme/brand';
 import { duration, radius, spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { RootStackParamList } from '../types';
-import { devLog } from '../utils/devLog';
 import { setOnboardingComplete } from '../utils/storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.ONBOARDING>;
@@ -124,7 +123,6 @@ export function OnboardingScreen({ navigation }: Props) {
 
   const finishOnboarding = async () => {
     await setOnboardingComplete();
-    devLog('[Nice Place Auth] guest mode enabled');
     resetToMain(navigation);
   };
 

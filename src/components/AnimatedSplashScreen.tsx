@@ -14,8 +14,8 @@ import { brand } from '../theme/brand';
 import { duration, fontFamily, spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 
-/** Official Brand Kit app icon — do not replace or redraw. */
-const BRAND_APP_ICON = require('../../docs/BrandKit/logos/01_App_Icon.png');
+/** Branded app icon — matches native splash / launcher assets. */
+const BRAND_APP_ICON = require('../../assets/icon.png');
 
 const ICON_SIZE = 120;
 const ICON_RADIUS = 28;

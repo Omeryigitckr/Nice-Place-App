@@ -1,6 +1,6 @@
 import { readUserProfileByAuthCache, writeUserProfileCache } from '../cache';
 import { DbProfile } from '../types/database';
-import { devLog, devWarn } from '../utils/devLog';
+import { devWarn } from '../utils/devLog';
 
 import { getSupabase } from './supabase';
 
@@ -114,7 +114,6 @@ export async function fetchCurrentUserAdminStatus(): Promise<AdminAccessStatus> 
     }
 
     if (!authUserId) {
-      devLog('[Nice Place Admin] access check: no authenticated user');
       return { ...empty, verified: true };
     }
 
@@ -184,18 +183,6 @@ export async function fetchCurrentUserAdminStatus(): Promise<AdminAccessStatus> 
       }
     }
 
-    devLog('[Nice Place Admin] access check', {
-      authUserId,
-      profileId,
-      profileRow: row,
-      isAdminRaw: resolved.isAdminRaw,
-      roleRaw: resolved.roleRaw,
-      roleOnlyAdmin: resolved.roleOnlyAdmin,
-      detectedField: resolved.detectedField,
-      isAdmin: resolved.isAdmin,
-      note: 'Permission uses is_admin only; RLS requires is_admin = true',
-    });
-
     return {
       isAdmin: resolved.isAdmin,
       verified: true,
@@ -207,8 +194,7 @@ export async function fetchCurrentUserAdminStatus(): Promise<AdminAccessStatus> 
       detectedField: resolved.detectedField,
       profileRow: row,
     };
-  } catch (error: unknown) {
-    devWarn('[Nice Place Admin] access check exception:', error);
+  } catch {
     return { ...empty, verified: false, error: 'Could not verify admin access.' };
   }
 }
@@ -217,19 +203,6 @@ export async function assertAdminAccess(): Promise<
   { ok: true; authUserId: string } | { ok: false; error: string }
 > {
   const status = await fetchCurrentUserAdminStatus();
-
-  devLog('[Nice Place Admin] assertAdminAccess', {
-    authUserId: status.authUserId,
-    profileId: status.profileId,
-    isAdminRaw: status.isAdminRaw,
-    roleRaw: status.roleRaw,
-    roleOnlyAdmin: status.roleOnlyAdmin,
-    detectedField: status.detectedField,
-    isAdmin: status.isAdmin,
-    verified: status.verified,
-    error: status.error ?? null,
-    note: 'Write actions require profiles.is_admin = true (RLS)',
-  });
 
   if (!status.authUserId) {
     return { ok: false, error: 'Sign in as an admin to continue.' };

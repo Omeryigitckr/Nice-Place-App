@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { devLog } from '../../utils/devLog';
 
 import {
   AppButton,
@@ -115,10 +114,9 @@ export function SettingsAccountScreen(_props: Props) {
               previousStoragePath={profile?.avatar_storage_path}
               size={88}
               editable
-              onAvatarUpdated={async (avatarUrl) => {
+              onAvatarUpdated={async () => {
                 await refresh();
                 setToastMessage('Profile photo updated.');
-                devLog('[Nice Place Profile] profile avatar update success:', avatarUrl);
               }}
               onError={(message) => setToastMessage(message)}
             />

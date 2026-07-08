@@ -6,7 +6,6 @@ import {
   readIsAdminFlag,
 } from '../services/adminAccess';
 import { DbProfile } from '../types/database';
-import { devLog } from '../utils/devLog';
 
 import { useAuth } from './useAuth';
 
@@ -63,12 +62,6 @@ export function useAdminAccess(): UseAdminAccessResult {
         profileRow: null,
       });
       setChecking(false);
-      devLog('[Nice Place Admin] useAdminAccess', {
-        where: 'hook',
-        authUserId: null,
-        isAdmin: false,
-        reason: 'guest',
-      });
       return;
     }
 
@@ -76,18 +69,6 @@ export function useAdminAccess(): UseAdminAccessResult {
     try {
       const next = await fetchCurrentUserAdminStatus();
       setLive(next);
-      devLog('[Nice Place Admin] useAdminAccess', {
-        where: 'hook',
-        authUserId: next.authUserId,
-        profileId: next.profileId,
-        isAdminRaw: next.isAdminRaw,
-        roleRaw: next.roleRaw,
-        roleOnlyAdmin: next.roleOnlyAdmin,
-        detectedField: next.detectedField,
-        isAdmin: next.isAdmin,
-        verified: next.verified,
-        note: 'Permission uses is_admin only; RLS requires is_admin = true',
-      });
     } finally {
       setChecking(false);
     }

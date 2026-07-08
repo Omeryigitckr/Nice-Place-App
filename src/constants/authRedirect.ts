@@ -1,11 +1,13 @@
 /**
- * Mobile deep link used for all Supabase Auth email redirects (password reset, email change).
+ * Mobile deep link used for all Supabase Auth redirects (password reset, email change, OAuth).
  *
  * Supabase Dashboard → Authentication → URL Configuration:
  * Add `niceplace://auth/callback` to Redirect URLs.
  *
+ * Supabase Dashboard → Authentication → Providers:
+ * Enable Google and Apple; use the same redirect URL for OAuth callbacks.
+ *
  * Do not use localhost, Expo Go links, or web-only URLs for this mobile flow.
- * A production website redirect can be added separately later if needed.
  */
 export const AUTH_CALLBACK_REDIRECT = 'niceplace://auth/callback';
 

@@ -123,3 +123,8 @@ export {
 } from './authCallbackService';
 export type { AuthCallbackFlow, AuthCallbackResult } from './authCallbackService';
 export type { SignOutOptions } from './authService';
+export {
+  signInWithGoogle,
+  signInWithApple,
+  isAppleSignInAvailable,
+} from './socialAuthService';

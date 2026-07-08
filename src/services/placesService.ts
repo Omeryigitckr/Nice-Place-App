@@ -24,7 +24,7 @@ import {
 import { AccessType, CrowdLevel, Difficulty, MapPosition, OwnedPlace, Place } from '../types/place';
 import { PublicProfileSummary } from '../types/publicProfile';
 import { DISTANCE_UNAVAILABLE } from '../utils/distance';
-import { devLog, devWarn, devError } from '../utils/devLog';
+import { devWarn, devError } from '../utils/devLog';
 
 import { resolveCurrentUserProfileId } from './authService';
 import { enrichPlacesWithEngagement } from './placeEngagementService';
@@ -555,19 +555,8 @@ export async function getPlaceDetail(id: string): Promise<PlaceDetailResult | nu
       }
 
       const createdBy = row.created_by;
-      devLog('[Nice Place PlaceDetail] place.created_by:', createdBy);
 
       const creator = createdBy ? await getPublicProfile(createdBy) : null;
-
-      if (creator) {
-        devLog(
-          '[Nice Place PlaceDetail] creator profile loaded:',
-          creator.id,
-          creator.username,
-        );
-      } else if (createdBy) {
-        devLog('[Nice Place PlaceDetail] creator profile not found:', createdBy);
-      }
 
       const detail: PlaceDetailResult = { place, createdBy, creator };
       writePlaceDetailCache(detail);
@@ -944,22 +933,14 @@ export async function updateMyPlace(
       status: 'pending',
     };
 
-    devLog('[Nice Place] final place_update_requests payload', payload);
-
-    const { data: insertedRow, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('place_update_requests')
       .insert(payload)
       .select('id, status, place_id')
       .single();
 
     if (insertError) {
-      devError('[Nice Place] place_update_requests insert failed:', {
-        code: insertError.code,
-        message: insertError.message,
-        details: insertError.details,
-        hint: insertError.hint,
-        payload,
-      });
+      devError('[Nice Place] place_update_requests insert failed:', insertError.message);
 
       if (insertError.message.includes('row-level security')) {
         return {
@@ -981,7 +962,6 @@ export async function updateMyPlace(
       };
     }
 
-    devLog('[Nice Place] place_update_requests insert succeeded:', insertedRow);
     return { success: true, action: 'update_request' };
   }
 
@@ -1010,13 +990,6 @@ export async function updateMyPlace(
       .select('id, status, rejected_resubmit_count');
 
     const row = data?.[0];
-    devLog('[Nice Place] rejected identical resubmit', {
-      placeId,
-      nextCount,
-      dataLength: data?.length ?? 0,
-      returned: data ?? [],
-      error: error?.message ?? null,
-    });
 
     if (error) {
       if (error.code === 'PGRST204' || error.message.toLowerCase().includes('rejected_resubmit_count')) {
@@ -1063,12 +1036,6 @@ export async function updateMyPlace(
     .select('id, status, rejected_resubmit_count');
 
   const row = data?.[0];
-  devLog('[Nice Place] rejected changed resubmit', {
-    placeId,
-    dataLength: data?.length ?? 0,
-    returned: data ?? [],
-    error: error?.message ?? null,
-  });
 
   if (error) {
     if (error.code === 'PGRST204' || error.message.toLowerCase().includes('rejected_resubmit_count')) {

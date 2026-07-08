@@ -1,6 +1,5 @@
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { User } from '@supabase/supabase-js';
-import { devLog } from './devLog';
 
 import { ROOT_ROUTES } from '../constants';
 import { getRootNavigation } from '../navigation/navigationHelpers';
@@ -19,13 +18,12 @@ export type ProtectedAction =
  */
 export function requireAuth(
   user: User | null | undefined,
-  action: ProtectedAction,
+  _action: ProtectedAction,
 ): boolean {
   if (user) {
     return true;
   }
 
-  devLog('[Nice Place Auth] protected action blocked', action);
   return false;
 }
 

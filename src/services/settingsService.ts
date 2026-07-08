@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { devLog, devWarn } from '../utils/devLog';
 
+import { ONBOARDING_STORAGE_KEYS } from '../utils/storage';
+
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type MapStylePreference = 'standard' | 'satellite' | 'outdoors';
 export type DistanceUnit = 'km' | 'mi';
@@ -20,7 +22,8 @@ export interface AppSettings {
 
 export const SETTINGS_KEYS = {
   preferences: '@nice_place/app_preferences',
-  onboardingComplete: '@nice_place/onboarding_complete',
+  onboardingComplete: ONBOARDING_STORAGE_KEYS.completed,
+  onboardingLegacy: ONBOARDING_STORAGE_KEYS.legacy,
   savedPlaceIds: '@nice_place/saved_place_ids',
 } as const;
 

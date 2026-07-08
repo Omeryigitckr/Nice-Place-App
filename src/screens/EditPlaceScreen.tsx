@@ -9,7 +9,7 @@ import {
   clearLocationPickerResult,
   consumeLocationPickerResult,
 } from '../navigation/locationPickerResult';
-import { devLog, devError } from '../utils/devLog';
+import { devError } from '../utils/devLog';
 
 import {
   AppButton,
@@ -104,7 +104,6 @@ export function EditPlaceScreen({ navigation, route }: Props) {
         return;
       }
 
-      devLog('[Nice Place Edit] location returned', result);
       setLatitude(result.latitude);
       setLongitude(result.longitude);
       const address = result.addressText?.trim();
@@ -121,11 +120,6 @@ export function EditPlaceScreen({ navigation, route }: Props) {
     let mounted = true;
 
     const loadPlace = async () => {
-      devLog('[Nice Place Edit] auth loading:', authLoading);
-      devLog('[Nice Place Edit] auth user:', user?.id ?? null);
-      devLog('[Nice Place Edit] profile:', profile?.id ?? null);
-      devLog('[Nice Place Edit] canEdit:', Boolean(user) && !authLoading);
-
       // Wait for auth/profile bootstrap before deciding signed-out state.
       if (authLoading) {
         setLoading(true);
@@ -312,14 +306,10 @@ export function EditPlaceScreen({ navigation, route }: Props) {
 
     // Photo-first path: never insert place_update_requests if upload fails.
     if (selectedPhoto) {
-      devLog('[Nice Place] selected update photo:', selectedPhoto.uri);
-
       if (!profileId) {
         abortBecausePhotoFailed('Missing profile id');
         return;
       }
-
-      devLog('[Nice Place] update photo upload started');
 
       const photoResult = await uploadPlaceCoverPhoto({
         placeId,
@@ -334,7 +324,6 @@ export function EditPlaceScreen({ navigation, route }: Props) {
         return;
       }
 
-      devLog('[Nice Place] update photo upload success:', photoResult.imageUrl);
       coverPhotoUrl = photoResult.imageUrl;
     }
 

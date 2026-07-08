@@ -1,8 +1,26 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Application from 'expo-application';
+
 import { devWarn } from './devLog';
 
-const ONBOARDING_COMPLETE_KEY = '@nice_place/onboarding_complete';
+/** Primary onboarding flag — value is native install time (ms) for this completion. */
+export const ONBOARDING_COMPLETED_KEY = 'niceplace:onboarding:v1:completed';
+
+/** @deprecated Migrated on read — do not write. */
+export const ONBOARDING_LEGACY_KEY = '@nice_place/onboarding_complete';
+
+/** @deprecated Migrated on read — do not write. */
+export const ONBOARDING_INSTALL_MARKER_KEY = '@nice_place/onboarding_install_marker';
+
 const SAVED_PLACE_IDS_KEY = '@nice_place/saved_place_ids';
+
+const LEGACY_ONBOARDING_KEYS = [ONBOARDING_LEGACY_KEY, ONBOARDING_INSTALL_MARKER_KEY] as const;
+
+export const ONBOARDING_STORAGE_KEYS = {
+  completed: ONBOARDING_COMPLETED_KEY,
+  legacy: ONBOARDING_LEGACY_KEY,
+  legacyInstallMarker: ONBOARDING_INSTALL_MARKER_KEY,
+} as const;
 
 function parseSavedPlaceIds(raw: string | null): string[] {
   if (!raw) {
@@ -21,10 +39,96 @@ function parseSavedPlaceIds(raw: string | null): string[] {
   return [];
 }
 
+async function getNativeInstallTimeMs(): Promise<number | null> {
+  try {
+    const installTime = await Application.getInstallationTimeAsync();
+    const ms =
+      installTime instanceof Date
+        ? installTime.getTime()
+        : typeof installTime === 'number'
+          ? installTime
+          : NaN;
+    return Number.isFinite(ms) && ms > 0 ? ms : null;
+  } catch {
+    return null;
+  }
+}
+
+async function clearLegacyOnboardingKeys(): Promise<void> {
+  await AsyncStorage.multiRemove([...LEGACY_ONBOARDING_KEYS]);
+}
+
+async function persistOnboardingComplete(installTimeMs: number | null): Promise<void> {
+  const value = installTimeMs != null ? String(installTimeMs) : 'true';
+  await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, value);
+  await clearLegacyOnboardingKeys();
+}
+
+function isCompletedForCurrentInstall(
+  storedValue: string,
+  installTimeMs: number | null,
+): boolean {
+  if (installTimeMs == null) {
+    return storedValue === 'true' || storedValue.length > 0;
+  }
+
+  return storedValue === String(installTimeMs);
+}
+
+/**
+ * One-time migration for users who completed onboarding before v1 storage.
+ * Requires legacy install marker to match current install when present so
+ * backup-restored stale flags do not skip intro after reinstall.
+ */
+async function migrateLegacyOnboardingState(
+  installTimeMs: number | null,
+): Promise<string | null> {
+  const legacyMarker = await AsyncStorage.getItem(ONBOARDING_INSTALL_MARKER_KEY);
+  if (legacyMarker) {
+    if (installTimeMs != null && legacyMarker === String(installTimeMs)) {
+      await persistOnboardingComplete(installTimeMs);
+      return String(installTimeMs);
+    }
+
+    await clearLegacyOnboardingKeys();
+    return null;
+  }
+
+  const legacyComplete = await AsyncStorage.getItem(ONBOARDING_LEGACY_KEY);
+  if (legacyComplete === 'true') {
+    // Pre-v1 users on normal app update (same install, local storage intact).
+    await persistOnboardingComplete(installTimeMs);
+    return installTimeMs != null ? String(installTimeMs) : 'true';
+  }
+
+  return null;
+}
+
+/**
+ * Onboarding completion is scoped to the current native app installation.
+ * Fresh install / reinstall / clear-data → intro shows again.
+ * Normal app update → same install time → intro stays skipped.
+ */
 export async function isOnboardingComplete(): Promise<boolean> {
   try {
-    const value = await AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY);
-    return value === 'true';
+    const installTimeMs = await getNativeInstallTimeMs();
+    let stored = await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY);
+
+    if (!stored) {
+      stored = await migrateLegacyOnboardingState(installTimeMs);
+    }
+
+    if (!stored) {
+      return false;
+    }
+
+    if (!isCompletedForCurrentInstall(stored, installTimeMs)) {
+      await AsyncStorage.removeItem(ONBOARDING_COMPLETED_KEY);
+      await clearLegacyOnboardingKeys();
+      return false;
+    }
+
+    return true;
   } catch {
     return false;
   }
@@ -32,10 +136,20 @@ export async function isOnboardingComplete(): Promise<boolean> {
 
 export async function setOnboardingComplete(): Promise<void> {
   try {
-    await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
-  } catch (error: unknown) {
-    devWarn('[Nice Place] Failed to save onboarding state:', error);
+    const installTimeMs = await getNativeInstallTimeMs();
+    await persistOnboardingComplete(installTimeMs);
+  } catch {
+    devWarn('[Nice Place] Failed to save onboarding state');
   }
+}
+
+/** Development-only helper to re-test first-launch onboarding. */
+export async function resetOnboardingForDevelopment(): Promise<void> {
+  if (!__DEV__) {
+    return;
+  }
+
+  await AsyncStorage.multiRemove([ONBOARDING_COMPLETED_KEY, ...LEGACY_ONBOARDING_KEYS]);
 }
 
 export async function getSavedPlaceIds(): Promise<string[]> {
@@ -50,8 +164,8 @@ export async function getSavedPlaceIds(): Promise<string[]> {
 export async function setSavedPlaceIds(ids: string[]): Promise<void> {
   try {
     await AsyncStorage.setItem(SAVED_PLACE_IDS_KEY, JSON.stringify(ids));
-  } catch (error: unknown) {
-    devWarn('[Nice Place] Failed to save places:', error);
+  } catch {
+    devWarn('[Nice Place] Failed to save places');
   }
 }
 

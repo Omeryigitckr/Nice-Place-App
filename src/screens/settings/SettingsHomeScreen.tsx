@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { devLog } from '../../utils/devLog';
 
 import {
   AppButton,
@@ -42,6 +41,7 @@ import { motion, motionEasing } from '../../theme/motion';
 import { useThemeColors } from '../../theme/ThemeContext';
 import { ProfileStackParamList } from '../../types';
 import { navigateToAuth } from '../../utils/authGuard';
+import { userHasEmailPassword } from '../../utils/userAccount';
 import {
   APP_VERSION,
   LEGAL_CONTENT,
@@ -114,14 +114,26 @@ export function SettingsHomeScreen({ navigation }: Props) {
 
   const showToast = (message: string) => setToastMessage(message);
 
+  const requiresPasswordForDeletion = user ? userHasEmailPassword(user) : false;
+
   const canDelete = useMemo(() => {
+    const confirmationMatches = deleteConfirmText === DELETE_CONFIRM_TEXT;
+    if (!requiresPasswordForDeletion) {
+      return confirmationMatches;
+    }
+
     return (
       deletePassword.length > 0 &&
       deletePasswordConfirm.length > 0 &&
       deletePassword === deletePasswordConfirm &&
-      deleteConfirmText === DELETE_CONFIRM_TEXT
+      confirmationMatches
     );
-  }, [deletePassword, deletePasswordConfirm, deleteConfirmText]);
+  }, [
+    deleteConfirmText,
+    deletePassword,
+    deletePasswordConfirm,
+    requiresPasswordForDeletion,
+  ]);
 
   useEffect(() => {
     themeFade.setValue(0.88);
@@ -208,17 +220,18 @@ export function SettingsHomeScreen({ navigation }: Props) {
   };
 
   const handleDeleteAccount = async () => {
-    if (!user?.email || !canDelete || deleting) {
+    if (!user || !canDelete || deleting) {
       return;
     }
 
     setDeleting(true);
     setDeleteError(null);
 
-    const result = await deleteUserAccount({
-      email: user.email,
-      password: deletePassword,
-    });
+    const result = await deleteUserAccount(
+      requiresPasswordForDeletion
+        ? { password: deletePassword }
+        : { oauthOnly: true },
+    );
 
     setDeleting(false);
 
@@ -513,25 +526,31 @@ export function SettingsHomeScreen({ navigation }: Props) {
           >
             <Text style={[styles.deleteTitle, { color: colors.error }]}>Delete Account</Text>
             <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
-              Enter your password twice and type {DELETE_CONFIRM_TEXT} to confirm.
+              {requiresPasswordForDeletion
+                ? `Enter your password twice and type ${DELETE_CONFIRM_TEXT} to confirm.`
+                : `Type ${DELETE_CONFIRM_TEXT} to permanently delete your account.`}
             </Text>
 
-            <AppTextInput
-              label="Password"
-              value={deletePassword}
-              onChangeText={setDeletePassword}
-              secureTextEntry
-              autoComplete="password"
-              placeholder="••••••••"
-            />
-            <AppTextInput
-              label="Confirm password"
-              value={deletePasswordConfirm}
-              onChangeText={setDeletePasswordConfirm}
-              secureTextEntry
-              autoComplete="password"
-              placeholder="••••••••"
-            />
+            {requiresPasswordForDeletion ? (
+              <>
+                <AppTextInput
+                  label="Password"
+                  value={deletePassword}
+                  onChangeText={setDeletePassword}
+                  secureTextEntry
+                  autoComplete="password"
+                  placeholder="••••••••"
+                />
+                <AppTextInput
+                  label="Confirm password"
+                  value={deletePasswordConfirm}
+                  onChangeText={setDeletePasswordConfirm}
+                  secureTextEntry
+                  autoComplete="password"
+                  placeholder="••••••••"
+                />
+              </>
+            ) : null}
             <AppTextInput
               label={`Type ${DELETE_CONFIRM_TEXT}`}
               value={deleteConfirmText}
@@ -540,7 +559,8 @@ export function SettingsHomeScreen({ navigation }: Props) {
               placeholder={DELETE_CONFIRM_TEXT}
             />
 
-            {deletePassword &&
+            {requiresPasswordForDeletion &&
+            deletePassword &&
             deletePasswordConfirm &&
             deletePassword !== deletePasswordConfirm ? (
               <Text style={[settingsStyles.error, { color: colors.error }]}>

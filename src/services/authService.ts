@@ -4,7 +4,7 @@ import { clearUserPrivateCache } from '../cache/clearUserSession';
 import { readUserProfileByAuthCache, writeUserProfileCache } from '../cache';
 import { markNetworkFailure, markNetworkSuccess } from '../network';
 import { DbProfile } from '../types/database';
-import { devLog, devWarn } from '../utils/devLog';
+import { devWarn } from '../utils/devLog';
 
 import { AUTH_CALLBACK_REDIRECT } from '../constants/authRedirect';
 
@@ -195,7 +195,7 @@ export async function signOut(options?: SignOutOptions): Promise<AuthResult> {
     await clearUserPrivateCache({ profileId, authUserId });
     clearViewerProfileIdCache();
   } catch (error: unknown) {
-    devWarn('[Nice Place Auth] local logout cleanup failed:', error);
+    devWarn('[Nice Place Auth] local logout cleanup failed');
   }
 
   const supabase = getSupabase();
@@ -217,7 +217,7 @@ export async function signOut(options?: SignOutOptions): Promise<AuthResult> {
     }
     return { success: true };
   } catch (error: unknown) {
-    devWarn('[Nice Place Auth] signOut failed:', error);
+    devWarn('[Nice Place Auth] signOut failed');
     try {
       await supabase.auth.signOut({ scope: 'local' });
     } catch {
@@ -235,8 +235,6 @@ export async function fetchProfileIdByAuthUserId(
     return { profileId: null, error: 'Supabase is not configured.' };
   }
 
-  devLog('[Nice Place] Profile lookup auth_user_id:', authUserId);
-
   const { data, error } = await supabase
     .from('profiles')
     .select('id')
@@ -244,11 +242,9 @@ export async function fetchProfileIdByAuthUserId(
     .single();
 
   if (error) {
-    devLog('[Nice Place] Profile lookup error:', error.message, error.code);
     return { profileId: null, error: error.message };
   }
 
-  devLog('[Nice Place] Profile id found:', data.id);
   return { profileId: data.id, error: null };
 }
 
@@ -285,7 +281,7 @@ export async function getProfileForUser(user: User | null): Promise<DbProfile | 
     }
     return profile;
   } catch (error: unknown) {
-    devWarn('[Nice Place] Profile request failed:', error);
+    devWarn('[Nice Place] Profile request failed');
     const cached = await readUserProfileByAuthCache(user.id, { allowExpired: true });
     if (cached) {
       markNetworkFailure();
@@ -327,8 +323,6 @@ export async function getOrCreateProfileForUser(user: User): Promise<DbProfile |
   const fullName =
     typeof metadata?.full_name === 'string' ? metadata.full_name.trim() : null;
 
-  devLog('[Nice Place] Creating profile for auth_user_id:', user.id);
-
   const { data, error: insertError } = await supabase
     .from('profiles')
     .insert({
@@ -364,24 +358,18 @@ export async function resolveCurrentUserProfileId(): Promise<{
     return { profileId: null, authUserId: null, error: 'Supabase is not configured.' };
   }
 
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const { data: sessionData } = await supabase.auth.getSession();
   const sessionUser = sessionData.session?.user;
-
-  if (sessionError) {
-    devLog('[Nice Place] Session error:', sessionError.message);
-  }
 
   let authUserId = sessionUser?.id ?? null;
 
   if (!authUserId) {
     const { data: userData, error: authError } = await supabase.auth.getUser();
     if (authError) {
-      devLog('[Nice Place] Auth getUser error:', authError.message);
+      devWarn('[Nice Place] Auth getUser error:', authError.message);
     }
     authUserId = userData.user?.id ?? null;
   }
-
-  devLog('[Nice Place] Auth user id:', authUserId);
 
   if (!authUserId) {
     return { profileId: null, authUserId: null, error: 'Sign in to share a place.' };
@@ -403,7 +391,6 @@ export async function resolveCurrentUserProfileId(): Promise<{
 
   const created = await getOrCreateProfileForUser({ id: authUserId } as User);
   if (created?.id) {
-    devLog('[Nice Place] Profile id found after create:', created.id);
     return { profileId: created.id, authUserId };
   }
 
