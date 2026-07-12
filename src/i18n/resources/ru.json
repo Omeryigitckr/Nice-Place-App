@@ -432,7 +432,7 @@
     }
   },
   "explore": {
-    "searchPlaceholder": "Поиск мест, троп, видов…",
+    "searchPlaceholder": "Поиск мест...",
     "clearSearch": "Очистить поиск",
     "filterPlaces": "Фильтр мест",
     "filters": {

@@ -432,7 +432,7 @@
     }
   },
   "explore": {
-    "searchPlaceholder": "Orte, Trails, Aussichten suchen…",
+    "searchPlaceholder": "Orte suchen...",
     "clearSearch": "Suche löschen",
     "filterPlaces": "Orte filtern",
     "filters": {

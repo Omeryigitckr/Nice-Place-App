@@ -432,7 +432,7 @@
     }
   },
   "explore": {
-    "searchPlaceholder": "Search places, trails, views…",
+    "searchPlaceholder": "Search places...",
     "clearSearch": "Clear search",
     "filterPlaces": "Filter places",
     "filters": {
@@ -1447,7 +1447,7 @@
     }
   },
   "routes": {
-    "title": "Trail discovery",
+    "title": "Place discovery",
     "subtitle": "Outdoor routes shared by the community.",
     "emptyTitle": "Coming after launch",
     "emptyBody": "Community routes are postponed until after the first public release.",

@@ -432,7 +432,7 @@
     }
   },
   "explore": {
-    "searchPlaceholder": "Buscar lugares, rutas, vistas…",
+    "searchPlaceholder": "Buscar lugares...",
     "clearSearch": "Borrar búsqueda",
     "filterPlaces": "Filtrar lugares",
     "filters": {

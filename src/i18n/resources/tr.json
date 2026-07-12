@@ -52,7 +52,7 @@
   },
   "navigation": {
     "explore": "Keşfet",
-    "saved": "Kayıtlı",
+    "saved": "Kaydedilenler",
     "addPlace": "Mekan Ekle",
     "profile": "Profil",
     "settings": "Ayarlar",
@@ -432,7 +432,7 @@
     }
   },
   "explore": {
-    "searchPlaceholder": "Mekan, parkur, manzara ara…",
+    "searchPlaceholder": "Yer ara...",
     "clearSearch": "Aramayı temizle",
     "filterPlaces": "Mekanları filtrele",
     "filters": {
@@ -1447,7 +1447,7 @@
     }
   },
   "routes": {
-    "title": "Parkur keşfi",
+    "title": "Mekan keşfi",
     "subtitle": "Topluluk tarafından paylaşılan açık hava rotaları.",
     "emptyTitle": "Yayından sonra",
     "emptyBody": "Topluluk rotaları ilk herkese açık yayından sonraya ertelendi.",
