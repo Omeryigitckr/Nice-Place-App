@@ -1,7 +1,9 @@
 import { getNetworkStatus } from '../network';
+import { i18n } from '../i18n/instance';
 
-export const OFFLINE_USER_MESSAGE =
-  'İnternet bağlantısı yok. Lütfen bağlantını kontrol edip tekrar dene.';
+export function getOfflineUserMessage(): string {
+  return i18n.t('network.offline');
+}
 
 function isLikelyNetworkMessage(message: string): boolean {
   const normalized = message.toLowerCase();
@@ -33,7 +35,21 @@ export function isOfflineOrNetworkError(error?: string | null): boolean {
 
 export function toUserFacingNetworkError(error?: string | null): string {
   if (isOfflineOrNetworkError(error)) {
-    return OFFLINE_USER_MESSAGE;
+    return i18n.t('network.offline');
   }
-  return error?.trim() || 'Bir şeyler ters gitti. Lütfen tekrar dene.';
+  const trimmed = error?.trim();
+  if (
+    trimmed &&
+    (trimmed.startsWith('auth.') ||
+      trimmed.startsWith('place.') ||
+      trimmed.startsWith('errors.') ||
+      trimmed.startsWith('network.') ||
+      trimmed.startsWith('common.') ||
+      trimmed.startsWith('settings.') ||
+      trimmed.startsWith('placeForm.') ||
+      trimmed.startsWith('admin.'))
+  ) {
+    return String(i18n.t(trimmed as never));
+  }
+  return trimmed || i18n.t('errors.generic');
 }

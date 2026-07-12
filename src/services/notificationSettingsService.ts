@@ -1,29 +1,38 @@
-export type NotificationPermissionStatus = 'enabled' | 'disabled' | 'denied' | 'undetermined';
+export type {
+  NotificationPermissionStatus,
+} from './notificationService';
 
-/** Push notifications are not wired for the beta release. */
-export const NOTIFICATIONS_COMING_SOON = true;
+export {
+  getNotificationPermissionStatus,
+  requestNotificationPermission,
+  ensureNotificationPermissionForFeature,
+  notificationStatusLabel,
+  getExpoPushTokenIfPermitted,
+  registerForPush,
+  savePushToken,
+  deactivatePushToken,
+  deactivateAllPushTokens,
+  removePushToken,
+  getNotificationPreferences,
+  updateNotificationPreferences,
+  getNotifications,
+  getUnreadNotificationCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  sendLocalNotification,
+  sendPushIfEnabled,
+  broadcastNotification,
+  notifyPlaceApproved,
+  notifyPlaceRejected,
+  notifyPlaceUpdateApproved,
+  notifyPlaceUpdateRejected,
+  notifyPlaceLiked,
+  previewNotificationCopy,
+  syncBadgeCount,
+} from './notificationService';
 
-export async function getNotificationPermissionStatus(): Promise<NotificationPermissionStatus> {
-  return 'disabled';
-}
-
-export async function requestNotificationPermission(): Promise<NotificationPermissionStatus> {
-  return 'disabled';
-}
-
-export function notificationStatusLabel(status: NotificationPermissionStatus): string {
-  if (NOTIFICATIONS_COMING_SOON) {
-    return 'Coming soon';
-  }
-
-  switch (status) {
-    case 'enabled':
-      return 'Enabled';
-    case 'disabled':
-      return 'Disabled';
-    case 'denied':
-      return 'Permission denied';
-    default:
-      return 'Not available';
-  }
-}
+export type {
+  NotificationActionResult,
+  DispatchNotificationInput,
+  BroadcastNotificationInput,
+} from './notificationService';

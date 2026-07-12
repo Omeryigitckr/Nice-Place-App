@@ -56,6 +56,12 @@ export function getSupabase(): SupabaseClient | null {
         detectSessionInUrl: false,
       },
     });
+
+    if (__DEV__) {
+      // Avoid importing devLog cycle; console is fine for one-time client init.
+      // eslint-disable-next-line no-console
+      console.log('[Nice Place Auth] Supabase client created (AsyncStorage persistence)');
+    }
   }
 
   return client;

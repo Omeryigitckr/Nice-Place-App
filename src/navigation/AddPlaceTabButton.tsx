@@ -2,6 +2,7 @@ import { Plus } from 'lucide-react-native';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 
 import { AuthRequiredModal } from '../components/AuthRequiredModal';
@@ -18,6 +19,7 @@ export function AddPlaceTabButton({
   accessibilityState,
   accessibilityLabel,
 }: BottomTabBarButtonProps) {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const { colors, shadows } = useTheme();
   const { user, loading: authLoading } = useAuth();
@@ -65,7 +67,7 @@ export function AddPlaceTabButton({
           onPressOut={() => animatePress(1)}
           accessibilityRole="button"
           accessibilityState={accessibilityState}
-          accessibilityLabel={accessibilityLabel ?? 'Add place'}
+          accessibilityLabel={accessibilityLabel ?? t('navigation.addPlace')}
           style={[
             styles.button,
             {
@@ -80,7 +82,7 @@ export function AddPlaceTabButton({
 
       <AuthRequiredModal
         visible={authPromptVisible}
-        message="Sign in to share a new place with the community."
+        message={t('addPlace.authMessage')}
         onSignIn={() => {
           setAuthPromptVisible(false);
           navigateToAuth(navigation);

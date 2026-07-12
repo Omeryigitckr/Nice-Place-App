@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { ensureLocationPermission } from '../services/appPermissionsService';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Animated,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -21,21 +21,34 @@ import {
   AppTextInput,
   AuthErrorMessage,
   FilterChip,
+  PlacePhotoPickerForm,
+  createPlacePhotoPickerItem,
+  PlaceCategoryPicker,
   ProfileEntranceBlock,
   ScreenContainer,
   SectionHeader,
 } from '../components';
+import type { PlacePhotoPickerItem } from '../components';
 import { AuthRequiredModal } from '../components/AuthRequiredModal';
 import {
   ACCESS_TYPE_OPTIONS,
-  ADD_PLACE_CATEGORIES,
   BEST_TIME_OPTIONS,
   CROWD_LEVEL_OPTIONS,
   DIFFICULTY_OPTIONS,
   FACILITY_TOGGLES,
   MAP_ROUTES,
+  getAccessTypeLabel,
+  getBestTimeLabel,
+  getCrowdLevelLabel,
+  getDifficultyLabel,
+  getFacilityLabel,
 } from '../constants';
-import type { AddPlaceCategoryValue, BestTimeOption, FacilityToggleKey } from '../constants';
+import type { BestTimeOption, FacilityToggleKey } from '../constants';
+import {
+  MAX_PLACE_CATEGORIES,
+  MIN_PLACE_CATEGORIES,
+  PlaceCategoryKey,
+} from '../constants/placeCategories';
 import { useAuth } from '../hooks';
 import {
   clearAddPlaceFormDraft,
@@ -47,7 +60,13 @@ import {
   clearLocationPickerResult,
   consumeLocationPickerResult,
 } from '../navigation/locationPickerResult';
-import { createPlace, resolveCurrentUserProfileId, uploadPlaceCoverPhoto } from '../services';
+import {
+  createPlace,
+  MAX_PLACE_PHOTOS,
+  MIN_PLACE_PHOTOS,
+  resolveCurrentUserProfileId,
+  uploadPlacePhotos,
+} from '../services';
 import { hapticError, hapticSuccess, showAppToast } from '../feedback';
 import { radius, spacing, typography } from '../theme';
 import { motion, motionEasing } from '../theme/motion';
@@ -57,6 +76,7 @@ import { AddPlaceStackParamList } from '../types';
 import { navigateToAuth, requireAuth } from '../utils/authGuard';
 import { devLog } from '../utils/devLog';
 import { DEFAULT_MAP_CENTER } from '../utils/mapbox';
+import { localizePlaceFormMessage } from '../utils/placeFormMessages';
 
 type Props = NativeStackScreenProps<AddPlaceStackParamList, typeof MAP_ROUTES.ADD_PLACE>;
 
@@ -68,10 +88,6 @@ interface FacilityState {
   isPicnicSuitable: boolean;
 }
 
-interface SelectedPhoto {
-  uri: string;
-}
-
 const INITIAL_FACILITIES: FacilityState = {
   isPetFriendly: false,
   isChildFriendly: false,
@@ -81,14 +97,15 @@ const INITIAL_FACILITIES: FacilityState = {
 };
 
 export function AddPlaceScreen({ navigation, route }: Props) {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const { user, profile, loading: authLoading } = useAuth();
   // Rehydrate from draft if the screen remounted while the map picker was open.
   const bootDraft = peekAddPlaceFormDraft();
   const [authPromptVisible, setAuthPromptVisible] = useState(false);
   const [title, setTitle] = useState(bootDraft?.title ?? '');
-  const [category, setCategory] = useState<AddPlaceCategoryValue | null>(
-    bootDraft?.category ?? null,
+  const [selectedCategories, setSelectedCategories] = useState<PlaceCategoryKey[]>(
+    bootDraft?.selectedCategories ?? [],
   );
   const [description, setDescription] = useState(bootDraft?.description ?? '');
   const [latitude, setLatitude] = useState(
@@ -99,7 +116,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
   );
   const [locationReady, setLocationReady] = useState(bootDraft?.locationReady ?? false);
   const [locationLabel, setLocationLabel] = useState(
-    bootDraft?.locationLabel ?? 'Waiting for location…',
+    bootDraft?.locationLabel ?? t('placeForm.location.waiting'),
   );
   const [bestTime, setBestTime] = useState<BestTimeOption>(bootDraft?.bestTime ?? 'Anytime');
   const [accessType, setAccessType] = useState<DbAccessType>(
@@ -115,8 +132,8 @@ export function AddPlaceScreen({ navigation, route }: Props) {
     bootDraft?.facilities ?? INITIAL_FACILITIES,
   );
   const [safetyNote, setSafetyNote] = useState(bootDraft?.safetyNote ?? '');
-  const [selectedPhoto, setSelectedPhoto] = useState<SelectedPhoto | null>(
-    bootDraft?.selectedPhotoUri ? { uri: bootDraft.selectedPhotoUri } : null,
+  const [selectedPhotos, setSelectedPhotos] = useState<PlacePhotoPickerItem[]>(
+    bootDraft?.selectedPhotoUris?.map((uri) => createPlacePhotoPickerItem(uri)) ?? [],
   );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -142,7 +159,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
   const formSnapshotRef = useRef({
     title: '',
     description: '',
-    category: null as AddPlaceCategoryValue | null,
+    selectedCategories: [] as PlaceCategoryKey[],
     hasPhoto: false,
     bestTime: 'Anytime' as BestTimeOption,
     accessType: 'unknown' as DbAccessType,
@@ -157,8 +174,8 @@ export function AddPlaceScreen({ navigation, route }: Props) {
   formSnapshotRef.current = {
     title,
     description,
-    category,
-    hasPhoto: selectedPhoto != null,
+    selectedCategories,
+    hasPhoto: selectedPhotos.length > 0,
     bestTime,
     accessType,
     difficultyLevel,
@@ -176,16 +193,16 @@ export function AddPlaceScreen({ navigation, route }: Props) {
 
     const requestId = ++gpsRequestIdRef.current;
     setLocationReady(false);
-    setLocationLabel('Waiting for location…');
+    setLocationLabel(t('placeForm.location.waiting'));
 
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const permission = await ensureLocationPermission();
       if (requestId !== gpsRequestIdRef.current || userPickedLocationRef.current) {
         return;
       }
 
-      if (status !== 'granted') {
-        setLocationLabel('Using default map area — tap Set on Map to refine');
+      if (!permission.granted) {
+        setLocationLabel(t('placeForm.location.usingDefault'));
         setLocationReady(true);
         return;
       }
@@ -200,16 +217,16 @@ export function AddPlaceScreen({ navigation, route }: Props) {
 
       setLatitude(position.coords.latitude);
       setLongitude(position.coords.longitude);
-      setLocationLabel('Using your current location');
+      setLocationLabel(t('placeForm.location.usingGps'));
       setLocationReady(true);
     } catch {
       if (requestId !== gpsRequestIdRef.current || userPickedLocationRef.current) {
         return;
       }
-      setLocationLabel('Using default map area — tap Set on Map to refine');
+      setLocationLabel(t('placeForm.location.usingDefault'));
       setLocationReady(true);
     }
-  }, []);
+  }, [t]);
 
   // GPS once on first mount only — skip when returning from the map picker (draft exists).
   useEffect(() => {
@@ -245,12 +262,12 @@ export function AddPlaceScreen({ navigation, route }: Props) {
       if (draft) {
         devLog('[Nice Place AddPlace] restoring form draft', {
           title: draft.title,
-          category: draft.category,
-          hasPhoto: Boolean(draft.selectedPhotoUri),
+          selectedCategories: draft.selectedCategories,
+          hasPhoto: draft.selectedPhotoUris.length > 0,
           awaitingPicker: draft.awaitingPicker,
         });
         setTitle(draft.title);
-        setCategory(draft.category);
+        setSelectedCategories(draft.selectedCategories);
         setDescription(draft.description);
         setBestTime(draft.bestTime);
         setAccessType(draft.accessType);
@@ -258,8 +275,8 @@ export function AddPlaceScreen({ navigation, route }: Props) {
         setCrowdLevel(draft.crowdLevel);
         setFacilities({ ...draft.facilities });
         setSafetyNote(draft.safetyNote);
-        setSelectedPhoto(
-          draft.selectedPhotoUri ? { uri: draft.selectedPhotoUri } : null,
+        setSelectedPhotos(
+          draft.selectedPhotoUris.map((uri) => createPlacePhotoPickerItem(uri)),
         );
         setError(null);
 
@@ -269,7 +286,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
           setLongitude(locationResult.longitude);
           setLocationReady(true);
           const address = locationResult.addressText?.trim();
-          setLocationLabel(address || 'Location adjusted on map');
+          setLocationLabel(address || t('placeForm.location.adjusted'));
           devLog('[Nice Place AddPlace] location merged into draft', locationResult);
         } else {
           // Cancel: restore previous location fields exactly.
@@ -287,7 +304,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
         setLongitude(locationResult.longitude);
         setLocationReady(true);
         const address = locationResult.addressText?.trim();
-        setLocationLabel(address || 'Location adjusted on map');
+        setLocationLabel(address || t('placeForm.location.adjusted'));
         devLog('[Nice Place AddPlace] location applied (mounted)', locationResult);
         devLog('[Nice Place AddPlace] form after location', formSnapshotRef.current);
       }
@@ -297,38 +314,11 @@ export function AddPlaceScreen({ navigation, route }: Props) {
         longitude: undefined,
         locationAdjusted: undefined,
       });
-    }, [navigation]),
+    }, [navigation, t]),
   );
 
   const toggleFacility = (key: FacilityToggleKey) => {
     setFacilities((current) => ({ ...current, [key]: !current[key] }));
-  };
-
-  const handlePickPhoto = async () => {
-    setError(null);
-
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      setError('Photo library permission is required to attach an image.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.85,
-    });
-
-    if (result.canceled || !result.assets[0]) {
-      return;
-    }
-
-    setSelectedPhoto({ uri: result.assets[0].uri });
-  };
-
-  const handleRemovePhoto = () => {
-    setSelectedPhoto(null);
   };
 
   const handleAdjustOnMap = () => {
@@ -339,7 +329,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
     const draft = {
       awaitingPicker: true,
       title,
-      category,
+      selectedCategories,
       description,
       latitude,
       longitude,
@@ -352,7 +342,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
       crowdLevel,
       facilities: { ...facilities },
       safetyNote,
-      selectedPhotoUri: selectedPhoto?.uri ?? null,
+      selectedPhotoUris: selectedPhotos.map((photo) => photo.uri),
     };
 
     devLog('[Nice Place AddPlace] opening location picker (saving draft)', draft);
@@ -372,19 +362,19 @@ export function AddPlaceScreen({ navigation, route }: Props) {
     gpsRequestIdRef.current += 1;
 
     setTitle('');
-    setCategory(null);
+    setSelectedCategories([]);
     setDescription('');
     setLatitude(DEFAULT_MAP_CENTER[1]);
     setLongitude(DEFAULT_MAP_CENTER[0]);
     setLocationReady(false);
-    setLocationLabel('Waiting for location…');
+    setLocationLabel(t('placeForm.location.waiting'));
     setBestTime('Anytime');
     setAccessType('unknown');
     setDifficultyLevel('unknown');
     setCrowdLevel('unknown');
     setFacilities(INITIAL_FACILITIES);
     setSafetyNote('');
-    setSelectedPhoto(null);
+    setSelectedPhotos([]);
     setError(null);
 
     navigation.setParams({
@@ -395,7 +385,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
 
     void loadGpsLocation();
     devLog('[Nice Place AddPlace] form reset after submit');
-  }, [loadGpsLocation, navigation]);
+  }, [loadGpsLocation, navigation, t]);
 
   const finishSubmission = (message: string, photoWarning?: string) => {
     const body = photoWarning ? `${message} ${photoWarning}` : message;
@@ -426,17 +416,32 @@ export function AddPlaceScreen({ navigation, route }: Props) {
     }
 
     if (!title.trim()) {
-      setError('Place name is required.');
+      setError(t('placeForm.validation.nameRequired'));
       return;
     }
 
-    if (!category) {
-      setError('Please select a category.');
+    if (selectedCategories.length < MIN_PLACE_CATEGORIES) {
+      setError(t('placeForm.validation.categoriesMin', { count: MIN_PLACE_CATEGORIES }));
+      return;
+    }
+
+    if (selectedCategories.length > MAX_PLACE_CATEGORIES) {
+      setError(t('placeForm.validation.categoriesMax', { count: MAX_PLACE_CATEGORIES }));
       return;
     }
 
     if (!locationReady || Number.isNaN(latitude) || Number.isNaN(longitude)) {
-      setError('Location is required. Set on Map or enable location permission.');
+      setError(t('placeForm.validation.locationRequired'));
+      return;
+    }
+
+    if (selectedPhotos.length < MIN_PLACE_PHOTOS) {
+      setError(t('placeForm.validation.photosMin', { count: MIN_PLACE_PHOTOS }));
+      return;
+    }
+
+    if (selectedPhotos.length > MAX_PLACE_PHOTOS) {
+      setError(t('placeForm.validation.photosMax', { count: MAX_PLACE_PHOTOS }));
       return;
     }
 
@@ -445,7 +450,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
     const result = await createPlace({
       title,
       description,
-      category,
+      categories: selectedCategories,
       latitude,
       longitude,
       bestTime,
@@ -462,44 +467,39 @@ export function AddPlaceScreen({ navigation, route }: Props) {
 
     if (!result.success || !result.placeId) {
       setSubmitting(false);
-      const message = result.error ?? 'Could not submit place.';
+      const message = result.error ?? 'placeForm.errors.submitFailed';
       setError(message);
       hapticError();
-      showAppToast(message, { tone: 'error' });
+      showAppToast(localizePlaceFormMessage(message) ?? message, { tone: 'error' });
       return;
     }
 
-    if (selectedPhoto) {
-      const profileId = profile?.id ?? (await resolveCurrentUserProfileId()).profileId;
+    const profileId = profile?.id ?? (await resolveCurrentUserProfileId()).profileId;
 
-      if (!profileId) {
-        finishSubmission(
-          'Your place was saved and will appear on the map after review.',
-          'Photo upload failed.',
-        );
-        return;
-      }
-
-      const photoResult = await uploadPlaceCoverPhoto({
-        placeId: result.placeId,
-        imageUri: selectedPhoto.uri,
-        authUserId: user.id,
-        profileId,
-      });
-
-      if (!photoResult.success) {
-        finishSubmission(
-          'Your place was saved and will appear on the map after review.',
-          'Place submitted, but photo upload failed.',
-        );
-        return;
-      }
-
-      finishSubmission('Your place was saved and will appear on the map after review.');
+    if (!profileId) {
+      finishSubmission(
+        t('addPlace.success'),
+        t('placeForm.errors.photoUploadFailed'),
+      );
       return;
     }
 
-    finishSubmission('Your place was saved and will appear on the map after review.');
+    const photoResult = await uploadPlacePhotos({
+      placeId: result.placeId,
+      imageUris: selectedPhotos.map((photo) => photo.uri),
+      authUserId: user.id,
+      profileId,
+    });
+
+    if (!photoResult.success) {
+      finishSubmission(
+        t('addPlace.success'),
+        t('addPlace.successPhotoPartial'),
+      );
+      return;
+    }
+
+    finishSubmission(t('addPlace.success'));
   };
 
   return (
@@ -518,33 +518,27 @@ export function AddPlaceScreen({ navigation, route }: Props) {
     >
       <ProfileEntranceBlock index={0}>
         <SectionHeader
-          title="Share a place"
-          subtitle="Help others discover a hidden spot worth visiting."
+          title={t('addPlace.title')}
+          subtitle={t('addPlace.subtitle')}
         />
       </ProfileEntranceBlock>
 
       <ProfileEntranceBlock index={1}>
-      <FormSection icon="create-outline" title="Basic Info">
+      <FormSection icon="create-outline" title={t('placeForm.sections.basicInfo')} sectionKey="basicInfo">
         <AppTextInput
-          label="Place name *"
-          placeholder="e.g. Sunset Cliff"
+          label={t('placeForm.fields.placeName')}
+          placeholder={t('placeForm.fields.placeNamePlaceholder')}
           value={title}
           onChangeText={setTitle}
         />
-        <FieldLabel label="Category *" />
-        <OptionGrid>
-          {ADD_PLACE_CATEGORIES.map((item) => (
-            <FilterChip
-              key={item.value}
-              label={item.label}
-              active={category === item.value}
-              onPress={() => setCategory(item.value)}
-            />
-          ))}
-        </OptionGrid>
+        <FieldLabel label={t('placeForm.fields.categories')} />
+        <PlaceCategoryPicker
+          selected={selectedCategories}
+          onChange={setSelectedCategories}
+        />
         <AppTextInput
-          label="Description"
-          placeholder="Why is this place worth visiting?"
+          label={t('placeForm.fields.description')}
+          placeholder={t('placeForm.fields.descriptionPlaceholder')}
           multiline
           numberOfLines={4}
           style={styles.textArea}
@@ -555,7 +549,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
       </ProfileEntranceBlock>
 
       <ProfileEntranceBlock index={2}>
-      <FormSection icon="location-outline" title="Location">
+      <FormSection icon="location-outline" title={t('placeForm.sections.location')} sectionKey="location">
         <LocationFeedbackBox
           locationLabel={locationLabel}
           latitude={latitude}
@@ -563,7 +557,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
           ready={locationReady}
         />
         <AppButton
-          title="Set on Map"
+          title={t('placeForm.location.setOnMap')}
           variant="secondary"
           onPress={handleAdjustOnMap}
           disabled={submitting}
@@ -573,49 +567,49 @@ export function AddPlaceScreen({ navigation, route }: Props) {
       </ProfileEntranceBlock>
 
       <ProfileEntranceBlock index={3}>
-      <FormSection icon="time-outline" title="Visit Details">
-        <FieldLabel label="Best time to visit" />
-        <OptionGrid>
+      <FormSection icon="time-outline" title={t('placeForm.sections.visitDetails')} sectionKey="visitDetails">
+        <FieldLabel label={t('placeForm.fields.bestTime')} />
+        <OptionGrid key={i18n.language}>
           {BEST_TIME_OPTIONS.map((option) => (
             <FilterChip
               key={option}
-              label={option}
+              label={getBestTimeLabel(option)}
               active={bestTime === option}
               onPress={() => setBestTime(option)}
             />
           ))}
         </OptionGrid>
 
-        <FieldLabel label="Access type" />
+        <FieldLabel label={t('placeForm.fields.accessType')} />
         <OptionGrid>
           {ACCESS_TYPE_OPTIONS.map((option) => (
             <FilterChip
               key={option.value}
-              label={option.label}
+              label={getAccessTypeLabel(option.value)}
               active={accessType === option.value}
               onPress={() => setAccessType(option.value)}
             />
           ))}
         </OptionGrid>
 
-        <FieldLabel label="Difficulty" />
+        <FieldLabel label={t('placeForm.fields.difficulty')} />
         <OptionGrid>
           {DIFFICULTY_OPTIONS.map((option) => (
             <FilterChip
               key={option.value}
-              label={option.label}
+              label={getDifficultyLabel(option.value)}
               active={difficultyLevel === option.value}
               onPress={() => setDifficultyLevel(option.value)}
             />
           ))}
         </OptionGrid>
 
-        <FieldLabel label="Crowd level" />
+        <FieldLabel label={t('placeForm.fields.crowdLevel')} />
         <OptionGrid>
           {CROWD_LEVEL_OPTIONS.map((option) => (
             <FilterChip
               key={option.value}
-              label={option.label}
+              label={getCrowdLevelLabel(option.value)}
               active={crowdLevel === option.value}
               onPress={() => setCrowdLevel(option.value)}
             />
@@ -625,12 +619,12 @@ export function AddPlaceScreen({ navigation, route }: Props) {
       </ProfileEntranceBlock>
 
       <ProfileEntranceBlock index={4}>
-      <FormSection icon="leaf-outline" title="Facilities">
+      <FormSection icon="leaf-outline" title={t('placeForm.sections.facilities')} sectionKey="facilities">
         <OptionGrid>
           {FACILITY_TOGGLES.map((item) => (
             <ToggleChip
               key={item.key}
-              label={item.label}
+              label={getFacilityLabel(item.key)}
               active={facilities[item.key]}
               onPress={() => toggleFacility(item.key)}
             />
@@ -638,10 +632,10 @@ export function AddPlaceScreen({ navigation, route }: Props) {
         </OptionGrid>
       </FormSection>
 
-      <FormSection icon="shield-checkmark-outline" title="Safety">
+      <FormSection icon="shield-checkmark-outline" title={t('placeForm.sections.safety')} sectionKey="safety">
         <AppTextInput
-          label="Safety note (optional)"
-          placeholder="Any hazards, access warnings, or things to watch for?"
+          label={t('placeForm.fields.safetyNote')}
+          placeholder={t('placeForm.fields.safetyNotePlaceholder')}
           multiline
           numberOfLines={3}
           style={styles.safetyArea}
@@ -652,27 +646,27 @@ export function AddPlaceScreen({ navigation, route }: Props) {
       </ProfileEntranceBlock>
 
       <ProfileEntranceBlock index={5}>
-      <FormSection icon="images-outline" title="Photos">
-        <PhotoPickerBlock
-          selectedPhoto={selectedPhoto}
-          onPick={handlePickPhoto}
-          onRemove={handleRemovePhoto}
+      <FormSection icon="images-outline" title={t('placeForm.sections.photos')} sectionKey="photos">
+        <PlacePhotoPickerForm
+          photos={selectedPhotos}
+          onChange={setSelectedPhotos}
+          required
         />
       </FormSection>
       </ProfileEntranceBlock>
 
       <ProfileEntranceBlock index={6}>
-        <AuthErrorMessage message={error} />
+        <AuthErrorMessage message={localizePlaceFormMessage(error)} />
 
         <View style={styles.actions}>
           <AppButton
-            title={submitting ? 'Submitting…' : 'Submit Place'}
+            title={submitting ? t('addPlace.submitting') : t('addPlace.submit')}
             onPress={handleSubmit}
             disabled={submitting}
             loading={submitting}
           />
           <AppButton
-            title="Cancel"
+            title={t('common.cancel')}
             variant="secondary"
             onPress={() => navigation.goBack()}
             disabled={submitting}
@@ -684,7 +678,7 @@ export function AddPlaceScreen({ navigation, route }: Props) {
 
     <AuthRequiredModal
       visible={authPromptVisible}
-      message="Sign in to share a new place with the community."
+      message={t('addPlace.authMessage')}
       onSignIn={() => {
         setAuthPromptVisible(false);
         navigateToAuth(navigation);
@@ -698,16 +692,18 @@ export function AddPlaceScreen({ navigation, route }: Props) {
 function FormSection({
   icon,
   title,
+  sectionKey,
   children,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
+  sectionKey?: string;
   children: ReactNode;
 }) {
   const colors = useThemeColors();
 
   return (
-    <AppCard elevated={title === 'Basic Info'} style={styles.sectionCard}>
+    <AppCard elevated={sectionKey === 'basicInfo'} style={styles.sectionCard}>
       <View style={styles.sectionHeading}>
         <Ionicons name={icon} size={18} color={colors.primary} />
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{title}</Text>
@@ -860,85 +856,6 @@ function LocationFeedbackBox({
   );
 }
 
-function PhotoPickerBlock({
-  selectedPhoto,
-  onPick,
-  onRemove,
-}: {
-  selectedPhoto: SelectedPhoto | null;
-  onPick: () => void;
-  onRemove: () => void;
-}) {
-  const colors = useThemeColors();
-  const pressScale = useRef(new Animated.Value(1)).current;
-  const imageOpacity = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (!selectedPhoto) {
-      imageOpacity.setValue(0);
-      return;
-    }
-
-    imageOpacity.setValue(0);
-    Animated.timing(imageOpacity, {
-      toValue: 1,
-      duration: motion.duration.slow,
-      easing: motionEasing.out,
-      useNativeDriver: true,
-    }).start();
-  }, [imageOpacity, selectedPhoto]);
-
-  const animatePress = (toValue: number) => {
-    Animated.timing(pressScale, {
-      toValue,
-      duration: motion.duration.fast,
-      easing: motionEasing.out,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  if (selectedPhoto) {
-    return (
-      <View style={styles.photoPreviewWrap}>
-        <View style={[styles.photoPreview, { backgroundColor: colors.surfaceSecondary }]}>
-          <Animated.Image
-            source={{ uri: selectedPhoto.uri }}
-            style={[styles.photoPreviewImage, { opacity: imageOpacity }]}
-            resizeMode="cover"
-          />
-        </View>
-        <View style={styles.photoActions}>
-          <AppButton title="Change photo" variant="secondary" onPress={onPick} fullWidth={false} />
-          <AppButton title="Remove" variant="ghost" onPress={onRemove} fullWidth={false} />
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <Animated.View style={{ transform: [{ scale: pressScale }] }}>
-      <Pressable
-        style={[
-          styles.photoPicker,
-          { backgroundColor: colors.input, borderColor: colors.border },
-        ]}
-        accessibilityRole="button"
-        onPress={onPick}
-        onPressIn={() => animatePress(motion.scale.press)}
-        onPressOut={() => animatePress(1)}
-      >
-        <Ionicons name="camera-outline" size={28} color={colors.textMuted} />
-        <Text style={[styles.photoPickerText, { color: colors.textSecondary }]}>
-          Add cover photo (optional)
-        </Text>
-        <Text style={[styles.photoPickerSubtext, { color: colors.textMuted }]}>
-          Choose from your gallery
-        </Text>
-      </Pressable>
-    </Animated.View>
-  );
-}
-
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
@@ -1006,38 +923,6 @@ const styles = StyleSheet.create({
   },
   toggleLabelActive: {
     fontWeight: '600',
-  },
-  photoPicker: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    minHeight: 120,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-  },
-  photoPreviewWrap: {
-    gap: spacing.sm,
-  },
-  photoPreview: {
-    width: '100%',
-    height: 180,
-    borderRadius: radius.md,
-    overflow: 'hidden',
-  },
-  photoPreviewImage: {
-    width: '100%',
-    height: '100%',
-  },
-  photoActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  photoPickerText: {
-    ...typography.label,
-  },
-  photoPickerSubtext: {
-    ...typography.caption,
   },
   actions: {
     gap: spacing.sm,

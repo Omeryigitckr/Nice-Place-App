@@ -7,6 +7,7 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { duration, spacing } from '../theme';
 
@@ -23,9 +24,11 @@ const calmEasing = Easing.out(Easing.cubic);
 
 /**
  * Shared auth screen shell: branded header entrance + keyboard-safe form area.
- * Field stagger lives in AuthStaggerItem; this only animates the logo.
+ * Safe-area top/bottom come from ScreenContainer — never override paddingTop here
+ * or the logo will sit under the notch / punch-hole camera.
  */
 export function AuthScreenLayout({ children }: AuthScreenLayoutProps) {
+  const insets = useSafeAreaInsets();
   const [reduceMotion, setReduceMotion] = useState(false);
 
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -91,9 +94,17 @@ export function AuthScreenLayout({ children }: AuthScreenLayoutProps) {
     <KeyboardAvoidingView
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? Math.max(insets.top, spacing.sm) : 0}
     >
-      <ScreenContainer scrollable keyboardAware contentStyle={styles.content}>
+      <ScreenContainer
+        scrollable
+        keyboardAware
+        safeTop
+        safeBottom
+        topExtra={spacing.md}
+        bottomExtra={spacing.md}
+        contentStyle={styles.content}
+      >
         <Animated.View
           style={[
             styles.brand,
@@ -120,11 +131,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     gap: spacing.xl,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
   },
   brand: {
     alignItems: 'center',
-    marginBottom: spacing.xs,
   },
 });

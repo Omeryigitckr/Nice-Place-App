@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import {
@@ -10,6 +10,7 @@ import {
   consumeLocationPickerResult,
 } from '../navigation/locationPickerResult';
 import { devError } from '../utils/devLog';
+import { localizePlaceFormMessage } from '../utils/placeFormMessages';
 
 import {
   AppButton,
@@ -17,27 +18,44 @@ import {
   AppTextInput,
   EmptyState,
   FilterChip,
+  PlacePhotoPickerForm,
+  createPlacePhotoPickerItem,
+  PlaceCategoryPicker,
   ScreenContainer,
   SectionHeader,
 } from '../components';
+import type { PlacePhotoPickerItem } from '../components';
 import { AuthRequiredModal } from '../components/AuthRequiredModal';
 import { FeedbackModal } from '../components/FeedbackModal';
 import {
   ACCESS_TYPE_OPTIONS,
-  ADD_PLACE_CATEGORIES,
   BEST_TIME_OPTIONS,
   CROWD_LEVEL_OPTIONS,
   DIFFICULTY_OPTIONS,
   FACILITY_TOGGLES,
   MAP_ROUTES,
+  getAccessTypeLabel,
+  getBestTimeLabel,
+  getCrowdLevelLabel,
+  getDifficultyLabel,
+  getFacilityLabel,
 } from '../constants';
-import type { AddPlaceCategoryValue, BestTimeOption, FacilityToggleKey } from '../constants';
+import type { BestTimeOption, FacilityToggleKey } from '../constants';
+import {
+  MAX_PLACE_CATEGORIES,
+  MIN_PLACE_CATEGORIES,
+  PlaceCategoryKey,
+  normalizePlaceCategories,
+} from '../constants/placeCategories';
 import { useAuth } from '../hooks';
 import {
   getMyPlaceById,
+  MAX_PLACE_PHOTOS,
+  MIN_PLACE_PHOTOS,
+  normalizePlacePhotoUrls,
   resolveCurrentUserProfileId,
   updateMyPlace,
-  uploadPlaceCoverPhoto,
+  uploadPlacePhotos,
 } from '../services';
 import { radius, spacing, typography } from '../theme';
 import { useThemeColors } from '../theme/ThemeContext';
@@ -55,22 +73,23 @@ interface FacilityState {
   isPicnicSuitable: boolean;
 }
 
-interface SelectedPhoto {
-  uri: string;
+function isRemotePhotoUri(uri: string): boolean {
+  return uri.startsWith('http://') || uri.startsWith('https://');
 }
 
 export function EditPlaceScreen({ navigation, route }: Props) {
+  const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const { user, profile, loading: authLoading } = useAuth();
   const placeId = route.params.placeId;
 
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<AddPlaceCategoryValue | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<PlaceCategoryKey[]>([]);
   const [description, setDescription] = useState('');
   const [latitude, setLatitude] = useState(0);
   const [longitude, setLongitude] = useState(0);
-  const [locationLabel, setLocationLabel] = useState('Loading location…');
+  const [locationLabel, setLocationLabel] = useState(t('placeForm.location.loading'));
   const [bestTime, setBestTime] = useState<BestTimeOption>('Anytime');
   const [accessType, setAccessType] = useState<DbAccessType>('unknown');
   const [difficultyLevel, setDifficultyLevel] = useState<DbDifficultyLevel>('unknown');
@@ -83,16 +102,13 @@ export function EditPlaceScreen({ navigation, route }: Props) {
     isPicnicSuitable: false,
   });
   const [safetyNote, setSafetyNote] = useState('');
-  const [existingImage, setExistingImage] = useState<string | null>(null);
-  const [selectedPhoto, setSelectedPhoto] = useState<SelectedPhoto | null>(null);
+  const [selectedPhotos, setSelectedPhotos] = useState<PlacePhotoPickerItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
   const [placeStatus, setPlaceStatus] = useState<'approved' | 'rejected' | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [successVisible, setSuccessVisible] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(
-    'Your changes were submitted for review.',
-  );
+  const [successMessage, setSuccessMessage] = useState(() => t('editPlace.successBody'));
   const [photoErrorVisible, setPhotoErrorVisible] = useState(false);
   const [authPromptVisible, setAuthPromptVisible] = useState(false);
 
@@ -107,13 +123,13 @@ export function EditPlaceScreen({ navigation, route }: Props) {
       setLatitude(result.latitude);
       setLongitude(result.longitude);
       const address = result.addressText?.trim();
-      setLocationLabel(address || 'Location adjusted on map');
+      setLocationLabel(address || t('placeForm.location.adjusted'));
       navigation.setParams({
         latitude: undefined,
         longitude: undefined,
         locationAdjusted: undefined,
       });
-    }, [navigation]),
+    }, [navigation, t]),
   );
 
   useEffect(() => {
@@ -145,10 +161,7 @@ export function EditPlaceScreen({ navigation, route }: Props) {
         profileId = resolved.profileId;
         if (!profileId) {
           if (mounted) {
-            setError(
-              resolved.error ??
-                'Your account is signed in, but your profile could not be loaded. Try signing out and back in.',
-            );
+            setError(resolved.error ?? 'placeForm.errors.profileMissing');
             setLoading(false);
           }
           return;
@@ -161,19 +174,19 @@ export function EditPlaceScreen({ navigation, route }: Props) {
       }
 
       if (!place) {
-        setError('Place not found or you do not have permission to edit it.');
+        setError('placeForm.errors.notFound');
         setLoading(false);
         return;
       }
 
       if (place.status === 'pending') {
-        setBlockedMessage('This place is still pending review and cannot be updated yet.');
+        setBlockedMessage(t('placeForm.errors.pendingCannotEdit'));
         setLoading(false);
         return;
       }
 
       if (place.status !== 'approved' && place.status !== 'rejected') {
-        setBlockedMessage('This place cannot be edited.');
+        setBlockedMessage(t('placeForm.errors.cannotEdit'));
         setLoading(false);
         return;
       }
@@ -181,11 +194,11 @@ export function EditPlaceScreen({ navigation, route }: Props) {
       setBlockedMessage(null);
       setPlaceStatus(place.status);
       setTitle(place.title);
-      setCategory(place.categorySlug as AddPlaceCategoryValue);
+      setSelectedCategories(normalizePlaceCategories(place.categories));
       setDescription(place.description);
       setLatitude(place.latitude);
       setLongitude(place.longitude);
-      setLocationLabel('Current place location');
+      setLocationLabel(t('placeForm.location.current'));
       setBestTime((place.bestTime as BestTimeOption) || 'Anytime');
       setAccessType((place.accessTypeSlug as DbAccessType) || 'unknown');
       setDifficultyLevel((place.difficultySlug as DbDifficultyLevel) || 'unknown');
@@ -198,7 +211,10 @@ export function EditPlaceScreen({ navigation, route }: Props) {
         isPicnicSuitable: place.isPicnicSuitable,
       });
       setSafetyNote(place.safetyNote ?? '');
-      setExistingImage(place.image);
+      const initialPhotos = (place.photos?.length ? place.photos : place.image ? [place.image] : []).map(
+        (uri) => createPlacePhotoPickerItem(uri),
+      );
+      setSelectedPhotos(initialPhotos);
       setLoading(false);
     };
 
@@ -207,33 +223,10 @@ export function EditPlaceScreen({ navigation, route }: Props) {
     return () => {
       mounted = false;
     };
-  }, [placeId, user, profile?.id, authLoading]);
+  }, [placeId, user, profile?.id, authLoading, t]);
 
   const toggleFacility = (key: FacilityToggleKey) => {
     setFacilities((current) => ({ ...current, [key]: !current[key] }));
-  };
-
-  const handlePickPhoto = async () => {
-    setError(null);
-
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      setError('Photo library permission is required to attach an image.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.85,
-    });
-
-    if (result.canceled || !result.assets[0]) {
-      return;
-    }
-
-    setSelectedPhoto({ uri: result.assets[0].uri });
   };
 
   const handleAdjustOnMap = () => {
@@ -272,12 +265,27 @@ export function EditPlaceScreen({ navigation, route }: Props) {
     }
 
     if (!title.trim()) {
-      setError('Place name is required.');
+      setError(t('placeForm.validation.nameRequired'));
       return;
     }
 
-    if (!category) {
-      setError('Please select a category.');
+    if (selectedCategories.length < MIN_PLACE_CATEGORIES) {
+      setError(t('placeForm.validation.categoriesMin', { count: MIN_PLACE_CATEGORIES }));
+      return;
+    }
+
+    if (selectedCategories.length > MAX_PLACE_CATEGORIES) {
+      setError(t('placeForm.validation.categoriesMax', { count: MAX_PLACE_CATEGORIES }));
+      return;
+    }
+
+    if (selectedPhotos.length < MIN_PLACE_PHOTOS) {
+      setError(t('placeForm.validation.photosKeepMin', { count: MIN_PLACE_PHOTOS }));
+      return;
+    }
+
+    if (selectedPhotos.length > MAX_PLACE_PHOTOS) {
+      setError(t('placeForm.validation.photosMax', { count: MAX_PLACE_PHOTOS }));
       return;
     }
 
@@ -293,45 +301,52 @@ export function EditPlaceScreen({ navigation, route }: Props) {
       profileId = resolved.profileId;
       if (!profileId) {
         setSubmitting(false);
-        setError(
-          resolved.error ??
-            'Your account is signed in, but your profile could not be loaded. Try signing out and back in.',
-        );
+        setError(resolved.error ?? 'placeForm.errors.profileMissing');
         return;
       }
     }
 
-    // Default: keep existing cover when no new photo is selected.
-    let coverPhotoUrl: string | null = existingImage;
+    let finalPhotoUrls: string[] = [];
+    const localPhotos = selectedPhotos.filter((photo) => !isRemotePhotoUri(photo.uri));
 
-    // Photo-first path: never insert place_update_requests if upload fails.
-    if (selectedPhoto) {
-      if (!profileId) {
-        abortBecausePhotoFailed('Missing profile id');
-        return;
-      }
-
-      const photoResult = await uploadPlaceCoverPhoto({
+    if (localPhotos.length > 0) {
+      const uploadResult = await uploadPlacePhotos({
         placeId,
-        imageUri: selectedPhoto.uri,
+        imageUris: localPhotos.map((photo) => photo.uri),
         authUserId: user.id,
         profileId,
         requirePlacePhotoRow: false,
+        insertPlacePhotoRows: placeStatus === 'rejected',
+        updateCoverPhoto: placeStatus === 'rejected',
+        status: 'pending',
       });
 
-      if (!photoResult.success || !photoResult.imageUrl) {
-        abortBecausePhotoFailed(photoResult.error ?? 'Unknown upload error');
+      if (!uploadResult.success || !uploadResult.imageUrls?.length) {
+        abortBecausePhotoFailed(uploadResult.error ?? 'placeForm.errors.photoUploadFailed');
         return;
       }
 
-      coverPhotoUrl = photoResult.imageUrl;
+      let uploadedIndex = 0;
+      finalPhotoUrls = selectedPhotos.map((photo) => {
+        if (isRemotePhotoUri(photo.uri)) {
+          return photo.uri;
+        }
+
+        const uploaded = uploadResult.imageUrls?.[uploadedIndex];
+        uploadedIndex += 1;
+        return uploaded ?? photo.uri;
+      });
+    } else {
+      finalPhotoUrls = selectedPhotos.map((photo) => photo.uri);
     }
 
-    // Only reached when there is no new photo, or photo upload succeeded.
+    finalPhotoUrls = normalizePlacePhotoUrls(finalPhotoUrls);
+    const coverPhotoUrl = finalPhotoUrls[0] ?? null;
+
     const result = await updateMyPlace(placeId, {
       title,
       description,
-      category,
+      categories: selectedCategories,
       latitude,
       longitude,
       bestTime,
@@ -345,19 +360,20 @@ export function EditPlaceScreen({ navigation, route }: Props) {
       isPicnicSuitable: facilities.isPicnicSuitable,
       safetyNote,
       coverPhotoUrl,
+      photoUrls: finalPhotoUrls,
     });
 
     setSubmitting(false);
 
     if (!result.success) {
-      setError(result.error ?? 'Could not submit your update for review.');
+      setError(result.error ?? 'placeForm.errors.updateFailed');
       return;
     }
 
     setSuccessMessage(
       result.action === 'resubmit'
-        ? 'Your place was sent back for review.'
-        : 'Your changes were submitted for review.',
+        ? t('editPlace.successBodyResubmit')
+        : t('editPlace.successBody'),
     );
     setSuccessVisible(true);
   };
@@ -379,7 +395,9 @@ export function EditPlaceScreen({ navigation, route }: Props) {
   if (authLoading || loading) {
     return (
       <ScreenContainer contentStyle={styles.content}>
-        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading place…</Text>
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          {t('editPlace.loading')}
+        </Text>
       </ScreenContainer>
     );
   }
@@ -389,46 +407,47 @@ export function EditPlaceScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} contentStyle={styles.content}>
         <EmptyState
           icon="lock-closed-outline"
-          title="Cannot update this place"
+          title={t('editPlace.blockedTitle')}
           description={blockedMessage}
           action={
-            <AppButton title="Go back" onPress={() => navigation.goBack()} fullWidth={false} />
+            <AppButton
+              title={t('common.back')}
+              onPress={() => navigation.goBack()}
+              fullWidth={false}
+            />
           }
         />
       </ScreenContainer>
     );
   }
 
-  const previewImage = selectedPhoto?.uri ?? existingImage;
-
   return (
     <>
     <ScreenContainer scrollable safeTop={false} reserveFloatingTabBar contentStyle={styles.content}>
       <SectionHeader
-        title={placeStatus === 'rejected' ? 'Resubmit place' : 'Edit place'}
+        title={placeStatus === 'rejected' ? t('editPlace.titleResubmit') : t('editPlace.title')}
         subtitle={
           placeStatus === 'rejected'
-            ? 'Update details and send this place back for review.'
-            : 'Update details for a place you shared.'
+            ? t('editPlace.subtitleResubmit')
+            : t('editPlace.subtitle')
         }
       />
 
-      <FormSection icon="create-outline" title="Basic Info">
-        <AppTextInput label="Place name *" placeholder="e.g. Sunset Cliff" value={title} onChangeText={setTitle} />
-        <FieldLabel label="Category *" />
-        <OptionGrid>
-          {ADD_PLACE_CATEGORIES.map((item) => (
-            <FilterChip
-              key={item.value}
-              label={item.label}
-              active={category === item.value}
-              onPress={() => setCategory(item.value)}
-            />
-          ))}
-        </OptionGrid>
+      <FormSection icon="create-outline" title={t('placeForm.sections.basicInfo')} sectionKey="basicInfo">
         <AppTextInput
-          label="Description"
-          placeholder="Why is this place worth visiting?"
+          label={t('placeForm.fields.placeName')}
+          placeholder={t('placeForm.fields.placeNamePlaceholder')}
+          value={title}
+          onChangeText={setTitle}
+        />
+        <FieldLabel label={t('placeForm.fields.categories')} />
+        <PlaceCategoryPicker
+          selected={selectedCategories}
+          onChange={setSelectedCategories}
+        />
+        <AppTextInput
+          label={t('placeForm.fields.description')}
+          placeholder={t('placeForm.fields.descriptionPlaceholder')}
           multiline
           numberOfLines={4}
           style={styles.textArea}
@@ -437,7 +456,7 @@ export function EditPlaceScreen({ navigation, route }: Props) {
         />
       </FormSection>
 
-      <FormSection icon="location-outline" title="Location">
+      <FormSection icon="location-outline" title={t('placeForm.sections.location')} sectionKey="location">
         <View
           style={[
             styles.locationBox,
@@ -449,44 +468,54 @@ export function EditPlaceScreen({ navigation, route }: Props) {
             {latitude.toFixed(5)}, {longitude.toFixed(5)}
           </Text>
         </View>
-        <AppButton title="Adjust on map" variant="secondary" onPress={handleAdjustOnMap} fullWidth={false} />
+        <AppButton
+          title={t('placeForm.location.adjustOnMap')}
+          variant="secondary"
+          onPress={handleAdjustOnMap}
+          fullWidth={false}
+        />
       </FormSection>
 
-      <FormSection icon="time-outline" title="Visit Details">
-        <FieldLabel label="Best time to visit" />
-        <OptionGrid>
+      <FormSection icon="time-outline" title={t('placeForm.sections.visitDetails')} sectionKey="visitDetails">
+        <FieldLabel label={t('placeForm.fields.bestTime')} />
+        <OptionGrid key={i18n.language}>
           {BEST_TIME_OPTIONS.map((option) => (
-            <FilterChip key={option} label={option} active={bestTime === option} onPress={() => setBestTime(option)} />
+            <FilterChip
+              key={option}
+              label={getBestTimeLabel(option)}
+              active={bestTime === option}
+              onPress={() => setBestTime(option)}
+            />
           ))}
         </OptionGrid>
-        <FieldLabel label="Access type" />
+        <FieldLabel label={t('placeForm.fields.accessType')} />
         <OptionGrid>
           {ACCESS_TYPE_OPTIONS.map((option) => (
             <FilterChip
               key={option.value}
-              label={option.label}
+              label={getAccessTypeLabel(option.value)}
               active={accessType === option.value}
               onPress={() => setAccessType(option.value)}
             />
           ))}
         </OptionGrid>
-        <FieldLabel label="Difficulty" />
+        <FieldLabel label={t('placeForm.fields.difficulty')} />
         <OptionGrid>
           {DIFFICULTY_OPTIONS.map((option) => (
             <FilterChip
               key={option.value}
-              label={option.label}
+              label={getDifficultyLabel(option.value)}
               active={difficultyLevel === option.value}
               onPress={() => setDifficultyLevel(option.value)}
             />
           ))}
         </OptionGrid>
-        <FieldLabel label="Crowd level" />
+        <FieldLabel label={t('placeForm.fields.crowdLevel')} />
         <OptionGrid>
           {CROWD_LEVEL_OPTIONS.map((option) => (
             <FilterChip
               key={option.value}
-              label={option.label}
+              label={getCrowdLevelLabel(option.value)}
               active={crowdLevel === option.value}
               onPress={() => setCrowdLevel(option.value)}
             />
@@ -494,12 +523,12 @@ export function EditPlaceScreen({ navigation, route }: Props) {
         </OptionGrid>
       </FormSection>
 
-      <FormSection icon="leaf-outline" title="Facilities">
+      <FormSection icon="leaf-outline" title={t('placeForm.sections.facilities')} sectionKey="facilities">
         <OptionGrid>
           {FACILITY_TOGGLES.map((item) => (
             <ToggleChip
               key={item.key}
-              label={item.label}
+              label={getFacilityLabel(item.key)}
               active={facilities[item.key]}
               onPress={() => toggleFacility(item.key)}
             />
@@ -507,10 +536,10 @@ export function EditPlaceScreen({ navigation, route }: Props) {
         </OptionGrid>
       </FormSection>
 
-      <FormSection icon="shield-checkmark-outline" title="Safety">
+      <FormSection icon="shield-checkmark-outline" title={t('placeForm.sections.safety')} sectionKey="safety">
         <AppTextInput
-          label="Safety note (optional)"
-          placeholder="Any hazards, access warnings, or things to watch for?"
+          label={t('placeForm.fields.safetyNote')}
+          placeholder={t('placeForm.fields.safetyNotePlaceholder')}
           multiline
           numberOfLines={3}
           style={styles.safetyArea}
@@ -519,81 +548,68 @@ export function EditPlaceScreen({ navigation, route }: Props) {
         />
       </FormSection>
 
-      <FormSection icon="images-outline" title="Photos">
-        {previewImage ? (
-          <View style={styles.photoPreviewWrap}>
-            <Image
-              source={{ uri: previewImage }}
-              style={[styles.photoPreview, { backgroundColor: colors.surfaceSecondary }]}
-              resizeMode="cover"
-            />
-            <View style={styles.photoActions}>
-              <AppButton title="Change photo" variant="secondary" onPress={handlePickPhoto} fullWidth={false} />
-              {selectedPhoto ? (
-                <AppButton title="Revert" variant="ghost" onPress={() => setSelectedPhoto(null)} fullWidth={false} />
-              ) : null}
-            </View>
-          </View>
-        ) : (
-          <Pressable
-            style={[
-              styles.photoPicker,
-              { backgroundColor: colors.input, borderColor: colors.border },
-            ]}
-            accessibilityRole="button"
-            onPress={handlePickPhoto}
-          >
-            <Ionicons name="camera-outline" size={28} color={colors.textMuted} />
-            <Text style={[styles.photoPickerText, { color: colors.textSecondary }]}>
-              Add cover photo (optional)
-            </Text>
-          </Pressable>
-        )}
+      <FormSection icon="images-outline" title={t('placeForm.sections.photos')} sectionKey="photos">
+        <PlacePhotoPickerForm
+          photos={selectedPhotos}
+          onChange={setSelectedPhotos}
+          required
+        />
       </FormSection>
 
       {error && !authLoading ? (
-        <Text style={[styles.error, { color: colors.error }]}>{error}</Text>
+        <Text style={[styles.error, { color: colors.error }]}>
+          {localizePlaceFormMessage(error)}
+        </Text>
       ) : null}
 
       <View style={styles.actions}>
         <AppButton
           title={
             submitting
-              ? 'Saving…'
+              ? t('editPlace.saving')
               : placeStatus === 'rejected'
-                ? 'Resubmit for review'
-                : 'Save changes'
+                ? t('editPlace.resubmit')
+                : t('editPlace.save')
           }
           onPress={handleSubmit}
           disabled={submitting}
         />
-        <AppButton title="Cancel" variant="secondary" onPress={() => navigation.goBack()} disabled={submitting} />
+        <AppButton
+          title={t('common.cancel')}
+          variant="secondary"
+          onPress={() => navigation.goBack()}
+          disabled={submitting}
+        />
       </View>
     </ScreenContainer>
 
     <FeedbackModal
       visible={successVisible}
       variant="success"
-      title={placeStatus === 'rejected' ? 'Resubmitted' : 'Update request sent'}
+      title={
+        placeStatus === 'rejected'
+          ? t('editPlace.successTitleResubmit')
+          : t('editPlace.successTitle')
+      }
       subtitle={successMessage}
-      primaryLabel="Done"
+      primaryLabel={t('common.done')}
       onPrimary={handleSuccessDone}
     />
 
     <FeedbackModal
       visible={photoErrorVisible}
       variant="error"
-      title="Photo upload failed"
-      subtitle="Please try again before submitting your update."
-      primaryLabel="Try again"
+      title={t('editPlace.photoErrorTitle')}
+      subtitle={t('editPlace.photoErrorBody')}
+      primaryLabel={t('common.retry')}
       onPrimary={handlePhotoErrorRetry}
-      secondaryLabel="Cancel"
+      secondaryLabel={t('common.cancel')}
       onSecondary={handlePhotoErrorCancel}
     />
 
     <AuthRequiredModal
       visible={authPromptVisible}
-      message="Sign in to edit places you have shared."
+      message={t('editPlace.authMessage')}
       onSignIn={() => {
         setAuthPromptVisible(false);
         navigateToAuth(navigation);
@@ -610,16 +626,18 @@ export function EditPlaceScreen({ navigation, route }: Props) {
 function FormSection({
   icon,
   title,
+  sectionKey,
   children,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
+  sectionKey?: string;
   children: ReactNode;
 }) {
   const colors = useThemeColors();
 
   return (
-    <AppCard elevated={title === 'Basic Info'} style={styles.sectionCard}>
+    <AppCard elevated={sectionKey === 'basicInfo'} style={styles.sectionCard}>
       <View style={styles.sectionHeading}>
         <Ionicons name={icon} size={18} color={colors.primary} />
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{title}</Text>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import {
   AppButton,
@@ -15,6 +16,7 @@ import { changePasswordWithReauth } from '../../services';
 import { spacing } from '../../theme';
 import { useThemeColors } from '../../theme/ThemeContext';
 import { ProfileStackParamList } from '../../types';
+import { getLocalizedAuthError } from '../../utils/authErrors';
 import { validateNewPassword } from '../../utils/authValidation';
 import { SettingsSection, settingsStyles } from './settingsShared';
 
@@ -22,6 +24,7 @@ type Props = NativeStackScreenProps<ProfileStackParamList, typeof PROFILE_ROUTES
 
 export function ChangePasswordScreen(_props: Props) {
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -34,12 +37,12 @@ export function ChangePasswordScreen(_props: Props) {
     setError(null);
 
     if (!user?.email) {
-      setError('Sign in to change your password.');
+      setError(t('auth.changePassword.signInRequired'));
       return;
     }
 
     if (!currentPassword) {
-      setError('Please enter your current password.');
+      setError(t('auth.validation.currentPasswordRequired'));
       return;
     }
 
@@ -50,12 +53,12 @@ export function ChangePasswordScreen(_props: Props) {
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('auth.validation.passwordsDoNotMatch'));
       return;
     }
 
     if (currentPassword === newPassword) {
-      setError('New password must be different from your current password.');
+      setError(t('auth.validation.passwordMustDiffer'));
       return;
     }
 
@@ -64,14 +67,14 @@ export function ChangePasswordScreen(_props: Props) {
     setLoading(false);
 
     if (!result.success) {
-      setError(result.error ?? 'Could not update password. Please try again.');
+      setError(getLocalizedAuthError(result.error, 'auth.errors.updatePasswordFailed'));
       return;
     }
 
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
-    setToastMessage('Password updated successfully.');
+    setToastMessage(t('auth.changePassword.successMessage'));
   };
 
   return (
@@ -84,15 +87,15 @@ export function ChangePasswordScreen(_props: Props) {
         />
       ) : null}
 
-      <SettingsSection title="Change password" entranceIndex={0}>
+      <SettingsSection title={t('auth.changePassword.title')} entranceIndex={0}>
         <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
-          Re-enter your current password, then choose a new one.
+          {t('auth.changePassword.description')}
         </Text>
 
         <View style={styles.form}>
           <AppTextInput
-            label="Current password"
-            placeholder="••••••••"
+            label={t('auth.changePassword.currentPasswordLabel')}
+            placeholder={t('auth.changePassword.passwordPlaceholder')}
             secureTextEntry
             autoComplete="password"
             value={currentPassword}
@@ -100,8 +103,8 @@ export function ChangePasswordScreen(_props: Props) {
             editable={!loading}
           />
           <AppTextInput
-            label="New password"
-            placeholder="••••••••"
+            label={t('auth.changePassword.newPasswordLabel')}
+            placeholder={t('auth.changePassword.passwordPlaceholder')}
             secureTextEntry
             autoComplete="new-password"
             value={newPassword}
@@ -109,8 +112,8 @@ export function ChangePasswordScreen(_props: Props) {
             editable={!loading}
           />
           <AppTextInput
-            label="Confirm new password"
-            placeholder="••••••••"
+            label={t('auth.changePassword.confirmPasswordLabel')}
+            placeholder={t('auth.changePassword.passwordPlaceholder')}
             secureTextEntry
             autoComplete="new-password"
             value={confirmPassword}
@@ -119,7 +122,11 @@ export function ChangePasswordScreen(_props: Props) {
           />
           <AuthErrorMessage message={error} />
           <AppButton
-            title={loading ? 'Updating…' : 'Update password'}
+            title={
+              loading
+                ? t('auth.changePassword.submitting')
+                : t('auth.changePassword.submit')
+            }
             onPress={handleUpdatePassword}
             disabled={loading}
             fullWidth={false}

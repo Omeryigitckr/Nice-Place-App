@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { localizeCollectionMessage } from '../utils/collectionMessages';
 import { devWarn } from '../utils/devLog';
 import { toUserFacingNetworkError } from '../utils/networkErrors';
 
 import { readSavedIdsCache, writeSavedIdsCache } from '../cache';
 import { hapticError, hapticLight, showAppToast } from '../feedback';
+import { i18n } from '../i18n/instance';
 import {
   getSavedPlaceIds,
   SavedPlaceResult,
@@ -163,19 +165,19 @@ export function useSavedPlaces(): UseSavedPlacesResult {
   const toggleSave = useCallback(
     async (placeId: string, currentCount = 0): Promise<SavedPlaceResult> => {
       if (!isSupabaseConfigured()) {
-        return { success: false, error: 'Supabase is not configured.' };
+        return { success: false, error: 'auth.errors.configMissing' };
       }
 
       if (!profileId) {
         return {
           success: false,
           requiresAuth: true,
-          error: 'Sign in to save places.',
+          error: 'explore.auth.saveShort',
         };
       }
 
       if (pendingPlaceIds.has(placeId)) {
-        return { success: false, error: 'Please wait…' };
+        return { success: false, error: 'common.pleaseWait' };
       }
 
       const baseIds = cachedSavedIds ?? savedIds;
@@ -216,7 +218,13 @@ export function useSavedPlaces(): UseSavedPlacesResult {
         devWarn('[Nice Place Saves] error', result.error);
         hapticError();
         if (result.error && !result.requiresAuth) {
-          showAppToast(toUserFacingNetworkError(result.error), { tone: 'error' });
+          const localized = localizeCollectionMessage(result.error);
+          showAppToast(
+            localized && localized !== result.error
+              ? localized
+              : toUserFacingNetworkError(result.error),
+            { tone: 'error' },
+          );
         }
         return result;
       }
@@ -229,7 +237,7 @@ export function useSavedPlaces(): UseSavedPlacesResult {
       writeSavedIdsCache(profileId, optimisticIds);
 
       hapticLight();
-      showAppToast(currentlySaved ? 'Removed from saved' : 'Place saved', {
+      showAppToast(currentlySaved ? i18n.t('place.toasts.removed') : i18n.t('place.toasts.saved'), {
         tone: 'success',
         icon: currentlySaved ? 'bookmark-outline' : 'bookmark',
         durationMs: 1600,

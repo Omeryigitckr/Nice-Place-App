@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
+import { ensureLocationPermission, openAppSettings } from '../services/appPermissionsService';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -17,7 +18,9 @@ import {
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import {
   ExploreFiltersPanel,
@@ -25,6 +28,8 @@ import {
   ExploreSearchResults,
   MapFabButton,
   MapInlineNotice,
+  NotificationBellButton,
+  PermissionBlockedModal,
   PlaceMapView,
   PlaceMapViewHandle,
   PlacePreviewCard,
@@ -41,8 +46,9 @@ import {
   useAuth,
   useFloatingTabBarInset,
   usePlaceLikes,
-  useSavedPlaces,
 } from '../hooks';
+import { useNotifications } from '../hooks/useNotifications';
+import { useSavePlaceWithCollections } from '../providers/SavePlaceWithCollectionsProvider';
 import {
   addRecentSearch,
   loadPlacesForMap,
@@ -71,13 +77,17 @@ type Props = NativeStackScreenProps<MapStackParamList, typeof MAP_ROUTES.MAP_HOM
 
 const QUICK_FILTERS: {
   key: QuickFilter;
-  label: string;
+  labelKey:
+    | 'explore.quickFilters.nearby'
+    | 'explore.quickFilters.hiddenGems'
+    | 'explore.quickFilters.sunset'
+    | 'explore.quickFilters.camping';
   icon: keyof typeof Ionicons.glyphMap;
 }[] = [
-  { key: 'nearby', label: 'Nearby', icon: 'navigate-outline' },
-  { key: 'hidden_gems', label: 'Hidden gems', icon: 'diamond-outline' },
-  { key: 'sunset', label: 'Sunset', icon: 'partly-sunny-outline' },
-  { key: 'camping', label: 'Camping', icon: 'bonfire-outline' },
+  { key: 'nearby', labelKey: 'explore.quickFilters.nearby', icon: 'navigate-outline' },
+  { key: 'hidden_gems', labelKey: 'explore.quickFilters.hiddenGems', icon: 'diamond-outline' },
+  { key: 'sunset', labelKey: 'explore.quickFilters.sunset', icon: 'partly-sunny-outline' },
+  { key: 'camping', labelKey: 'explore.quickFilters.camping', icon: 'bonfire-outline' },
 ];
 
 const LOCATION_EPSILON = 0.00015;
@@ -94,10 +104,12 @@ function locationsDiffer(a: UserLocationCoords, b: UserLocationCoords): boolean 
   );
 }
 
-export function MapHomeScreen({ navigation }: Props) {
+export function MapHomeScreen({ navigation: _navigation }: Props) {
+  const navigation = useNavigation<NativeStackNavigationProp<MapStackParamList>>();
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
-  const { user } = useAuth();
+  const { t, i18n } = useTranslation();
+  const { user, profile } = useAuth();
   const { settings } = useAppSettings();
   const tabBarInset = useFloatingTabBarInset();
   const mapRef = useRef<PlaceMapViewHandle>(null);
@@ -127,30 +139,40 @@ export function MapHomeScreen({ navigation }: Props) {
   const previewBackdrop = useRef(new Animated.Value(0)).current;
   const [filterPanelVisible, setFilterPanelVisible] = useState(false);
   const [locationGranted, setLocationGranted] = useState(false);
+  const [locationBlockedVisible, setLocationBlockedVisible] = useState(false);
   const [lastKnownLocation, setLastKnownLocation] = useState<UserLocationCoords | null>(null);
   const [locating, setLocating] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [authPromptVisible, setAuthPromptVisible] = useState(false);
-  const [authPromptMessage, setAuthPromptMessage] = useState(
-    'Sign in to save places to your collection.',
+  const [authPromptMessage, setAuthPromptMessage] = useState(() =>
+    t('explore.auth.save'),
   );
 
   const {
     isSaved,
     getSaveCount,
-    isToggling: isSaveToggling,
-    toggleSave,
-  } = useSavedPlaces();
+    isSaving,
+    pressSave,
+  } = useSavePlaceWithCollections();
   const {
     isLiked,
     getLikeCount,
     isToggling: isLikeToggling,
     toggleLike,
   } = usePlaceLikes();
+  const { unreadCount, refresh: refreshNotifications } = useNotifications(profile?.id);
 
   const mapboxError = getMapboxConfigError();
   const activeFilterCount = countActiveExploreFilters(appliedFilters);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (profile?.id) {
+        void refreshNotifications({ silent: true });
+      }
+    }, [profile?.id, refreshNotifications]),
+  );
 
   const applyLocation = useCallback((longitude: number, latitude: number) => {
     setLastKnownLocation({ longitude, latitude });
@@ -258,11 +280,11 @@ export function MapHomeScreen({ navigation }: Props) {
     } catch {
       const cached = await readMapPlacesCache({ allowExpired: true });
       if (cached?.length) {
-        applyPlacesResult(cached, 'Showing cached places. Connect to refresh.');
+        applyPlacesResult(cached, 'explore.load.cached');
       } else if (!options?.background) {
-        applyPlacesResult([], 'Could not load places. Check your connection and try again.');
+        applyPlacesResult([], 'explore.load.failed');
       } else {
-        setLoadError('Could not refresh places. Showing last loaded data.');
+        setLoadError('explore.load.refreshFailed');
       }
     } finally {
       setMapReady(true);
@@ -367,7 +389,7 @@ export function MapHomeScreen({ navigation }: Props) {
 
   const placesWithDistance = useMemo(
     () => withPlaceDistances(places, lastKnownLocation),
-    [places, lastKnownLocation, settings.distanceUnit],
+    [places, lastKnownLocation, settings.distanceUnit, i18n.language],
   );
 
   const filteredPlaces = useMemo(() => {
@@ -494,34 +516,48 @@ export function MapHomeScreen({ navigation }: Props) {
     setToastMessage(message);
   }, []);
 
-  const handleToggleSave = useCallback(async (placeId: string) => {
-    if (isSaveToggling(placeId)) {
-      return;
-    }
+  const localizeLoadMessage = useCallback(
+    (message: string | null | undefined): string | null => {
+      if (!message) {
+        return null;
+      }
+      if (
+        message.startsWith('explore.') ||
+        message.startsWith('map.') ||
+        message.startsWith('network.')
+      ) {
+        return i18n.t(message as never);
+      }
+      return message;
+    },
+    [i18n],
+  );
 
-    if (!requireAuth(user, 'save_place')) {
-      setAuthPromptMessage('Sign in to save places to your collection.');
-      setAuthPromptVisible(true);
+  const handleToggleSave = useCallback(async (placeId: string) => {
+    if (isSaving(placeId)) {
       return;
     }
 
     const place = placesRef.current.find((item) => item.id === placeId);
     const currentCount = getSaveCount(placeId, place?.saveCount ?? 0);
-    const result = await toggleSave(placeId, currentCount);
-    if (!result.success) {
-      return;
-    }
+    const result = await pressSave(placeId, {
+      saveCount: currentCount,
+      onSaveCountChange: (nextCount) => {
+        setPlaces((prev) =>
+          prev.map((item) =>
+            item.id === placeId
+              ? { ...item, saveCount: Math.max(0, nextCount) }
+              : item,
+          ),
+        );
+      },
+    });
 
-    if (result.success && typeof result.saveCount === 'number') {
-      setPlaces((prev) =>
-        prev.map((item) =>
-          item.id === placeId
-            ? { ...item, saveCount: Math.max(0, result.saveCount ?? item.saveCount) }
-            : item,
-        ),
-      );
+    if (result.requiresAuth) {
+      setAuthPromptMessage(t('explore.auth.save'));
+      setAuthPromptVisible(true);
     }
-  }, [getSaveCount, isSaveToggling, toggleSave, user]);
+  }, [getSaveCount, isSaving, pressSave, t]);
 
   const handleToggleLike = useCallback(async (placeId: string) => {
     if (isLikeToggling(placeId)) {
@@ -529,28 +565,32 @@ export function MapHomeScreen({ navigation }: Props) {
     }
 
     if (!requireAuth(user, 'like_place')) {
-      setAuthPromptMessage('Sign in to like places.');
+      setAuthPromptMessage(t('explore.auth.like'));
       setAuthPromptVisible(true);
       return;
     }
 
-    const place = placesRef.current.find((item) => item.id === placeId);
-    const currentCount = getLikeCount(placeId, place?.likeCount ?? 0);
-    const result = await toggleLike(placeId, currentCount);
-    if (!result.success) {
-      return;
-    }
+    try {
+      const place = placesRef.current.find((item) => item.id === placeId);
+      const currentCount = getLikeCount(placeId, place?.likeCount ?? 0);
+      const result = await toggleLike(placeId, currentCount);
+      if (!result.success) {
+        return;
+      }
 
-    if (result.success && typeof result.likeCount === 'number') {
-      setPlaces((prev) =>
-        prev.map((item) =>
-          item.id === placeId
-            ? { ...item, likeCount: Math.max(0, result.likeCount ?? item.likeCount) }
-            : item,
-        ),
-      );
+      if (typeof result.likeCount === 'number') {
+        setPlaces((prev) =>
+          prev.map((item) =>
+            item.id === placeId
+              ? { ...item, likeCount: Math.max(0, result.likeCount ?? item.likeCount) }
+              : item,
+          ),
+        );
+      }
+    } catch {
+      // toggleLike already surfaces errors; keep UI stable
     }
-  }, [getLikeCount, isLikeToggling, toggleLike, user]);
+  }, [getLikeCount, isLikeToggling, toggleLike, user, t]);
 
   const handleSelectPlace = useCallback((placeId: string) => {
     const place = filteredPlacesRef.current.find((p) => p.id === placeId);
@@ -609,7 +649,7 @@ export function MapHomeScreen({ navigation }: Props) {
   const handleQuickFilter = (key: QuickFilter) => {
     setQuickFilter(key);
     if (key === 'nearby' && !lastKnownLocation) {
-      showToast('Enable location to sort by distance.');
+      showToast(t('map.location.enableForSort'));
     }
   };
 
@@ -637,9 +677,13 @@ export function MapHomeScreen({ navigation }: Props) {
     };
 
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        showToast('Location permission denied. Enable it in settings to see nearby places.');
+      const permission = await ensureLocationPermission();
+      if (!permission.granted) {
+        if (permission.shouldOpenSettings) {
+          setLocationBlockedVisible(true);
+        } else {
+          showToast(t('map.location.permissionDenied'));
+        }
         setLocationGranted(false);
         return;
       }
@@ -661,7 +705,7 @@ export function MapHomeScreen({ navigation }: Props) {
 
         if (!refreshed) {
           if (!cached) {
-            showToast('Could not get your location right now.');
+            showToast(t('map.location.unavailable'));
           }
           return;
         }
@@ -677,7 +721,7 @@ export function MapHomeScreen({ navigation }: Props) {
       });
     } catch {
       setLocating(false);
-      showToast('Could not get your location right now.');
+      showToast(t('map.location.unavailable'));
     }
   };
 
@@ -696,7 +740,7 @@ export function MapHomeScreen({ navigation }: Props) {
           <View style={[styles.mapFallbackIcon, { backgroundColor: colors.surfaceElevated }]}>
             <Ionicons name="map-outline" size={28} color={colors.textMuted} />
           </View>
-          <Text style={[styles.mapFallbackTitle, { color: colors.textPrimary }]}>Map unavailable</Text>
+          <Text style={[styles.mapFallbackTitle, { color: colors.textPrimary }]}>{t('map.unavailable')}</Text>
           <Text style={[styles.mapFallbackText, { color: colors.textMuted }]}>{mapboxError}</Text>
         </Animated.View>
       );
@@ -707,7 +751,7 @@ export function MapHomeScreen({ navigation }: Props) {
         <View style={[styles.mapFallback, { backgroundColor: colors.background }]}>
           <View style={[styles.mapLoadingCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <ActivityIndicator color={colors.primary} size="small" />
-            <Text style={[styles.mapFallbackText, { color: colors.textMuted }]}>Loading places…</Text>
+            <Text style={[styles.mapFallbackText, { color: colors.textMuted }]}>{t('map.loading')}</Text>
             <View style={styles.mapSkeletonRow}>
               <View style={[styles.mapSkeletonChip, { backgroundColor: colors.surfaceSecondary }]} />
               <View style={[styles.mapSkeletonChip, { backgroundColor: colors.surfaceSecondary }]} />
@@ -745,7 +789,7 @@ export function MapHomeScreen({ navigation }: Props) {
           style={styles.keyboardDismissBackdrop}
           onPress={Keyboard.dismiss}
           accessibilityRole="button"
-          accessibilityLabel="Dismiss keyboard"
+          accessibilityLabel={t('explore.a11y.dismissKeyboard')}
         />
       ) : null}
 
@@ -759,14 +803,24 @@ export function MapHomeScreen({ navigation }: Props) {
           },
         ]}
       >
-        <ExploreSearchBar
-          value={search}
-          onChangeText={setSearch}
-          onFilterPress={openFilterPanel}
-          activeFilterCount={activeFilterCount}
-          onFocusChange={setSearchFocused}
-          onSubmit={handleSearchSubmit}
-        />
+        <View style={styles.searchRow}>
+          <View style={styles.searchFlex}>
+            <ExploreSearchBar
+              value={search}
+              onChangeText={setSearch}
+              onFilterPress={openFilterPanel}
+              activeFilterCount={activeFilterCount}
+              onFocusChange={setSearchFocused}
+              onSubmit={handleSearchSubmit}
+            />
+          </View>
+          {user ? (
+            <NotificationBellButton
+              unreadCount={unreadCount}
+              onPress={() => navigation.navigate(MAP_ROUTES.NOTIFICATIONS)}
+            />
+          ) : null}
+        </View>
 
         <ExploreSearchResults
           visible={searchPanelVisible}
@@ -778,14 +832,27 @@ export function MapHomeScreen({ navigation }: Props) {
           onSelectPlace={handleSelectPlace}
           onSelectRecent={handleSelectRecentSearch}
           onRemoveRecent={handleRemoveRecentSearch}
+          onRequiresAuth={() => {
+            setAuthPromptMessage(t('explore.auth.save'));
+            setAuthPromptVisible(true);
+          }}
+          onSaveCountChange={(placeId, nextCount) => {
+            setPlaces((prev) =>
+              prev.map((item) =>
+                item.id === placeId
+                  ? { ...item, saveCount: Math.max(0, nextCount) }
+                  : item,
+              ),
+            );
+          }}
         />
 
         {loadError ? (
           <MapInlineNotice
             message={
               places.length > 0
-                ? loadError
-                : 'No places available offline. Connect to load the map.'
+                ? (localizeLoadMessage(loadError) ?? loadError)
+                : t('explore.empty.offline')
             }
             icon="cloud-offline-outline"
             tone="accent"
@@ -794,7 +861,7 @@ export function MapHomeScreen({ navigation }: Props) {
 
         {mapReady && places.length === 0 && !loadError ? (
           <MapInlineNotice
-            message="No places yet. Be the first to share a spot."
+            message={t('explore.empty.noPlaces')}
             icon="leaf-outline"
             tone="primary"
           />
@@ -802,7 +869,7 @@ export function MapHomeScreen({ navigation }: Props) {
 
         {noFilterMatches && !search.trim() ? (
           <MapInlineNotice
-            message="No places match these filters."
+            message={t('explore.empty.noFilterMatches')}
             icon="funnel-outline"
             tone="accent"
           />
@@ -817,7 +884,7 @@ export function MapHomeScreen({ navigation }: Props) {
           {QUICK_FILTERS.map((option) => (
             <SortChip
               key={option.key}
-              label={option.label}
+              label={t(option.labelKey)}
               icon={option.icon}
               active={quickFilter === option.key}
               onPress={() => handleQuickFilter(option.key)}
@@ -858,7 +925,7 @@ export function MapHomeScreen({ navigation }: Props) {
       >
         <MapFabButton
           icon="locate"
-          accessibilityLabel="Show my location"
+          accessibilityLabel={t('map.a11y.myLocation')}
           onPress={handleLocate}
           loading={locating}
         />
@@ -882,7 +949,7 @@ export function MapHomeScreen({ navigation }: Props) {
             <Pressable
               style={StyleSheet.absoluteFill}
               onPress={() => setPreviewVisible(false)}
-              accessibilityLabel="Dismiss place preview"
+              accessibilityLabel={t('explore.preview.a11yDismiss')}
             />
           </Animated.View>
           <View
@@ -893,7 +960,7 @@ export function MapHomeScreen({ navigation }: Props) {
               place={selectedPlace}
               visible={previewVisible}
               saved={isSaved(selectedPlace.id)}
-              saveDisabled={isSaveToggling(selectedPlace.id)}
+              saveDisabled={isSaving(selectedPlace.id)}
               onSave={() => {
                 void handleToggleSave(selectedPlace.id);
               }}
@@ -918,7 +985,7 @@ export function MapHomeScreen({ navigation }: Props) {
                   selectedPlace.title,
                 ).then((opened) => {
                   if (!opened) {
-                    showToast('Could not open Maps. Check that a maps app is installed.');
+                    showToast(t('map.directions.failed'));
                   }
                 });
               }}
@@ -935,6 +1002,16 @@ export function MapHomeScreen({ navigation }: Props) {
           navigateToAuth(navigation);
         }}
         onCancel={() => setAuthPromptVisible(false)}
+      />
+      <PermissionBlockedModal
+        visible={locationBlockedVisible}
+        title={t('map.location.blockedTitle')}
+        message={t('map.location.blockedMessage')}
+        onCancel={() => setLocationBlockedVisible(false)}
+        onOpenSettings={() => {
+          setLocationBlockedVisible(false);
+          void openAppSettings();
+        }}
       />
     </KeyboardAvoidingView>
   );
@@ -998,8 +1075,16 @@ const styles = StyleSheet.create({
   },
   topOverlay: {
     zIndex: 10,
-    gap: spacing.sm + 2,
+    gap: spacing.xs,
     paddingHorizontal: spacing.md,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  searchFlex: {
+    flex: 1,
   },
   chips: {
     flexDirection: 'row',

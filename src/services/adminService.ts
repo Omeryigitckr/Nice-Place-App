@@ -3,6 +3,13 @@ import { DbPlace, DbPlaceUpdateRequest, PlaceStatus } from '../types/database';
 import { devLog, devWarn, devError } from '../utils/devLog';
 
 import { assertAdminAccess } from './adminAccess';
+import { normalizePlaceCategories } from '../constants/placeCategories';
+import { syncPlaceCategories } from './placeCategoryService';
+import {
+  approvePendingPlacePhotos,
+  normalizePlacePhotoUrls,
+  syncPlacePhotos,
+} from './placePhotoService';
 import { PLACE_SELECT } from './placesService';
 import { getSupabase } from './supabase';
 
@@ -26,6 +33,8 @@ const UPDATE_REQUEST_SELECT = `
   is_picnic_suitable,
   safety_note,
   cover_photo_url,
+  photo_urls,
+  category_keys,
   status,
   admin_note,
   created_at,
@@ -38,6 +47,8 @@ export interface AdminActionResult {
   error?: string;
 }
 
+const ADMIN_ACTION_ERROR = 'admin.errors.actionFailed';
+
 function isMissingAdminListPlacesRpc(error: { message?: string; code?: string }): boolean {
   const message = (error.message ?? '').toLowerCase();
   return (
@@ -45,6 +56,43 @@ function isMissingAdminListPlacesRpc(error: { message?: string; code?: string })
     message.includes('admin_list_places') ||
     message.includes('could not find the function')
   );
+}
+
+function isMissingAdminUpdatePlaceStatusRpc(error: { message?: string; code?: string }): boolean {
+  const message = (error.message ?? '').toLowerCase();
+  return (
+    error.code === 'PGRST202' ||
+    message.includes('admin_update_place_status') ||
+    message.includes('could not find the function')
+  );
+}
+
+function mapAdminPlaceStatusError(
+  error: { message?: string; code?: string } | null | undefined,
+  status: PlaceStatus,
+): string {
+  const message = (error?.message ?? '').toLowerCase();
+
+  if (message.includes('admin access required') || message.includes('admin access')) {
+    return 'admin.errors.noAccess';
+  }
+
+  if (message.includes('place not found')) {
+    return 'admin.errors.placeNotFound';
+  }
+
+  if (
+    status === 'deleted' &&
+    (message.includes('check constraint') ||
+      message.includes('places_status_check') ||
+      error?.code === '23514')
+  ) {
+    return 'admin.errors.removeNotEnabled';
+  }
+
+  return status === 'deleted'
+    ? 'admin.errors.removeFailed'
+    : ADMIN_ACTION_ERROR;
 }
 
 /** Load places for admin review — RPC first, then direct table query. */
@@ -59,7 +107,7 @@ async function loadAdminPlacesByStatus(
 
   const supabase = getSupabase();
   if (!supabase) {
-    return { places: [], error: 'Supabase is not configured.' };
+    return { places: [], error: 'admin.errors.notConfigured' };
   }
 
   try {
@@ -101,7 +149,7 @@ async function loadAdminPlacesByStatus(
     return { places };
   } catch (error: unknown) {
     devError('[Nice Place Admin] places load exception:', status, error);
-    return { places: [], error: `Could not load ${status} places.` };
+    return { places: [], error: 'admin.errors.loadPlacesFailed' };
   }
 }
 
@@ -113,8 +161,8 @@ export async function getPendingPlaces(): Promise<{
   return loadAdminPlacesByStatus('pending', 'created_at');
 }
 
-const APPROVE_PLACE_ERROR = "Couldn't approve the place. Please try again.";
-const REJECT_PLACE_ERROR = "Couldn't reject the place. Please try again.";
+const APPROVE_PLACE_ERROR = 'admin.errors.approvePlaceFailed';
+const REJECT_PLACE_ERROR = 'admin.errors.rejectPlaceFailed';
 
 /**
  * Shared approve/reject path — mirrors working SQL Editor statements:
@@ -225,37 +273,7 @@ async function updatePendingPlaceStatus(
     }
 
     if (status === 'approved') {
-      const { error: photoError } = await supabase
-        .from('place_photos')
-        .update({ status: 'approved' })
-        .eq('place_id', id)
-        .eq('status', 'pending');
-
-      if (photoError) {
-        devWarn('[Nice Place Admin] approve place photos failed:', photoError.message);
-      }
-
-      const { data: coverPhoto } = await supabase
-        .from('place_photos')
-        .select('image_url')
-        .eq('place_id', id)
-        .order('is_cover', { ascending: false })
-        .order('created_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-
-      const coverUrl = (coverPhoto as { image_url?: string } | null)?.image_url;
-
-      if (coverUrl) {
-        const { error: coverSyncError } = await supabase
-          .from('places')
-          .update({ cover_photo_url: coverUrl })
-          .eq('id', id);
-
-        if (coverSyncError) {
-          devWarn('[Nice Place Admin] cover_photo_url sync failed:', coverSyncError.message);
-        }
-      }
+      await approvePendingPlacePhotos(id);
     }
 
     devLog('[Nice Place Admin] place status updated', {
@@ -265,6 +283,12 @@ async function updatePendingPlaceStatus(
       updated_at: row.updated_at,
       authUserId: access.authUserId,
     });
+
+    if (status === 'approved' || status === 'rejected') {
+      const { dispatchPlaceStatusNotification } = await import('./notificationIntegration');
+      void dispatchPlaceStatusNotification(id, status);
+    }
+
     return { success: true };
   } catch (error: unknown) {
     devWarn('[Nice Place Admin] updatePendingPlaceStatus exception:', {
@@ -297,7 +321,7 @@ export async function getPendingPlaceUpdateRequests(): Promise<{
 
   const supabase = getSupabase();
   if (!supabase) {
-    return { requests: [], error: 'Supabase is not configured.' };
+    return { requests: [], error: 'admin.errors.notConfigured' };
   }
 
   try {
@@ -317,7 +341,7 @@ export async function getPendingPlaceUpdateRequests(): Promise<{
     return { requests };
   } catch (error: unknown) {
     devError('[Nice Place Admin] pending requests exception:', error);
-    return { requests: [], error: 'Could not load update requests.' };
+    return { requests: [], error: 'admin.errors.loadUpdatesFailed' };
   }
 }
 
@@ -331,7 +355,7 @@ export async function getPlaceUpdateRequestById(
 
   const supabase = getSupabase();
   if (!supabase) {
-    return { request: null, error: 'Supabase is not configured.' };
+    return { request: null, error: 'admin.errors.notConfigured' };
   }
 
   try {
@@ -348,7 +372,7 @@ export async function getPlaceUpdateRequestById(
     return { request: (data as DbPlaceUpdateRequest) ?? null };
   } catch (error: unknown) {
     devError('[Nice Place Admin] getPlaceUpdateRequestById failed:', error);
-    return { request: null, error: 'Could not load update request.' };
+    return { request: null, error: 'admin.errors.loadUpdateFailed' };
   }
 }
 
@@ -362,7 +386,7 @@ export async function getPlaceForAdminReview(
 
   const supabase = getSupabase();
   if (!supabase) {
-    return { place: null, error: 'Supabase is not configured.' };
+    return { place: null, error: 'admin.errors.notConfigured' };
   }
 
   try {
@@ -379,7 +403,7 @@ export async function getPlaceForAdminReview(
     return { place: (data as DbPlace) ?? null };
   } catch (error: unknown) {
     devError('[Nice Place Admin] getPlaceForAdminReview failed:', error);
-    return { place: null, error: 'Could not load place.' };
+    return { place: null, error: 'admin.errors.loadPlaceFailed' };
   }
 }
 
@@ -410,8 +434,8 @@ function buildPlaceUpdateFromRequest(request: DbPlaceUpdateRequest): Record<stri
   return payload;
 }
 
-const APPROVE_UPDATE_ERROR = "Couldn't approve the update. Please try again.";
-const REJECT_UPDATE_ERROR = "Couldn't reject the update. Please try again.";
+const APPROVE_UPDATE_ERROR = 'admin.errors.approveUpdateFailed';
+const REJECT_UPDATE_ERROR = 'admin.errors.rejectUpdateFailed';
 
 const UPDATE_REQUEST_RLS_HINT =
   'Authenticated UPDATE on place_update_requests affected 0 rows (SQL Editor bypasses RLS). ' +
@@ -550,6 +574,12 @@ async function markPlaceUpdateRequestStatus(
           statusRows.length > 0 &&
           statusRow?.status === status
         ) {
+          if (status === 'approved' || status === 'rejected') {
+            const { dispatchUpdateRequestStatusNotification } = await import(
+              './notificationIntegration'
+            );
+            void dispatchUpdateRequestStatusNotification(id, status);
+          }
           return { success: true };
         }
 
@@ -596,6 +626,11 @@ async function markPlaceUpdateRequestStatus(
         cause: UPDATE_REQUEST_RLS_HINT,
       });
       return { success: false, error: userFacingError };
+    }
+
+    if (status === 'approved' || status === 'rejected') {
+      const { dispatchUpdateRequestStatusNotification } = await import('./notificationIntegration');
+      void dispatchUpdateRequestStatusNotification(id, status);
     }
 
     return { success: true };
@@ -735,6 +770,56 @@ export async function approvePlaceUpdateRequest(
       return { success: false, error: APPROVE_UPDATE_ERROR };
     }
 
+    const requestedPhotoUrls = normalizePlacePhotoUrls(
+      Array.isArray(request.photo_urls)
+        ? request.photo_urls
+        : request.cover_photo_url
+          ? [request.cover_photo_url]
+          : [],
+    );
+
+    if (requestedPhotoUrls.length > 0) {
+      const photoSync = await syncPlacePhotos({
+        placeId,
+        imageUrls: requestedPhotoUrls,
+        status: 'approved',
+        replaceExisting: true,
+      });
+
+      if (!photoSync.success) {
+        devWarn('[Nice Place Admin] approvePlaceUpdateRequest photo sync failed', {
+          requestId: id,
+          placeId,
+          error: photoSync.error,
+        });
+        return { success: false, error: APPROVE_UPDATE_ERROR };
+      }
+    }
+
+    const requestedCategoryKeys = normalizePlaceCategories(
+      Array.isArray(request.category_keys)
+        ? request.category_keys
+        : request.category
+          ? [request.category]
+          : [],
+    );
+
+    if (requestedCategoryKeys.length > 0) {
+      const categorySync = await syncPlaceCategories({
+        placeId,
+        categoryKeys: requestedCategoryKeys,
+      });
+
+      if (!categorySync.success) {
+        devWarn('[Nice Place Admin] approvePlaceUpdateRequest category sync failed', {
+          requestId: id,
+          placeId,
+          error: categorySync.error,
+        });
+        return { success: false, error: APPROVE_UPDATE_ERROR };
+      }
+    }
+
     // Mark request approved — does not touch places again.
     return markPlaceUpdateRequestStatus(id, 'approved', adminNote);
   } catch (error: unknown) {
@@ -756,13 +841,51 @@ export async function rejectPlaceUpdateRequest(
   return markPlaceUpdateRequestStatus(requestId, 'rejected', adminNote);
 }
 
-const ADMIN_ACTION_ERROR = "Couldn't complete action. Please try again.";
-
 const PLACES_STATUS_RLS_HINT =
   'Authenticated UPDATE on places affected 0 rows (SQL Editor bypasses RLS). ' +
   'App uses the user JWT; policies must allow UPDATE when profiles.is_admin = true. ' +
   'Run scripts/2026_07_04_place_update_requests_admin_rls.sql ' +
-  'and scripts/2026_07_04_places_status_deleted.sql if status=deleted is rejected.';
+  'and scripts/2026_07_10_admin_soft_delete_place.sql if status=deleted is rejected.';
+
+/** RPC first, then direct table UPDATE — mirrors admin_list_places pattern. */
+async function updatePlaceStatusByAdminViaRpc(
+  placeId: string,
+  status: Extract<PlaceStatus, 'pending' | 'approved' | 'rejected' | 'deleted'>,
+): Promise<{ row: DbPlace | null; error?: string; rpcMissing?: boolean }> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { row: null, error: ADMIN_ACTION_ERROR };
+  }
+
+  const { data, error } = await supabase.rpc('admin_update_place_status', {
+    p_place_id: placeId,
+    p_status: status,
+  });
+
+  if (error) {
+    if (isMissingAdminUpdatePlaceStatusRpc(error)) {
+      return { row: null, rpcMissing: true };
+    }
+
+    devWarn('[Nice Place Admin] admin_update_place_status rpc failed', {
+      placeId,
+      status,
+      error: error.message,
+      code: error.code,
+    });
+    return { row: null, error: mapAdminPlaceStatusError(error, status) };
+  }
+
+  const row = (Array.isArray(data) ? data[0] : data) as DbPlace | null | undefined;
+  if (!row || row.status !== status) {
+    return {
+      row: null,
+      error: mapAdminPlaceStatusError(null, status),
+    };
+  }
+
+  return { row };
+}
 
 async function updatePlaceStatusByAdmin(
   placeId: string,
@@ -789,6 +912,20 @@ async function updatePlaceStatusByAdmin(
   }
 
   try {
+    const rpcAttempt = await updatePlaceStatusByAdminViaRpc(id, status);
+    if (rpcAttempt.row) {
+      devLog('[Nice Place Admin] updatePlaceStatusByAdmin via rpc', {
+        placeId: id,
+        status: rpcAttempt.row.status,
+        title: rpcAttempt.row.title,
+      });
+      return { success: true };
+    }
+
+    if (rpcAttempt.error && !rpcAttempt.rpcMissing) {
+      return { success: false, error: rpcAttempt.error };
+    }
+
     const before = await supabase
       .from('places')
       .select('id, title, status')
@@ -829,10 +966,10 @@ async function updatePlaceStatusByAdmin(
         code: error.code,
         hint:
           status === 'deleted'
-            ? 'If check constraint rejects deleted, run scripts/2026_07_04_places_status_deleted.sql'
+            ? 'Run scripts/2026_07_10_admin_soft_delete_place.sql'
             : PLACES_STATUS_RLS_HINT,
       });
-      return { success: false, error: ADMIN_ACTION_ERROR };
+      return { success: false, error: mapAdminPlaceStatusError(error, status) };
     }
 
     if (!(rows.length > 0 && row?.status === status)) {
@@ -843,7 +980,7 @@ async function updatePlaceStatusByAdmin(
         beforeStatus: before.data?.status ?? null,
         cause: PLACES_STATUS_RLS_HINT,
       });
-      return { success: false, error: ADMIN_ACTION_ERROR };
+      return { success: false, error: mapAdminPlaceStatusError(null, status) };
     }
 
     return { success: true };
@@ -875,7 +1012,7 @@ export async function getRejectedPlaceUpdateRequests(): Promise<{
 
   const supabase = getSupabase();
   if (!supabase) {
-    return { requests: [], error: 'Supabase is not configured.' };
+    return { requests: [], error: 'admin.errors.notConfigured' };
   }
 
   try {
@@ -895,7 +1032,7 @@ export async function getRejectedPlaceUpdateRequests(): Promise<{
     return { requests };
   } catch (error: unknown) {
     devError('[Nice Place Admin] rejected requests exception:', error);
-    return { requests: [], error: 'Could not load rejected update requests.' };
+    return { requests: [], error: 'admin.errors.loadRejectedUpdatesFailed' };
   }
 }
 

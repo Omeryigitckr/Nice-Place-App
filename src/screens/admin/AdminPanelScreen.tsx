@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import { BellRing } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -20,26 +22,26 @@ import {
   getPendingPlaceUpdateRequests,
   getRejectedPlaces,
   getRejectedPlaceUpdateRequests,
+  adminListReportedProfiles,
 } from '../../services';
 import { radius, spacing, typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { DbPlace, DbPlaceUpdateRequest } from '../../types/database';
 import { ProfileStackParamList } from '../../types';
+import {
+  formatAdminDateTime,
+  getPlaceStatusLabel,
+  isAdminAccessGateMessage,
+  localizeAdminMessage,
+} from '../../utils/adminMessages';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, typeof PROFILE_ROUTES.ADMIN_PANEL>;
 
 type QueueFilter = 'pending' | 'rejected';
 type AdminTab = 'places' | 'updates';
 
-function formatDate(value: string): string {
-  try {
-    return new Date(value).toLocaleString();
-  } catch {
-    return value;
-  }
-}
-
 export function AdminPanelScreen({ navigation }: Props) {
+  const { t, i18n } = useTranslation();
   const { colors, shadows } = useTheme();
   const { isAdmin, loading: adminLoading, authUserId } = useAdminAccess();
 
@@ -49,6 +51,7 @@ export function AdminPanelScreen({ navigation }: Props) {
   const [rejectedPlaces, setRejectedPlaces] = useState<DbPlace[]>([]);
   const [pendingRequests, setPendingRequests] = useState<DbPlaceUpdateRequest[]>([]);
   const [rejectedRequests, setRejectedRequests] = useState<DbPlaceUpdateRequest[]>([]);
+  const [openReportedProfiles, setOpenReportedProfiles] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,30 +63,35 @@ export function AdminPanelScreen({ navigation }: Props) {
     setLoading(true);
     setError(null);
 
-    const [pendingPlacesResult, rejectedPlacesResult, pendingRequestsResult, rejectedRequestsResult] =
-      await Promise.all([
-        getPendingPlaces(),
-        getRejectedPlaces(),
-        getPendingPlaceUpdateRequests(),
-        getRejectedPlaceUpdateRequests(),
-      ]);
+    const [
+      pendingPlacesResult,
+      rejectedPlacesResult,
+      pendingRequestsResult,
+      rejectedRequestsResult,
+      reportedProfilesResult,
+    ] = await Promise.all([
+      getPendingPlaces(),
+      getRejectedPlaces(),
+      getPendingPlaceUpdateRequests(),
+      getRejectedPlaceUpdateRequests(),
+      adminListReportedProfiles(),
+    ]);
 
     setPendingPlaces(pendingPlacesResult.places);
     setRejectedPlaces(rejectedPlacesResult.places);
     setPendingRequests(pendingRequestsResult.requests);
     setRejectedRequests(rejectedRequestsResult.requests);
+    setOpenReportedProfiles(
+      reportedProfilesResult.profiles.filter((item) => item.open_report_count > 0).length,
+    );
 
     const dataError = [
       pendingPlacesResult.error,
       rejectedPlacesResult.error,
       pendingRequestsResult.error,
       rejectedRequestsResult.error,
-    ].find(
-      (message) =>
-        message &&
-        !message.toLowerCase().includes('admin access') &&
-        !message.toLowerCase().includes('sign in as an admin'),
-    );
+      reportedProfilesResult.error,
+    ].find((message) => message && !isAdminAccessGateMessage(message));
     setError(dataError ?? null);
     setLoading(false);
   }, [adminLoading, isAdmin]);
@@ -98,95 +106,102 @@ export function AdminPanelScreen({ navigation }: Props) {
 
   const places = queueFilter === 'pending' ? pendingPlaces : rejectedPlaces;
   const requests = queueFilter === 'pending' ? pendingRequests : rejectedRequests;
-  const statusLabel = queueFilter === 'pending' ? 'pending' : 'rejected';
+  const statusLabel = getPlaceStatusLabel(queueFilter);
 
   const placeKeyExtractor = useCallback((item: DbPlace) => item.id, []);
   const requestKeyExtractor = useCallback((item: DbPlaceUpdateRequest) => item.id, []);
 
   const renderPlace: ListRenderItem<DbPlace> = useCallback(
-    ({ item }) => (
-      <Pressable
-        style={[
-          styles.card,
-          {
-            backgroundColor: colors.card,
-            borderColor: colors.border,
-            ...shadows.sm,
-          },
-        ]}
-        onPress={() =>
-          navigation.navigate(PROFILE_ROUTES.ADMIN_PLACE_DETAIL, { placeId: item.id })
-        }
-        accessibilityRole="button"
-        accessibilityLabel={`Review place ${item.title}`}
-      >
-        <CachedImage
-          uri={item.cover_photo_url}
-          width={64}
-          height={64}
-          borderRadius={radius.md}
-          recyclingKey={item.id}
-          priority="low"
-        />
-        <View style={styles.cardBody}>
-          <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>
-            {item.title?.trim() || 'Untitled place'}
-          </Text>
-          <Text style={[styles.meta, { color: colors.textSecondary }]} numberOfLines={1}>
-            {item.category} · {statusLabel}
-          </Text>
-          <Text style={[styles.meta, { color: colors.textSecondary }]} numberOfLines={1}>
-            {formatDate(item.created_at)}
-          </Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-      </Pressable>
-    ),
-    [colors, navigation, shadows.sm, statusLabel],
+    ({ item }) => {
+      const title = item.title?.trim() || t('admin.untitledPlace');
+      return (
+        <Pressable
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              ...shadows.sm,
+            },
+          ]}
+          onPress={() =>
+            navigation.navigate(PROFILE_ROUTES.ADMIN_PLACE_DETAIL, { placeId: item.id })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={t('admin.panel.a11yReviewPlace', { title })}
+        >
+          <CachedImage
+            uri={item.cover_photo_url}
+            width={64}
+            height={64}
+            borderRadius={radius.md}
+            recyclingKey={item.id}
+            priority="low"
+          />
+          <View style={styles.cardBody}>
+            <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>
+              {title}
+            </Text>
+            <Text style={[styles.meta, { color: colors.textSecondary }]} numberOfLines={1}>
+              {item.category} · {statusLabel}
+            </Text>
+            <Text style={[styles.meta, { color: colors.textSecondary }]} numberOfLines={1}>
+              {formatAdminDateTime(item.created_at, i18n.language)}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </Pressable>
+      );
+    },
+    [colors, i18n.language, navigation, shadows.sm, statusLabel, t],
   );
 
   const renderRequest: ListRenderItem<DbPlaceUpdateRequest> = useCallback(
-    ({ item }) => (
-      <Pressable
-        style={[
-          styles.card,
-          {
-            backgroundColor: colors.card,
-            borderColor: colors.border,
-            ...shadows.sm,
-          },
-        ]}
-        onPress={() =>
-          navigation.navigate(PROFILE_ROUTES.ADMIN_UPDATE_REQUEST, {
-            requestId: item.id,
-          })
-        }
-        accessibilityRole="button"
-        accessibilityLabel={`Review update for ${item.title ?? 'place'}`}
-      >
-        <CachedImage
-          uri={item.cover_photo_url}
-          width={64}
-          height={64}
-          borderRadius={radius.md}
-          recyclingKey={item.id}
-          priority="low"
-        />
-        <View style={styles.cardBody}>
-          <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>
-            {item.title?.trim() || 'Untitled place'}
-          </Text>
-          <Text style={[styles.meta, { color: colors.textSecondary }]} numberOfLines={1}>
-            {item.category ?? 'uncategorized'} · update · {statusLabel}
-          </Text>
-          <Text style={[styles.meta, { color: colors.textSecondary }]} numberOfLines={1}>
-            {formatDate(item.created_at)}
-          </Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-      </Pressable>
-    ),
-    [colors, navigation, shadows.sm, statusLabel],
+    ({ item }) => {
+      const title = item.title?.trim() || t('admin.untitledPlace');
+      const category = item.category ?? t('admin.uncategorized');
+      return (
+        <Pressable
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              ...shadows.sm,
+            },
+          ]}
+          onPress={() =>
+            navigation.navigate(PROFILE_ROUTES.ADMIN_UPDATE_REQUEST, {
+              requestId: item.id,
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={t('admin.panel.a11yReviewUpdate', { title })}
+        >
+          <CachedImage
+            uri={item.cover_photo_url}
+            width={64}
+            height={64}
+            borderRadius={radius.md}
+            recyclingKey={item.id}
+            priority="low"
+          />
+          <View style={styles.cardBody}>
+            <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>
+              {title}
+            </Text>
+            <Text style={[styles.meta, { color: colors.textSecondary }]} numberOfLines={1}>
+              {`${category} · ${t('admin.panel.metaUpdate')} · ${statusLabel}`}
+            </Text>
+            <Text style={[styles.meta, { color: colors.textSecondary }]} numberOfLines={1}>
+              {formatAdminDateTime(item.created_at, i18n.language)}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </Pressable>
+      );
+    },
+    [colors, i18n.language, navigation, shadows.sm, statusLabel, t],
   );
 
   const queueFilters = useMemo(
@@ -194,30 +209,32 @@ export function AdminPanelScreen({ navigation }: Props) {
       [
         {
           key: 'pending' as const,
-          label: 'Pending',
+          label: t('admin.panel.filterPending'),
           count: pendingPlaces.length + pendingRequests.length,
         },
         {
           key: 'rejected' as const,
-          label: 'Rejected',
+          label: t('admin.panel.filterRejected'),
           count: rejectedPlaces.length + rejectedRequests.length,
         },
       ] as const,
     [
+      i18n.language,
       pendingPlaces.length,
       pendingRequests.length,
       rejectedPlaces.length,
       rejectedRequests.length,
+      t,
     ],
   );
 
   const tabs = useMemo(
     () =>
       [
-        { key: 'places' as const, label: 'Places', count: places.length },
-        { key: 'updates' as const, label: 'Updates', count: requests.length },
+        { key: 'places' as const, label: t('admin.panel.tabPlaces'), count: places.length },
+        { key: 'updates' as const, label: t('admin.panel.tabUpdates'), count: requests.length },
       ] as const,
-    [places.length, requests.length],
+    [i18n.language, places.length, requests.length, t],
   );
 
   if (adminLoading) {
@@ -225,7 +242,7 @@ export function AdminPanelScreen({ navigation }: Props) {
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
         <ActivityIndicator color={colors.primary} size="large" />
         <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Checking admin access…
+          {t('admin.checkingAccess')}
         </Text>
       </ScreenContainer>
     );
@@ -236,8 +253,8 @@ export function AdminPanelScreen({ navigation }: Props) {
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
         <EmptyState
           icon="person-outline"
-          title="Sign in required"
-          description="Guests cannot access the admin panel. Sign in with an admin account."
+          title={t('admin.access.signInTitle')}
+          description={t('admin.access.signInBody')}
         />
       </ScreenContainer>
     );
@@ -248,8 +265,8 @@ export function AdminPanelScreen({ navigation }: Props) {
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
         <EmptyState
           icon="lock-closed-outline"
-          title="Access denied"
-          description="This panel is only available to administrators."
+          title={t('admin.access.deniedTitle')}
+          description={t('admin.access.deniedBody')}
         />
       </ScreenContainer>
     );
@@ -260,7 +277,7 @@ export function AdminPanelScreen({ navigation }: Props) {
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
         <ActivityIndicator color={colors.primary} size="large" />
         <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Loading admin queue…
+          {t('admin.loadingQueue')}
         </Text>
       </ScreenContainer>
     );
@@ -270,21 +287,29 @@ export function AdminPanelScreen({ navigation }: Props) {
     tab === 'places' ? (
       <EmptyState
         icon="checkmark-circle-outline"
-        title={queueFilter === 'pending' ? 'No pending places' : 'No rejected places'}
+        title={
+          queueFilter === 'pending'
+            ? t('admin.panel.emptyPendingPlacesTitle')
+            : t('admin.panel.emptyRejectedPlacesTitle')
+        }
         description={
           queueFilter === 'pending'
-            ? 'New place submissions will show up here for approval.'
-            : 'Rejected places can be restored to pending from here.'
+            ? t('admin.panel.emptyPendingPlacesBody')
+            : t('admin.panel.emptyRejectedPlacesBody')
         }
       />
     ) : (
       <EmptyState
         icon="checkmark-circle-outline"
-        title={queueFilter === 'pending' ? 'No pending updates' : 'No rejected updates'}
+        title={
+          queueFilter === 'pending'
+            ? t('admin.panel.emptyPendingUpdatesTitle')
+            : t('admin.panel.emptyRejectedUpdatesTitle')
+        }
         description={
           queueFilter === 'pending'
-            ? 'Place edit requests will show up here for review.'
-            : 'Rejected update requests can be restored to pending from here.'
+            ? t('admin.panel.emptyPendingUpdatesBody')
+            : t('admin.panel.emptyRejectedUpdatesBody')
         }
       />
     );
@@ -293,12 +318,75 @@ export function AdminPanelScreen({ navigation }: Props) {
     <ScreenContainer safeTop={false} reserveFloatingTabBar padded={false} contentStyle={styles.root}>
       <View style={styles.header}>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Review submissions before they go public.
+          {t('admin.panel.subtitle')}
         </Text>
         {error ? (
-          <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
+          <Text style={[styles.errorText, { color: colors.error }]}>
+            {localizeAdminMessage(error) ?? error}
+          </Text>
         ) : null}
       </View>
+
+      <Pressable
+        style={[
+          styles.toolCard,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            ...shadows.sm,
+          },
+        ]}
+        onPress={() => navigation.navigate(PROFILE_ROUTES.ADMIN_NOTIFICATION_BROADCAST)}
+        accessibilityRole="button"
+      >
+        <View style={[styles.toolIconWrap, { backgroundColor: colors.primaryLight }]}>
+          <BellRing size={20} color={colors.primary} />
+        </View>
+        <View style={styles.toolCopy}>
+          <Text style={[styles.toolTitle, { color: colors.textPrimary }]}>
+            {t('admin.panel.sendNotification')}
+          </Text>
+          <Text style={[styles.toolSubtitle, { color: colors.textMuted }]}>
+            {t('admin.panel.sendNotificationSubtitle')}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      </Pressable>
+
+      <Pressable
+        style={[
+          styles.toolCard,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            ...shadows.sm,
+          },
+        ]}
+        onPress={() => navigation.navigate(PROFILE_ROUTES.ADMIN_REPORTED_PROFILES)}
+        accessibilityRole="button"
+      >
+        <View style={[styles.toolIconWrap, { backgroundColor: colors.primaryLight }]}>
+          <Ionicons name="flag-outline" size={20} color={colors.primary} />
+        </View>
+        <View style={styles.toolCopy}>
+          <View style={styles.toolTitleRow}>
+            <Text style={[styles.toolTitle, { color: colors.textPrimary }]}>
+              {t('admin.panel.reportedProfiles')}
+            </Text>
+            {openReportedProfiles > 0 ? (
+              <View style={[styles.badge, { backgroundColor: colors.error }]}>
+                <Text style={styles.badgeText}>
+                  {openReportedProfiles > 99 ? '99+' : String(openReportedProfiles)}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+          <Text style={[styles.toolSubtitle, { color: colors.textMuted }]}>
+            {t('admin.panel.reportedProfilesSubtitle')}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      </Pressable>
 
       <View style={styles.tabs}>
         {queueFilters.map((item) => {
@@ -405,6 +493,7 @@ export function AdminPanelScreen({ navigation }: Props) {
           windowSize={7}
         />
       )}
+
     </ScreenContainer>
   );
 }
@@ -466,6 +555,39 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontWeight: '700',
     fontSize: 11,
+  },
+  toolCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+  },
+  toolIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toolCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  toolTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  toolTitle: {
+    ...typography.label,
+    fontWeight: '700',
+  },
+  toolSubtitle: {
+    ...typography.caption,
   },
   list: {
     paddingHorizontal: spacing.lg,

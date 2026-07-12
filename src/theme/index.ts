@@ -6,7 +6,7 @@ export { darkColors, lightColors, getPalette } from './palettes';
 export type { AppColorPalette } from './palettes';
 export { getThemeShadows } from './themeShadows';
 export type { ThemeShadows } from './themeShadows';
-export { spacing } from './spacing';
+export { spacing, touchTarget } from './spacing';
 export type { SpacingKey } from './spacing';
 export { radius } from './radius';
 export type { RadiusKey } from './radius';

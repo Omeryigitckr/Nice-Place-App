@@ -12,3 +12,9 @@ export const spacing = {
 } as const;
 
 export type SpacingKey = keyof typeof spacing;
+
+/** Minimum interactive target size and default hitSlop for icon/text controls. */
+export const touchTarget = {
+  min: 44,
+  hitSlop: 10,
+} as const;

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { iconSizes, radius, spacing } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
@@ -37,6 +38,7 @@ export function PlaceDetailHero({
   onShare,
   onImagePress,
 }: PlaceDetailHeroProps) {
+  const { t } = useTranslation();
   const { colors, shadows, colorScheme } = useTheme();
   const isLightTheme = colorScheme === 'light';
 
@@ -50,21 +52,15 @@ export function PlaceDetailHero({
           borderRadius={0}
           recyclingKey={imageUri}
           priority="high"
-          transitionMs={120}
+          transitionMs={0}
         />
       </Pressable>
-
-      <View style={[styles.gradientTop, { backgroundColor: colors.scrim }]} pointerEvents="none" />
-      <View
-        style={[styles.gradientBottom, { backgroundColor: colors.scrimDark }]}
-        pointerEvents="none"
-      />
 
       <View style={[styles.actions, { paddingTop: topInset + spacing.sm }]}>
         <HeroIconButton
           icon="chevron-back"
           onPress={onBack}
-          accessibilityLabel="Go back"
+          accessibilityLabel={t('common.back')}
           colors={colors}
           shadows={shadows}
           isLightTheme={isLightTheme}
@@ -73,7 +69,7 @@ export function PlaceDetailHero({
           <HeroIconButton
             icon="share-outline"
             onPress={onShare}
-            accessibilityLabel="Share place"
+            accessibilityLabel={t('placeDetail.share.a11y')}
             colors={colors}
             shadows={shadows}
             isLightTheme={isLightTheme}
@@ -81,7 +77,7 @@ export function PlaceDetailHero({
           <HeroIconButton
             icon={liked ? 'heart' : 'heart-outline'}
             onPress={onLike}
-            accessibilityLabel={liked ? 'Unlike place' : 'Like place'}
+            accessibilityLabel={liked ? t('place.a11yUnlike') : t('place.a11yLike')}
             active={liked}
             disabled={likeDisabled}
             popOnActive
@@ -92,7 +88,7 @@ export function PlaceDetailHero({
           <HeroIconButton
             icon={saved ? 'bookmark' : 'bookmark-outline'}
             onPress={onSave}
-            accessibilityLabel={saved ? 'Remove from saved' : 'Save place'}
+            accessibilityLabel={saved ? t('place.unsaveA11y') : t('place.saveA11y')}
             active={saved}
             disabled={saveDisabled}
             popOnActive
@@ -210,22 +206,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: radius.xxl,
     borderBottomRightRadius: radius.xxl,
     overflow: 'hidden',
-  },
-  gradientTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 120,
-    opacity: 0.35,
-  },
-  gradientBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 160,
-    opacity: 0.55,
   },
   actions: {
     position: 'absolute',

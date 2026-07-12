@@ -29,6 +29,8 @@ interface ThemeContextValue {
   colorScheme: ResolvedColorScheme;
   colors: AppColorPalette;
   shadows: ThemeShadows;
+  /** True after preferences have been read from storage (avoids splash theme flash). */
+  isThemeReady: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -36,6 +38,7 @@ const ThemeContext = createContext<ThemeContextValue>({
   colorScheme: 'dark',
   colors: getPalette('dark'),
   shadows: getThemeShadows(getPalette('dark'), 'dark'),
+  isThemeReady: false,
 });
 
 function resolveColorScheme(
@@ -55,12 +58,17 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const systemScheme = useColorScheme();
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
+  const [isThemeReady, setIsThemeReady] = useState(false);
 
   useEffect(() => {
-    void loadAppSettings().then((next) => {
-      setDistanceUnitPreference(next.distanceUnit);
-      setSettings(next);
-    });
+    void loadAppSettings()
+      .then((next) => {
+        setDistanceUnitPreference(next.distanceUnit);
+        setSettings(next);
+      })
+      .finally(() => {
+        setIsThemeReady(true);
+      });
 
     return subscribeAppSettings((next) => {
       setDistanceUnitPreference(next.distanceUnit);
@@ -77,8 +85,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const shadows = useMemo(() => getThemeShadows(colors, colorScheme), [colors, colorScheme]);
 
   useEffect(() => {
+    if (!isThemeReady) {
+      return;
+    }
     devLog('[Nice Place Theme] applied:', colorScheme, '(mode:', settings.themeMode + ')');
-  }, [colorScheme, settings.themeMode]);
+  }, [colorScheme, isThemeReady, settings.themeMode]);
 
   const value = useMemo(
     () => ({
@@ -86,8 +97,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       colorScheme,
       colors,
       shadows,
+      isThemeReady,
     }),
-    [settings.themeMode, colorScheme, colors, shadows],
+    [settings.themeMode, colorScheme, colors, shadows, isThemeReady],
   );
 
   return (

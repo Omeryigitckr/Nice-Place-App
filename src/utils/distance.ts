@@ -1,7 +1,6 @@
+import { i18n } from '../i18n/instance';
 import { DistanceUnit, getCachedAppSettings } from '../services/settingsService';
 import { Place } from '../types/place';
-
-export const DISTANCE_UNAVAILABLE = 'Distance unavailable';
 
 export interface Coordinates {
   latitude: number;
@@ -19,6 +18,14 @@ export function setDistanceUnitPreference(unit: DistanceUnit) {
 export function getDistanceUnitPreference(): DistanceUnit {
   return distanceUnitPreference;
 }
+
+/** Localized "Distance unavailable" — call at render time so language switches apply. */
+export function getDistanceUnavailableLabel(): string {
+  return i18n.t('units.distanceUnavailable');
+}
+
+/** @deprecated Prefer getDistanceUnavailableLabel() for reactive i18n. */
+export const DISTANCE_UNAVAILABLE = 'Distance unavailable';
 
 export function haversineKm(
   lat1: number,
@@ -39,15 +46,15 @@ export function formatDistance(km: number, unit: DistanceUnit = distanceUnitPref
   if (unit === 'mi') {
     const miles = km * 0.621371;
     if (miles < 0.1) {
-      return `${Math.round(miles * 5280)} ft`;
+      return i18n.t('units.ft', { value: Math.round(miles * 5280) });
     }
-    return `${miles.toFixed(1)} mi`;
+    return i18n.t('units.mi', { value: miles.toFixed(1) });
   }
 
   if (km < 1) {
-    return `${Math.round(km * 1000)} m`;
+    return i18n.t('units.m', { value: Math.round(km * 1000) });
   }
-  return `${km.toFixed(1)} km`;
+  return i18n.t('units.km', { value: km.toFixed(1) });
 }
 
 export function getPlaceDistanceKm(
@@ -67,7 +74,7 @@ export function getPlaceDistanceLabel(
 ): string {
   const km = getPlaceDistanceKm(user, place);
   if (km == null) {
-    return DISTANCE_UNAVAILABLE;
+    return getDistanceUnavailableLabel();
   }
 
   return formatDistance(km);

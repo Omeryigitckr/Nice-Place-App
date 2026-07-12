@@ -10,24 +10,47 @@ import {
 } from '../cache';
 import { markNetworkFailure, markNetworkSuccess } from '../network';
 import { MOCK_PLACES } from '../constants/mockPlaces';
-import { ADD_PLACE_CATEGORY_VALUES } from '../constants/addPlaceOptions';
+import {
+  MAX_PLACE_CATEGORIES,
+  MIN_PLACE_CATEGORIES,
+  PLACE_CATEGORY_KEYS,
+  categoryKeyListsEqual,
+  deriveTagsFromCategories,
+  formatPrimaryCategoryLabel,
+  getPlaceCategoryLabel,
+  mapLegacyCategoryKey,
+  normalizePlaceCategories,
+  PlaceCategoryKey,
+} from '../constants/placeCategories';
 import { PlaceUpdateRequestInsert } from '../constants/placeUpdateRequestSchema';
 import {
   DbAccessType,
   DbCrowdLevel,
   DbDifficultyLevel,
   DbPlace,
-  DbPlacePhoto,
-  PlaceCategory,
   PlaceStatus,
 } from '../types/database';
 import { AccessType, CrowdLevel, Difficulty, MapPosition, OwnedPlace, Place } from '../types/place';
 import { PublicProfileSummary } from '../types/publicProfile';
-import { DISTANCE_UNAVAILABLE } from '../utils/distance';
+import { getDistanceUnavailableLabel } from '../utils/distance';
 import { devWarn, devError } from '../utils/devLog';
 
 import { resolveCurrentUserProfileId } from './authService';
 import { enrichPlacesWithEngagement } from './placeEngagementService';
+import {
+  fetchPlaceCategoriesByPlaceIds,
+  fetchPlaceCategoryKeys,
+  insertPlaceCategories,
+  syncPlaceCategories,
+} from './placeCategoryService';
+import {
+  fetchCoverPhotosByPlaceIds,
+  fetchPlacePhotoListsByPlaceIds,
+  getCoverPhoto,
+  getPlacePhotoUrls,
+  normalizePlacePhotoUrls,
+  syncPlacePhotos,
+} from './placePhotoService';
 import { getPublicProfile } from './profileService';
 import { getSupabase, getSupabaseConfigError, isSupabaseConfigured } from './supabase';
 
@@ -64,23 +87,12 @@ export const PLACE_SELECT = `
   updated_at
 `;
 
-const VALID_CATEGORIES: PlaceCategory[] = [
-  ...ADD_PLACE_CATEGORY_VALUES,
-  'sunrise',
-  'quiet_spot',
-  'bench',
-  'waterside',
-  'city_view',
-  'photo_spot',
-  'camp',
-  'stargazing',
-  'hiking_start',
-];
+const VALID_CATEGORIES: PlaceCategoryKey[] = [...PLACE_CATEGORY_KEYS];
 
 export interface CreatePlaceInput {
   title: string;
   description: string;
-  category: string;
+  categories: string[];
   latitude: number;
   longitude: number;
   bestTime: string;
@@ -104,7 +116,7 @@ export interface CreatePlaceResult {
 export interface UpdatePlaceInput {
   title: string;
   description: string;
-  category: string;
+  categories: string[];
   latitude: number;
   longitude: number;
   bestTime: string;
@@ -119,6 +131,8 @@ export interface UpdatePlaceInput {
   safetyNote?: string;
   /** Existing cover URL when editable; new uploads still go through place_photos. */
   coverPhotoUrl?: string | null;
+  /** Final ordered photo URLs (1–3) for edit submissions. */
+  photoUrls?: string[];
 }
 
 export interface UpdatePlaceResult {
@@ -142,43 +156,13 @@ export interface PlaceDetailResult {
 }
 
 function formatCategory(category: string): string {
-  return category
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  return getPlaceCategoryLabel(category);
 }
 
-export function normalizePlaceCategory(input: string): PlaceCategory {
-  const slug = input
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_|_$/g, '');
-
-  if (VALID_CATEGORIES.includes(slug as PlaceCategory)) {
-    return slug as PlaceCategory;
-  }
-
-  if (slug.includes('sunset')) return 'sunset';
-  if (slug.includes('sunrise')) return 'sunrise';
-  if (slug.includes('hidden')) return 'hidden_gem';
-  if (slug.includes('waterfall')) return 'waterfall';
-  if (slug.includes('beach')) return 'beach';
-  if (slug.includes('histor')) return 'historical';
-  if (slug.includes('view') || slug.includes('lookout')) return 'viewpoint';
-  if (slug.includes('bench')) return 'bench';
-  if (slug.includes('water') || slug.includes('river') || slug.includes('lake')) {
-    return 'waterside';
-  }
-  if (slug.includes('forest') || slug.includes('wood')) return 'forest';
-  if (slug.includes('camp')) return 'camping';
-  if (slug.includes('picnic')) return 'picnic';
-  if (slug.includes('star')) return 'stargazing';
-  if (slug.includes('hike') || slug.includes('trail')) return 'trail';
-  if (slug.includes('photo')) return 'photo_spot';
-  if (slug.includes('quiet')) return 'quiet_spot';
-
-  return 'other';
+/** @deprecated Use normalizePlaceCategories — kept for imports. */
+export function normalizePlaceCategory(input: string): PlaceCategoryKey {
+  const normalized = normalizePlaceCategories(input);
+  return normalized[0] ?? mapLegacyCategoryKey(input) ?? 'hidden_gem';
 }
 
 function mapAccessType(value: string): AccessType {
@@ -220,12 +204,96 @@ function mapCrowdLevel(value: string): CrowdLevel {
 }
 
 function deriveTags(category: string): string[] {
-  if (category === 'other') {
-    return [];
-  }
-  return category.split('_').filter(Boolean);
+  return deriveTagsFromCategories(normalizePlaceCategories(category));
 }
 
+function resolvePlacePhotos(
+  row: DbPlace,
+  photoList?: string[],
+  coverImage?: string,
+): string[] | undefined {
+  if (photoList && photoList.length > 0) {
+    return photoList;
+  }
+
+  const cover = coverImage ?? row.cover_photo_url ?? null;
+  return cover ? [cover] : undefined;
+}
+
+function resolvePlaceCategories(row: DbPlace, categoryList?: string[]): PlaceCategoryKey[] {
+  const fromJoin = normalizePlaceCategories(categoryList ?? []);
+  if (fromJoin.length > 0) {
+    return fromJoin;
+  }
+  const legacy = normalizePlaceCategories(row.category);
+  return legacy.length > 0 ? legacy : ['hidden_gem'];
+}
+
+function mapDbPlaceToPlace(
+  row: DbPlace,
+  coverImage?: string,
+  photoList?: string[],
+  categoryList?: string[],
+): Place {
+  const categories = resolvePlaceCategories(row, categoryList);
+  const categorySlug = categories[0];
+  const photos = resolvePlacePhotos(row, photoList, coverImage);
+  const image =
+    getCoverPhoto(photos ?? [], coverImage ?? row.cover_photo_url) ?? DEFAULT_IMAGE;
+
+  const shell: Pick<Place, 'categories' | 'categorySlug' | 'category'> = {
+    categories,
+    categorySlug,
+    category: getPlaceCategoryLabel(categorySlug),
+  };
+
+  return {
+    id: row.id,
+    title: row.title,
+    category: formatPrimaryCategoryLabel(shell),
+    categorySlug,
+    categories,
+    description: row.description,
+    image,
+    photos,
+    distance: getDistanceUnavailableLabel(),
+    bestTime: row.best_time ?? 'Anytime',
+    accessType: mapAccessType(row.access_type),
+    accessTypeSlug: row.access_type ?? 'unknown',
+    difficulty: mapDifficulty(row.difficulty_level),
+    difficultySlug: row.difficulty_level ?? 'unknown',
+    crowdLevel: mapCrowdLevel(row.crowd_level),
+    crowdLevelSlug: row.crowd_level ?? 'unknown',
+    isPetFriendly: row.is_pet_friendly ?? false,
+    isChildFriendly: row.is_child_friendly ?? false,
+    isCarAccessible: row.is_car_accessible ?? false,
+    isCampAllowed: row.is_camp_allowed ?? false,
+    isPicnicSuitable: row.is_picnic_suitable ?? false,
+    safetyNote: row.safety_note?.trim() || null,
+    likeCount: Math.max(0, row.like_count ?? 0),
+    saveCount: Math.max(0, row.save_count ?? 0),
+    latitude: row.latitude,
+    longitude: row.longitude,
+    tags: deriveTagsFromCategories(categories),
+    mapPosition: { x: 0.5, y: 0.5 },
+    createdAt: row.created_at,
+  };
+}
+
+function mapDbPlaceToOwnedPlace(
+  row: DbPlace,
+  coverImage?: string,
+  rejectedResubmitCount = 0,
+  photoList?: string[],
+  categoryList?: string[],
+): OwnedPlace {
+  return {
+    ...mapDbPlaceToPlace(row, coverImage, photoList, categoryList),
+    status: row.status,
+    safetyNote: row.safety_note,
+    rejectedResubmitCount: Math.max(0, rejectedResubmitCount),
+  };
+}
 function computeMapPositions(places: Place[]): Place[] {
   if (places.length === 0) {
     return places;
@@ -255,95 +323,7 @@ async function fetchCoverPhotos(
   placeIds: string[],
   options?: { includePending?: boolean },
 ): Promise<Record<string, string>> {
-  const supabase = getSupabase();
-  if (!supabase || placeIds.length === 0) {
-    return {};
-  }
-
-  let query = supabase
-    .from('place_photos')
-    .select('place_id, image_url, is_cover, status')
-    .in('place_id', placeIds)
-    .order('is_cover', { ascending: false });
-
-  if (!options?.includePending) {
-    query = query.eq('status', 'approved');
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    devWarn('[Nice Place] Failed to load place photos:', error.message);
-    return {};
-  }
-
-  const photos = (data ?? []) as Pick<DbPlacePhoto, 'place_id' | 'image_url' | 'is_cover'>[];
-  const coverMap: Record<string, string> = {};
-  const fallbackMap: Record<string, string> = {};
-
-  for (const photo of photos) {
-    if (photo.is_cover && !coverMap[photo.place_id]) {
-      coverMap[photo.place_id] = photo.image_url;
-    }
-    if (!fallbackMap[photo.place_id]) {
-      fallbackMap[photo.place_id] = photo.image_url;
-    }
-  }
-
-  for (const placeId of placeIds) {
-    if (!coverMap[placeId] && fallbackMap[placeId]) {
-      coverMap[placeId] = fallbackMap[placeId];
-    }
-  }
-
-  return coverMap;
-}
-
-function mapDbPlaceToPlace(row: DbPlace, coverImage?: string): Place {
-  const categorySlug = String(row.category ?? 'other');
-
-  return {
-    id: row.id,
-    title: row.title,
-    category: formatCategory(categorySlug),
-    categorySlug,
-    description: row.description,
-    image: coverImage ?? row.cover_photo_url ?? DEFAULT_IMAGE,
-    distance: DISTANCE_UNAVAILABLE,
-    bestTime: row.best_time ?? 'Anytime',
-    accessType: mapAccessType(row.access_type),
-    accessTypeSlug: row.access_type ?? 'unknown',
-    difficulty: mapDifficulty(row.difficulty_level),
-    difficultySlug: row.difficulty_level ?? 'unknown',
-    crowdLevel: mapCrowdLevel(row.crowd_level),
-    crowdLevelSlug: row.crowd_level ?? 'unknown',
-    isPetFriendly: row.is_pet_friendly ?? false,
-    isChildFriendly: row.is_child_friendly ?? false,
-    isCarAccessible: row.is_car_accessible ?? false,
-    isCampAllowed: row.is_camp_allowed ?? false,
-    isPicnicSuitable: row.is_picnic_suitable ?? false,
-    safetyNote: row.safety_note?.trim() || null,
-    likeCount: Math.max(0, row.like_count ?? 0),
-    saveCount: Math.max(0, row.save_count ?? 0),
-    latitude: row.latitude,
-    longitude: row.longitude,
-    tags: deriveTags(row.category),
-    mapPosition: { x: 0.5, y: 0.5 },
-    createdAt: row.created_at,
-  };
-}
-
-function mapDbPlaceToOwnedPlace(
-  row: DbPlace,
-  coverImage?: string,
-  rejectedResubmitCount = 0,
-): OwnedPlace {
-  return {
-    ...mapDbPlaceToPlace(row, coverImage),
-    status: row.status,
-    safetyNote: row.safety_note,
-    rejectedResubmitCount: Math.max(0, rejectedResubmitCount),
-  };
+  return fetchCoverPhotosByPlaceIds(placeIds, options);
 }
 
 const COORD_EPSILON = 1e-6;
@@ -366,7 +346,7 @@ function coordsEqual(a: number, b: number): boolean {
 interface PlaceEditSnapshot {
   title: string;
   description: string;
-  category: string;
+  categoryKeys: PlaceCategoryKey[];
   latitude: number;
   longitude: number;
   bestTime: string;
@@ -380,13 +360,16 @@ interface PlaceEditSnapshot {
   isPicnicSuitable: boolean;
   safetyNote: string | null;
   coverPhotoUrl: string | null;
+  photoUrls: string[];
 }
 
 function snapshotFromOwnedPlace(place: OwnedPlace): PlaceEditSnapshot {
   return {
     title: normalizeText(place.title),
     description: normalizeText(place.description),
-    category: normalizeText(place.categorySlug),
+    categoryKeys: normalizePlaceCategories(
+      place.categories?.length ? place.categories : place.categorySlug,
+    ),
     latitude: place.latitude,
     longitude: place.longitude,
     bestTime: normalizeText(place.bestTime) || 'Anytime',
@@ -400,18 +383,15 @@ function snapshotFromOwnedPlace(place: OwnedPlace): PlaceEditSnapshot {
     isPicnicSuitable: place.isPicnicSuitable,
     safetyNote: normalizeNullableText(place.safetyNote),
     coverPhotoUrl: normalizeNullableText(place.image),
+    photoUrls: normalizePlacePhotoUrls(place.photos ?? (place.image ? [place.image] : [])),
   };
 }
 
-function snapshotFromUpdateInput(
-  title: string,
-  category: string,
-  input: UpdatePlaceInput,
-): PlaceEditSnapshot {
+function snapshotFromUpdateInput(title: string, input: UpdatePlaceInput): PlaceEditSnapshot {
   return {
     title,
     description: normalizeText(input.description),
-    category,
+    categoryKeys: normalizePlaceCategories(input.categories),
     latitude: input.latitude,
     longitude: input.longitude,
     bestTime: normalizeText(input.bestTime) || 'Anytime',
@@ -425,14 +405,26 @@ function snapshotFromUpdateInput(
     isPicnicSuitable: input.isPicnicSuitable,
     safetyNote: normalizeNullableText(input.safetyNote),
     coverPhotoUrl: normalizeNullableText(input.coverPhotoUrl),
+    photoUrls: normalizePlacePhotoUrls(
+      input.photoUrls ??
+        (input.coverPhotoUrl ? [input.coverPhotoUrl] : []),
+    ),
   };
+}
+
+function photoUrlListsEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  return a.every((url, index) => url === b[index]);
 }
 
 function placeSnapshotsEqual(a: PlaceEditSnapshot, b: PlaceEditSnapshot): boolean {
   return (
     a.title === b.title &&
     a.description === b.description &&
-    a.category === b.category &&
+    categoryKeyListsEqual(a.categoryKeys, b.categoryKeys) &&
     coordsEqual(a.latitude, b.latitude) &&
     coordsEqual(a.longitude, b.longitude) &&
     a.bestTime === b.bestTime &&
@@ -445,7 +437,8 @@ function placeSnapshotsEqual(a: PlaceEditSnapshot, b: PlaceEditSnapshot): boolea
     a.isCampAllowed === b.isCampAllowed &&
     a.isPicnicSuitable === b.isPicnicSuitable &&
     a.safetyNote === b.safetyNote &&
-    a.coverPhotoUrl === b.coverPhotoUrl
+    a.coverPhotoUrl === b.coverPhotoUrl &&
+    photoUrlListsEqual(a.photoUrls, b.photoUrls)
   );
 }
 
@@ -455,7 +448,11 @@ export async function mapDbRowsToPlaces(rows: DbPlace[]): Promise<Place[]> {
   }
 
   const coverMap = await fetchCoverPhotos(rows.map((row) => row.id));
-  const places = rows.map((row) => mapDbPlaceToPlace(row, coverMap[row.id]));
+  const photoLists = await fetchPlacePhotoListsByPlaceIds(rows.map((row) => row.id));
+  const categoryMap = await fetchPlaceCategoriesByPlaceIds(rows.map((row) => row.id));
+  const places = rows.map((row) =>
+    mapDbPlaceToPlace(row, coverMap[row.id], photoLists[row.id], categoryMap[row.id]),
+  );
   const positioned = computeMapPositions(places);
   return enrichPlacesWithEngagement(positioned);
 }
@@ -616,28 +613,28 @@ export async function getApprovedPlacesByCreator(profileId: string): Promise<Pla
 export async function createPlace(input: CreatePlaceInput): Promise<CreatePlaceResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: 'auth.errors.configMissing' };
   }
 
   const title = input.title.trim();
   if (!title) {
-    return { success: false, error: 'Place name is required.' };
+    return { success: false, error: 'placeForm.validation.nameRequired' };
   }
 
-  const categoryInput = input.category.trim();
-  if (!categoryInput) {
-    return { success: false, error: 'Please select a category.' };
+  const categoryKeys = normalizePlaceCategories(input.categories);
+  if (categoryKeys.length < MIN_PLACE_CATEGORIES) {
+    return { success: false, error: 'placeForm.errors.categoriesRequired' };
+  }
+  if (categoryKeys.length > MAX_PLACE_CATEGORIES) {
+    return { success: false, error: 'placeForm.validation.categoriesMax' };
   }
 
-  const category = normalizePlaceCategory(categoryInput);
-  if (!ADD_PLACE_CATEGORY_VALUES.includes(category as (typeof ADD_PLACE_CATEGORY_VALUES)[number])) {
-    return { success: false, error: 'Please select a valid category.' };
-  }
+  const primaryCategory = categoryKeys[0];
 
   const { profileId, authUserId, error: profileError } = await resolveCurrentUserProfileId();
 
   if (!profileId) {
-    return { success: false, error: profileError ?? 'Sign in to share a place.' };
+    return { success: false, error: profileError ?? 'placeForm.errors.signInToShare' };
   }
 
   if (profileId === authUserId) {
@@ -646,14 +643,14 @@ export async function createPlace(input: CreatePlaceInput): Promise<CreatePlaceR
     );
     return {
       success: false,
-      error: 'Profile lookup returned the wrong id. Try signing out and back in.',
+      error: 'placeForm.errors.profileLookupMismatch',
     };
   }
 
   const payload = {
     title,
     description: input.description.trim(),
-    category,
+    category: primaryCategory,
     latitude: input.latitude,
     longitude: input.longitude,
     created_by: profileId,
@@ -677,13 +674,23 @@ export async function createPlace(input: CreatePlaceInput): Promise<CreatePlaceR
       return {
         success: false,
         error:
-          'Could not submit place. Your profile may not be set up correctly — try signing out and back in.',
+          'placeForm.errors.submitProfileIssue',
       };
     }
     return { success: false, error: insertError.message };
   }
 
-  return { success: true, placeId: (data as { id: string }).id };
+  const placeId = (data as { id: string }).id;
+  const categoryResult = await insertPlaceCategories(placeId, categoryKeys);
+  if (!categoryResult.success) {
+    devWarn('[Nice Place] place_categories insert failed:', categoryResult.error);
+    return {
+      success: false,
+      error: categoryResult.error ?? 'Place saved, but categories could not be linked.',
+    };
+  }
+
+  return { success: true, placeId };
 }
 
 export async function loadPlacesForMap(
@@ -726,7 +733,7 @@ export async function loadPlacesForMap(
       places: cached,
       source: 'cache',
       fromCache: true,
-      error: 'Showing cached places. Connect to refresh.',
+      error: 'explore.load.cached',
     };
   }
 
@@ -734,7 +741,7 @@ export async function loadPlacesForMap(
   return {
     places: [],
     source: 'supabase',
-    error: 'Could not load places from Supabase.',
+    error: 'explore.load.supabaseFailed',
   };
 }
 
@@ -783,8 +790,20 @@ export async function getMyPlaces(profileId: string): Promise<OwnedPlace[]> {
         rows.map((row) => row.id),
         { includePending: true },
       );
+      const photoLists = await fetchPlacePhotoListsByPlaceIds(rows.map((row) => row.id), {
+        includePending: true,
+      });
+      const categoryMap = await fetchPlaceCategoriesByPlaceIds(rows.map((row) => row.id));
 
-      const owned = rows.map((row) => mapDbPlaceToOwnedPlace(row, coverMap[row.id]));
+      const owned = rows.map((row) =>
+        mapDbPlaceToOwnedPlace(
+          row,
+          coverMap[row.id],
+          0,
+          photoLists[row.id],
+          categoryMap[row.id],
+        ),
+      );
       const enriched = (await enrichPlacesWithEngagement(owned)) as OwnedPlace[];
       writeMyPlacesCache(profileId, enriched);
       return enriched;
@@ -829,6 +848,10 @@ export async function getMyPlaceById(placeId: string, profileId: string): Promis
 
   const row = data as DbPlace;
   const coverMap = await fetchCoverPhotos([row.id], { includePending: true });
+  const photoUrls = await getPlacePhotoUrls(row.id, row.cover_photo_url, {
+    includePending: true,
+  });
+  const categoryKeys = await fetchPlaceCategoryKeys(row.id);
 
   // Optional column — only needed for rejected resubmit limits.
   let rejectedResubmitCount = 0;
@@ -850,7 +873,13 @@ export async function getMyPlaceById(placeId: string, profileId: string): Promis
     );
   }
 
-  return mapDbPlaceToOwnedPlace(row, coverMap[row.id], rejectedResubmitCount);
+  return mapDbPlaceToOwnedPlace(
+    row,
+    coverMap[row.id],
+    rejectedResubmitCount,
+    photoUrls.length > 0 ? photoUrls : undefined,
+    categoryKeys,
+  );
 }
 
 export async function updateMyPlace(
@@ -859,56 +888,61 @@ export async function updateMyPlace(
 ): Promise<UpdatePlaceResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: 'auth.errors.configMissing' };
   }
 
   const title = input.title.trim();
   if (!title) {
-    return { success: false, error: 'Place name is required.' };
+    return { success: false, error: 'placeForm.validation.nameRequired' };
   }
 
-  const categoryInput = input.category.trim();
-  if (!categoryInput) {
-    return { success: false, error: 'Please select a category.' };
+  const categoryKeys = normalizePlaceCategories(input.categories);
+  if (categoryKeys.length < MIN_PLACE_CATEGORIES) {
+    return { success: false, error: 'placeForm.errors.categoriesRequired' };
   }
-
-  const category = normalizePlaceCategory(categoryInput);
-  if (!ADD_PLACE_CATEGORY_VALUES.includes(category as (typeof ADD_PLACE_CATEGORY_VALUES)[number])) {
-    return { success: false, error: 'Please select a valid category.' };
+  if (categoryKeys.length > MAX_PLACE_CATEGORIES) {
+    return { success: false, error: 'placeForm.validation.categoriesMax' };
   }
 
   const { profileId, authUserId, error: profileError } = await resolveCurrentUserProfileId();
   if (!profileId || !authUserId) {
-    return { success: false, error: profileError ?? 'Sign in to edit a place.' };
+    return { success: false, error: profileError ?? 'placeForm.errors.signInToEdit' };
   }
 
   const existing = await getMyPlaceById(placeId, profileId);
   if (!existing) {
-    return { success: false, error: 'Place not found or you do not have permission to edit it.' };
+    return { success: false, error: 'placeForm.errors.notFound' };
   }
 
   if (existing.status === 'pending') {
     return {
       success: false,
-      error: 'This place is still pending review and cannot be updated yet.',
+      error: 'placeForm.errors.pendingCannotEdit',
     };
   }
 
   if (existing.status !== 'approved' && existing.status !== 'rejected') {
     return {
       success: false,
-      error: 'This place cannot be edited.',
+      error: 'placeForm.errors.cannotEdit',
     };
   }
 
-  const nextSnapshot = snapshotFromUpdateInput(title, category, input);
+  const nextSnapshot = snapshotFromUpdateInput(title, input);
   const previousSnapshot = snapshotFromOwnedPlace(existing);
   const unchanged = placeSnapshotsEqual(previousSnapshot, nextSnapshot);
+  const nextPhotoUrls = nextSnapshot.photoUrls;
+  const photosChanged = !photoUrlListsEqual(previousSnapshot.photoUrls, nextPhotoUrls);
+  const categoriesChanged = !categoryKeyListsEqual(
+    previousSnapshot.categoryKeys,
+    nextSnapshot.categoryKeys,
+  );
+  const primaryCategory = nextSnapshot.categoryKeys[0];
 
   // Approved places: update-request flow only (never touch live place here).
   if (existing.status === 'approved') {
     if (unchanged) {
-      return { success: false, error: 'No changes to submit.' };
+      return { success: false, error: 'placeForm.errors.noChanges' };
     }
 
     const payload: PlaceUpdateRequestInsert = {
@@ -916,7 +950,7 @@ export async function updateMyPlace(
       user_id: authUserId,
       title: nextSnapshot.title,
       description: nextSnapshot.description,
-      category: nextSnapshot.category,
+      category: primaryCategory,
       latitude: nextSnapshot.latitude,
       longitude: nextSnapshot.longitude,
       access_type: nextSnapshot.accessType as PlaceUpdateRequestInsert['access_type'],
@@ -930,6 +964,8 @@ export async function updateMyPlace(
       is_picnic_suitable: nextSnapshot.isPicnicSuitable,
       safety_note: nextSnapshot.safetyNote,
       cover_photo_url: nextSnapshot.coverPhotoUrl,
+      photo_urls: photosChanged ? nextPhotoUrls : null,
+      category_keys: categoriesChanged ? nextSnapshot.categoryKeys : null,
       status: 'pending',
     };
 
@@ -945,20 +981,20 @@ export async function updateMyPlace(
       if (insertError.message.includes('row-level security')) {
         return {
           success: false,
-          error: 'Could not submit update. You may not have permission to edit this place.',
+          error: 'placeForm.errors.updatePermission',
         };
       }
 
       if (insertError.code === 'PGRST204') {
         return {
           success: false,
-          error: 'Update request schema is out of date. Please try again later.',
+          error: 'placeForm.errors.updateSchema',
         };
       }
 
       return {
         success: false,
-        error: 'Could not submit your update for review. Please try again.',
+        error: 'placeForm.errors.updateFailed',
       };
     }
 
@@ -973,7 +1009,7 @@ export async function updateMyPlace(
     if (existing.rejectedResubmitCount >= MAX_IDENTICAL_REJECTED_RESUBMITS) {
       return {
         success: false,
-        error: 'You can only resubmit the same rejected place 2 times.',
+        error: 'placeForm.errors.resubmitLimit',
       };
     }
 
@@ -995,14 +1031,14 @@ export async function updateMyPlace(
       if (error.code === 'PGRST204' || error.message.toLowerCase().includes('rejected_resubmit_count')) {
         return {
           success: false,
-          error: 'Resubmit is not available yet. Please try again later.',
+          error: 'placeForm.errors.resubmitUnavailable',
         };
       }
-      return { success: false, error: 'Could not resubmit this place. Please try again.' };
+      return { success: false, error: 'placeForm.errors.resubmitFailed' };
     }
 
     if (!row || row.status !== 'pending') {
-      return { success: false, error: 'Could not resubmit this place. Please try again.' };
+      return { success: false, error: 'placeForm.errors.resubmitFailed' };
     }
 
     return { success: true, action: 'resubmit' };
@@ -1013,7 +1049,7 @@ export async function updateMyPlace(
     .update({
       title: nextSnapshot.title,
       description: nextSnapshot.description,
-      category: nextSnapshot.category,
+      category: primaryCategory,
       latitude: nextSnapshot.latitude,
       longitude: nextSnapshot.longitude,
       access_type: nextSnapshot.accessType,
@@ -1041,14 +1077,45 @@ export async function updateMyPlace(
     if (error.code === 'PGRST204' || error.message.toLowerCase().includes('rejected_resubmit_count')) {
       return {
         success: false,
-        error: 'Resubmit is not available yet. Please try again later.',
+        error: 'placeForm.errors.resubmitUnavailable',
       };
     }
-    return { success: false, error: 'Could not resubmit this place. Please try again.' };
+    return { success: false, error: 'placeForm.errors.resubmitFailed' };
   }
 
   if (!row || row.status !== 'pending') {
-    return { success: false, error: 'Could not resubmit this place. Please try again.' };
+    return { success: false, error: 'placeForm.errors.resubmitFailed' };
+  }
+
+  if (photosChanged && nextPhotoUrls.length > 0) {
+    const syncResult = await syncPlacePhotos({
+      placeId,
+      imageUrls: nextPhotoUrls,
+      status: 'pending',
+      profileId,
+      replaceExisting: true,
+    });
+
+    if (!syncResult.success) {
+      return {
+        success: false,
+        error: syncResult.error ?? 'placeForm.errors.photoSyncFailed',
+      };
+    }
+  }
+
+  if (categoriesChanged) {
+    const categorySync = await syncPlaceCategories({
+      placeId,
+      categoryKeys: nextSnapshot.categoryKeys,
+    });
+
+    if (!categorySync.success) {
+      return {
+        success: false,
+        error: categorySync.error ?? 'placeForm.errors.categorySyncFailed',
+      };
+    }
   }
 
   return { success: true, action: 'resubmit' };

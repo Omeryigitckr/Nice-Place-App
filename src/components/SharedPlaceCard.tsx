@@ -1,23 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, GestureResponderEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { categoryKeyListsEqual } from '../constants/placeCategories';
 import { usePressScale } from '../motion';
-import { radius, spacing, typography } from '../theme';
+import { radius, spacing, touchTarget, typography } from '../theme';
 import { motion } from '../theme/motion';
 import { useTheme } from '../theme/ThemeContext';
-import { PlaceStatus } from '../types/database';
 import { OwnedPlace } from '../types/place';
 
 import { CachedImage } from './CachedImage';
-
-const STATUS_LABELS: Record<PlaceStatus, string> = {
-  pending: 'Pending review',
-  approved: 'Approved',
-  rejected: 'Rejected',
-  hidden: 'Hidden',
-  deleted: 'Removed',
-};
+import { PlaceCategoryChips } from './PlaceCategoryChips';
 
 interface SharedPlaceCardProps {
   place: OwnedPlace;
@@ -35,6 +29,7 @@ function SharedPlaceCardComponent({
   onEditId,
 }: SharedPlaceCardProps) {
   const { colors, shadows } = useTheme();
+  const { t } = useTranslation();
   const canPress = onPress != null || onPressId != null;
   const canEdit = onEdit != null || onEditId != null;
   const { onPressIn, onPressOut, animatedStyle } = usePressScale({
@@ -55,7 +50,7 @@ function SharedPlaceCardComponent({
     },
     [onEdit, onEditId, place.id],
   );
-  const statusLabel = STATUS_LABELS[place.status];
+  const statusLabel = t(`place.status.${place.status}`);
   const statusColor =
     place.status === 'pending'
       ? colors.warning
@@ -67,70 +62,80 @@ function SharedPlaceCardComponent({
 
   return (
     <Animated.View style={[{ width: '100%' }, animatedStyle]}>
-    <Pressable
-      onPress={canPress ? handlePress : undefined}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      disabled={!canPress}
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-          ...shadows.card,
-        },
-      ]}
-    >
-      <View style={styles.imageWrap}>
-        <CachedImage
-          uri={place.image}
-          style={StyleSheet.absoluteFill}
-          borderRadius={0}
-          recyclingKey={place.id}
-          priority="low"
-        />
-        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-          <Text style={[styles.statusText, { color: colors.white }]}>{statusLabel}</Text>
-        </View>
-      </View>
-
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
-          {place.title}
-        </Text>
-        <Text style={[styles.category, { color: colors.textMuted }]} numberOfLines={1}>
-          {place.category}
-        </Text>
-
-        <View style={styles.meta}>
-          <MetaItem icon="navigate-outline" label={place.distance} muted={colors.textMuted} text={colors.textSecondary} />
-          <MetaItem
-            icon={place.likeCount > 0 ? 'heart' : 'heart-outline'}
-            label={`${Math.max(0, place.likeCount)}`}
-            muted={place.likeCount > 0 ? colors.primary : colors.textMuted}
-            text={place.likeCount > 0 ? colors.primary : colors.textSecondary}
+      <Pressable
+        onPress={canPress ? handlePress : undefined}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        disabled={!canPress}
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            ...shadows.card,
+          },
+        ]}
+      >
+        <View style={styles.imageWrap}>
+          <CachedImage
+            uri={place.image}
+            style={StyleSheet.absoluteFill}
+            borderRadius={0}
+            recyclingKey={place.id}
+            priority="low"
           />
-          <MetaItem
-            icon={place.saveCount > 0 ? 'bookmark' : 'bookmark-outline'}
-            label={`${Math.max(0, place.saveCount)}`}
-            muted={place.saveCount > 0 ? colors.primary : colors.textMuted}
-            text={place.saveCount > 0 ? colors.primary : colors.textSecondary}
-          />
+          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+            <Text style={[styles.statusText, { color: colors.white }]}>{statusLabel}</Text>
+          </View>
+          {canEdit ? (
+            <Pressable
+              onPress={handleEdit}
+              hitSlop={touchTarget.hitSlop}
+              style={[
+                styles.editButton,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  ...shadows.sm,
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.edit') + ` ${place.title}`}
+            >
+              <Ionicons name="pencil-outline" size={13} color={colors.textPrimary} />
+              <Text style={[styles.editText, { color: colors.textPrimary }]}>{t('common.edit')}</Text>
+            </Pressable>
+          ) : null}
         </View>
 
-        {canEdit ? (
-          <Pressable
-            onPress={handleEdit}
-            style={[styles.editButton, { backgroundColor: colors.primaryLight }]}
-            accessibilityRole="button"
-            accessibilityLabel={`Edit ${place.title}`}
-          >
-            <Ionicons name="create-outline" size={14} color={colors.primary} />
-            <Text style={[styles.editText, { color: colors.primary }]}>Edit</Text>
-          </Pressable>
-        ) : null}
-      </View>
-    </Pressable>
+        <View style={styles.content}>
+          <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
+            {place.title}
+          </Text>
+          <PlaceCategoryChips place={place} maxVisible={2} compact />
+
+          <View style={styles.meta}>
+            <MetaItem
+              icon="navigate-outline"
+              label={place.distance}
+              muted={colors.textMuted}
+              text={colors.textSecondary}
+            />
+            <MetaItem
+              icon={place.likeCount > 0 ? 'heart' : 'heart-outline'}
+              label={`${Math.max(0, place.likeCount)}`}
+              muted={place.likeCount > 0 ? colors.primary : colors.textMuted}
+              text={place.likeCount > 0 ? colors.primary : colors.textSecondary}
+            />
+            <MetaItem
+              icon={place.saveCount > 0 ? 'bookmark' : 'bookmark-outline'}
+              label={`${Math.max(0, place.saveCount)}`}
+              muted={place.saveCount > 0 ? colors.primary : colors.textMuted}
+              text={place.saveCount > 0 ? colors.primary : colors.textSecondary}
+            />
+          </View>
+        </View>
+      </Pressable>
     </Animated.View>
   );
 }
@@ -145,6 +150,7 @@ function areSharedPlaceCardPropsEqual(
     prev.place.image === next.place.image &&
     prev.place.distance === next.place.distance &&
     prev.place.category === next.place.category &&
+    categoryKeyListsEqual(prev.place.categories, next.place.categories) &&
     prev.place.status === next.place.status &&
     prev.place.likeCount === next.place.likeCount &&
     prev.place.saveCount === next.place.saveCount &&
@@ -191,10 +197,6 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 4 / 3,
   },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
   statusBadge: {
     position: 'absolute',
     top: spacing.xs,
@@ -208,6 +210,25 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
   },
+  editButton: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    minHeight: 28,
+    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  editText: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.1,
+  },
   content: {
     padding: spacing.sm,
     gap: spacing.xs,
@@ -215,9 +236,6 @@ const styles = StyleSheet.create({
   title: {
     ...typography.label,
     fontSize: 13,
-  },
-  category: {
-    ...typography.caption,
   },
   meta: {
     flexDirection: 'row',
@@ -233,19 +251,5 @@ const styles = StyleSheet.create({
   metaText: {
     ...typography.caption,
     fontSize: 10,
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    alignSelf: 'flex-start',
-    marginTop: spacing.xs,
-    paddingVertical: 4,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radius.sm,
-  },
-  editText: {
-    ...typography.caption,
-    fontWeight: '600',
   },
 });

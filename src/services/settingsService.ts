@@ -185,16 +185,16 @@ export function normalizeUsername(value: string): string {
 
 export function validateUsername(username: string): string | null {
   if (!username) {
-    return 'Username is required.';
+    return 'profile.validation.usernameRequired';
   }
   if (username.length < 3) {
-    return 'Username must be at least 3 characters.';
+    return 'profile.validation.usernameTooShort';
   }
   if (username.length > 30) {
-    return 'Username must be 30 characters or fewer.';
+    return 'profile.validation.usernameTooLong';
   }
   if (!/^[a-z0-9_]+$/.test(username)) {
-    return 'Use only lowercase letters, numbers, and underscores.';
+    return 'profile.validation.usernameCharset';
   }
   return null;
 }
@@ -202,17 +202,17 @@ export function validateUsername(username: string): string | null {
 export function validateDisplayName(displayName: string): string | null {
   const trimmed = displayName.trim();
   if (!trimmed) {
-    return 'Display name is required.';
+    return 'profile.validation.displayNameRequired';
   }
   if (trimmed.length > 60) {
-    return 'Display name must be 60 characters or fewer.';
+    return 'profile.validation.displayNameTooLong';
   }
   return null;
 }
 
 export function validateBio(bio: string): string | null {
   if (bio.trim().length > 240) {
-    return 'Bio must be 240 characters or fewer.';
+    return 'profile.validation.bioTooLong';
   }
   return null;
 }

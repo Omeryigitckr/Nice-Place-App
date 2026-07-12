@@ -1,4 +1,5 @@
 import { AUTH_CALLBACK_REDIRECT } from '../constants/authRedirect';
+import { authErrorKey, resolveAuthErrorKey } from '../utils/authErrors';
 import { devWarn } from '../utils/devLog';
 
 import { AuthResult } from './authService';
@@ -71,17 +72,7 @@ function detectAuthCallbackFlow(type?: string): AuthCallbackFlow {
 }
 
 function mapAuthCallbackError(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes('expired') || lower.includes('otp_expired')) {
-    return 'This link has expired. Please request a new one.';
-  }
-  if (lower.includes('invalid') || lower.includes('malformed')) {
-    return 'This link is invalid. Please try again.';
-  }
-  if (lower.includes('access_denied')) {
-    return 'This link was denied or has already been used.';
-  }
-  return message;
+  return resolveAuthErrorKey(message, 'auth.errors.linkInvalid');
 }
 
 /**
@@ -92,7 +83,7 @@ export async function processAuthCallbackUrl(url: string): Promise<AuthCallbackR
   const normalized = url.trim();
 
   if (!isAuthCallbackUrl(normalized)) {
-    return { success: false, error: 'Not an auth callback link.' };
+    return { success: false, error: authErrorKey('auth.errors.notAuthCallback') };
   }
 
   if (processedCallbackUrls.has(normalized)) {
@@ -112,7 +103,7 @@ export async function processAuthCallbackUrl(url: string): Promise<AuthCallbackR
 
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured. Check your .env file.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   if (params.code) {
@@ -145,7 +136,7 @@ export async function processAuthCallbackUrl(url: string): Promise<AuthCallbackR
 
   return {
     success: false,
-    error: 'This link is invalid or missing verification data.',
+    error: authErrorKey('auth.errors.linkMissingData'),
   };
 }
 

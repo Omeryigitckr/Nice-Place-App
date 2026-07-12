@@ -19,8 +19,12 @@ export async function clearUserPrivateCache(ids: ClearUserSessionIds): Promise<v
       CACHE_KEYS.userProfile(ids.profileId),
       CACHE_KEYS.savedPlaces(ids.profileId),
       CACHE_KEYS.savedIds(ids.profileId),
+      CACHE_KEYS.collectionsList(ids.profileId),
       CACHE_KEYS.likedIds(ids.profileId),
       CACHE_KEYS.myPlaces(ids.profileId),
+      CACHE_KEYS.notificationsList(ids.profileId),
+      CACHE_KEYS.notificationsUnread(ids.profileId),
+      CACHE_KEYS.notificationPreferences(ids.profileId),
     );
   }
 

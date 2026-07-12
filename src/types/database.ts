@@ -62,6 +62,10 @@ export interface DbPlace {
   cover_photo_url?: string | null;
   /** Identical rejected-place resubmits (owner). Default 0. */
   rejected_resubmit_count?: number;
+  /** Set when status becomes rejected; cleared on resubmit/approve. */
+  rejected_at?: string | null;
+  /** Set after Storage cleanup of rejected place photos. */
+  rejected_photos_purged_at?: string | null;
   slug?: string | null;
   created_at: string;
   updated_at: string;
@@ -75,7 +79,15 @@ export interface DbPlacePhoto {
   storage_path: string | null;
   caption: string | null;
   is_cover: boolean;
+  order_index?: number;
   status: string;
+  created_at: string;
+}
+
+export interface DbPlaceCategory {
+  id: string;
+  place_id: string;
+  category_key: string;
   created_at: string;
 }
 
@@ -92,6 +104,11 @@ export interface DbProfile {
   trust_score: number;
   is_admin: boolean;
   is_banned: boolean;
+  is_suspended?: boolean;
+  suspended_until?: string | null;
+  suspension_reason?: string | null;
+  moderation_strikes?: number;
+  username_reset_required?: boolean;
   /** Optional; some deployments may use role = 'admin' instead of is_admin. */
   role?: string | null;
 }
@@ -99,6 +116,23 @@ export interface DbProfile {
 export interface DbSavedPlace {
   id: string;
   user_id: string;
+  place_id: string;
+  created_at: string;
+}
+
+export interface DbSavedCollection {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  cover_photo_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbSavedCollectionPlace {
+  id: string;
+  collection_id: string;
   place_id: string;
   created_at: string;
 }
@@ -133,6 +167,10 @@ export interface DbPlaceUpdateRequest {
   is_picnic_suitable: boolean | null;
   safety_note: string | null;
   cover_photo_url: string | null;
+  /** Ordered category keys submitted with the edit (max 4). */
+  category_keys?: string[] | null;
+  /** Ordered public image URLs submitted with an edit request (max 3). */
+  photo_urls?: string[] | null;
   status: PlaceUpdateRequestStatus;
   admin_note: string | null;
   created_at: string;

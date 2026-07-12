@@ -1,4 +1,10 @@
-import { ADD_PLACE_CATEGORIES, BestTimeOption } from '../constants/addPlaceOptions';
+import {
+  formatCategoryDisplayLabels,
+  PLACE_CATEGORY_GROUPS,
+  placeHasAnyCategory,
+  resolvePlaceCategoryKeys,
+} from '../constants/placeCategories';
+import { BestTimeOption } from '../constants/addPlaceOptions';
 import { DbAccessType, DbCrowdLevel, DbDifficultyLevel } from '../types/database';
 import { Place, QuickFilter } from '../types/place';
 
@@ -41,12 +47,18 @@ export function matchesSearch(place: Place, query: string): boolean {
     place.description.toLowerCase().includes(normalized) ||
     place.category.toLowerCase().includes(normalized) ||
     place.categorySlug.toLowerCase().includes(normalized) ||
+    resolvePlaceCategoryKeys(place).some((key) =>
+      key.toLowerCase().includes(normalized),
+    ) ||
+    formatCategoryDisplayLabels(resolvePlaceCategoryKeys(place)).some((label) =>
+      label.toLowerCase().includes(normalized),
+    ) ||
     place.tags.some((tag) => tag.toLowerCase().includes(normalized))
   );
 }
 
 export function matchesExploreFilters(place: Place, filters: ExploreFilters): boolean {
-  if (filters.categories.length > 0 && !filters.categories.includes(place.categorySlug)) {
+  if (filters.categories.length > 0 && !placeHasAnyCategory(place, filters.categories)) {
     return false;
   }
 
@@ -101,11 +113,13 @@ export function matchesExploreFilters(place: Place, filters: ExploreFilters): bo
 export function applyQuickFilter(places: Place[], quickFilter: QuickFilter): Place[] {
   switch (quickFilter) {
     case 'sunset':
-      return places.filter((place) => place.categorySlug === 'sunset');
+      return places.filter((place) =>
+        resolvePlaceCategoryKeys(place).some((key) => key === 'sunset_spot'),
+      );
     case 'hidden_gems':
-      return places.filter((place) => place.categorySlug === 'hidden_gem');
+      return places.filter((place) => resolvePlaceCategoryKeys(place).includes('hidden_gem'));
     case 'camping':
-      return places.filter((place) => place.categorySlug === 'camping');
+      return places.filter((place) => resolvePlaceCategoryKeys(place).includes('camping'));
     case 'nearby':
     default:
       return places;
@@ -161,4 +175,10 @@ export function countActiveExploreFilters(filters: ExploreFilters): number {
   return count;
 }
 
-export const EXPLORE_CATEGORY_OPTIONS = ADD_PLACE_CATEGORIES;
+export const EXPLORE_CATEGORY_OPTIONS = PLACE_CATEGORY_GROUPS.flatMap((group) =>
+  group.categories.map(({ key, label, emoji }) => ({
+    value: key,
+    label: `${emoji} ${label}`,
+    groupId: group.id,
+  })),
+);

@@ -36,10 +36,22 @@ export {
   SearchResultsSkeleton,
 } from './Skeleton';
 export { CachedImage } from './CachedImage';
-export { OfflineBanner } from './OfflineBanner';
+export { NotificationBellButton } from './NotificationBellButton';
+export { PermissionBlockedModal } from './PermissionBlockedModal';
 export { ExploreSearchBar } from './ExploreSearchBar';
 export { ExploreSearchResults } from './ExploreSearchResults';
 export { MapInlineNotice } from './MapInlineNotice';
+export { CollectionCard } from './CollectionCard';
+export { SystemSavedCollectionCard } from './SystemSavedCollectionCard';
+export { SavedScreenSection } from './SavedScreenSection';
+export { SaveToCollectionModal } from './SaveToCollectionModal';
+export { CollectionActionButton } from './CollectionActionButton';
+export type { CollectionActionVariant } from './CollectionActionButton';
+export { PlaceSaveButton } from './PlaceSaveButton';
+export { PlaceCollectionButton } from './PlaceCollectionButton';
+export { PlaceCardCollectionActions } from './PlaceCardCollectionActions';
+export { PlaceCategoryPicker } from './PlaceCategoryPicker';
+export { PlaceCategoryChips, getPlacePrimaryCategoryLabel } from './PlaceCategoryChips';
 export { PlacePreviewCard, PLACE_PREVIEW_CARD_HEIGHT } from './PlacePreviewCard';
 export { PlaceListCard } from './PlaceListCard';
 export { SortChip } from './SortChip';
@@ -49,8 +61,15 @@ export { LegalInfoModal } from './LegalInfoModal';
 export type { LegalInfoContent } from './LegalInfoModal';
 export { FeedbackModal } from './FeedbackModal';
 export { AuthRequiredModal } from './AuthRequiredModal';
+export { ReportProfileModal } from './ReportProfileModal';
+export { UsernameResetModal } from './UsernameResetModal';
 export { ProfileAvatar } from './ProfileAvatar';
 export { SharedPlaceCard } from './SharedPlaceCard';
+export {
+  PlacePhotoPickerForm,
+  createPlacePhotoPickerItem,
+} from './PlacePhotoPickerForm';
+export type { PlacePhotoPickerItem } from './PlacePhotoPickerForm';
 export { CreatorAttributionRow } from './CreatorAttributionRow';
 export { PlaceMapView } from './PlaceMapView';
 export type { PlaceMapViewHandle } from './PlaceMapView';
@@ -59,6 +78,7 @@ export { MapFabButton, MAP_FAB_PRIMARY_SIZE, MAP_FAB_GLASS_SIZE } from './MapFab
 export {
   PlaceDetailHero,
   PLACE_DETAIL_HERO_HEIGHT,
+  PlaceDetailHeroCarousel,
   PlaceQuickInfoCard,
   PlaceDescriptionBlock,
   PlaceSafetyBlock,

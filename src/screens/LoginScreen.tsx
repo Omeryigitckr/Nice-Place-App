@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import {
   AppButton,
@@ -20,11 +21,13 @@ import { signInWithApple, signInWithGoogle } from '../services/socialAuthService
 import { spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { AuthStackParamList } from '../types';
+import { getLocalizedAuthError, isAuthCancellationError } from '../utils/authErrors';
 
 type Props = NativeStackScreenProps<AuthStackParamList, typeof AUTH_ROUTES.LOGIN>;
 
 export function LoginScreen({ navigation }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +40,7 @@ export function LoginScreen({ navigation }: Props) {
     setError(null);
 
     if (!email.trim() || !password) {
-      setError('Please enter your email and password.');
+      setError(t('auth.login.emailPasswordRequired'));
       return;
     }
 
@@ -46,7 +49,7 @@ export function LoginScreen({ navigation }: Props) {
     setLoading(false);
 
     if (!result.success) {
-      setError(result.error ?? 'Sign in failed.');
+      setError(getLocalizedAuthError(result.error, 'auth.errors.signInFailed'));
       return;
     }
 
@@ -60,8 +63,8 @@ export function LoginScreen({ navigation }: Props) {
     setSocialLoading(null);
 
     if (!result.success) {
-      if (result.error && !result.error.toLowerCase().includes('cancelled')) {
-        setError(result.error);
+      if (!isAuthCancellationError(result.error)) {
+        setError(getLocalizedAuthError(result.error, 'auth.errors.googleFailed'));
       }
       return;
     }
@@ -76,8 +79,8 @@ export function LoginScreen({ navigation }: Props) {
     setSocialLoading(null);
 
     if (!result.success) {
-      if (result.error && !result.error.toLowerCase().includes('cancelled')) {
-        setError(result.error);
+      if (!isAuthCancellationError(result.error)) {
+        setError(getLocalizedAuthError(result.error, 'auth.errors.appleFailed'));
       }
       return;
     }
@@ -89,20 +92,20 @@ export function LoginScreen({ navigation }: Props) {
     <AuthScreenLayout>
       <AppCard elevated style={styles.card}>
         <AuthStaggerItem index={0}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Welcome back</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>{t('auth.login.title')}</Text>
         </AuthStaggerItem>
 
         <AuthStaggerItem index={1}>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Sign in to save places and share discoveries.
+            {t('auth.login.subtitle')}
           </Text>
         </AuthStaggerItem>
 
         <View style={styles.form}>
           <AuthStaggerItem index={2}>
             <AppTextInput
-              label="Email"
-              placeholder="you@email.com"
+              label={t('auth.login.emailLabel')}
+              placeholder={t('auth.login.emailPlaceholder')}
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
@@ -112,8 +115,8 @@ export function LoginScreen({ navigation }: Props) {
           </AuthStaggerItem>
           <AuthStaggerItem index={3}>
             <AppTextInput
-              label="Password"
-              placeholder="••••••••"
+              label={t('auth.login.passwordLabel')}
+              placeholder={t('auth.login.passwordPlaceholder')}
               secureTextEntry
               autoComplete="password"
               value={password}
@@ -126,7 +129,7 @@ export function LoginScreen({ navigation }: Props) {
               style={styles.forgotLinkWrap}
             >
               <Text style={[styles.forgotLink, { color: colors.primary }]}>
-                Forgot password?
+                {t('auth.login.forgotPassword')}
               </Text>
             </Pressable>
           </AuthStaggerItem>
@@ -139,7 +142,7 @@ export function LoginScreen({ navigation }: Props) {
         <View style={styles.actions}>
           <AuthStaggerItem index={5}>
             <AppButton
-              title={loading ? 'Signing in…' : 'Sign In'}
+              title={loading ? t('auth.login.submitting') : t('auth.login.submit')}
               onPress={handleSignIn}
               disabled={isBusy}
             />
@@ -157,7 +160,7 @@ export function LoginScreen({ navigation }: Props) {
           </AuthStaggerItem>
           <AuthStaggerItem index={8}>
             <AppButton
-              title="Create account"
+              title={t('auth.login.createAccount')}
               variant="ghost"
               onPress={() => navigation.navigate(AUTH_ROUTES.REGISTER)}
               disabled={isBusy}
@@ -165,7 +168,7 @@ export function LoginScreen({ navigation }: Props) {
           </AuthStaggerItem>
           <AuthStaggerItem index={9}>
             <AppButton
-              title="Continue as guest"
+              title={t('auth.guest.continue')}
               variant="secondary"
               onPress={() => resetToMain(navigation)}
               disabled={isBusy}

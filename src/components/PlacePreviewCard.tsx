@@ -11,12 +11,16 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { duration, iconSizes, radius, shadows, spacing, typography } from '../theme';
 import { darkColors } from '../theme/palettes';
 import { Place } from '../types/place';
 
 import { CachedImage } from './CachedImage';
+import { PlaceCategoryChips } from './PlaceCategoryChips';
+import { getBestTimeLabel, getDifficultyLabel } from '../constants/addPlaceOptions';
+import { categoryKeyListsEqual } from '../constants/placeCategories';
 
 /** Map overlay UI stays dark in both themes for premium map contrast. */
 const colors = darkColors;
@@ -60,6 +64,7 @@ function PlacePreviewCardComponent({
   onNavigate,
   discoveredBy,
 }: PlacePreviewCardProps) {
+  const { t } = useTranslation();
   const displayLikeCount = Math.max(0, likeCount ?? place.likeCount);
   const sheetY = useRef(new Animated.Value(32)).current;
   const sheetOpacity = useRef(new Animated.Value(0)).current;
@@ -301,7 +306,7 @@ function PlacePreviewCardComponent({
             <PreviewActionButton
               onPress={handleClose}
               style={styles.closeButton}
-              accessibilityLabel="Close place preview"
+              accessibilityLabel={t('explore.preview.a11yClose')}
             >
               <Ionicons name="close" size={16} color={colors.textPrimary} />
             </PreviewActionButton>
@@ -325,14 +330,10 @@ function PlacePreviewCardComponent({
           ]}
         >
           <View style={styles.badgeRow}>
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText} numberOfLines={1}>
-                {place.category}
-              </Text>
-            </View>
+            <PlaceCategoryChips place={place} maxVisible={2} compact />
             <View style={styles.verifiedBadge}>
               <Ionicons name="checkmark-circle" size={12} color={colors.primary} />
-              <Text style={styles.verifiedText}>Verified</Text>
+              <Text style={styles.verifiedText}>{t('explore.preview.verified')}</Text>
             </View>
           </View>
 
@@ -343,14 +344,14 @@ function PlacePreviewCardComponent({
           <View style={styles.meta}>
             <MetaItem icon="navigate-outline" label={place.distance} />
             <MetaDivider />
-            <MetaItem icon="trail-sign-outline" label={place.difficulty} />
+            <MetaItem icon="trail-sign-outline" label={getDifficultyLabel(place.difficulty)} />
             <MetaDivider />
-            <MetaItem icon="sunny-outline" label={place.bestTime} />
+            <MetaItem icon="sunny-outline" label={getBestTimeLabel(place.bestTime)} />
           </View>
 
           {discoveredBy ? (
             <Text style={styles.discoveredBy} numberOfLines={1}>
-              Discovered by @{discoveredBy}
+              {t('explore.preview.discoveredBy', { username: discoveredBy })}
             </Text>
           ) : null}
         </Animated.View>
@@ -382,7 +383,7 @@ function PlacePreviewCardComponent({
                     liked && styles.actionButtonActive,
                     likeDisabled && styles.actionButtonDisabled,
                   ]}
-                  accessibilityLabel={liked ? 'Unlike place' : 'Like place'}
+                  accessibilityLabel={liked ? t('explore.preview.a11yUnlike') : t('explore.preview.a11yLike')}
                 >
                   <Ionicons
                     name={liked ? 'heart' : 'heart-outline'}
@@ -405,7 +406,7 @@ function PlacePreviewCardComponent({
                     saved && styles.actionButtonActive,
                     saveDisabled && styles.actionButtonDisabled,
                   ]}
-                  accessibilityLabel={saved ? 'Remove from saved' : 'Save place'}
+                  accessibilityLabel={saved ? t('place.unsaveA11y') : t('place.saveA11y')}
                 >
                   <Ionicons
                     name={saved ? 'bookmark' : 'bookmark-outline'}
@@ -413,7 +414,7 @@ function PlacePreviewCardComponent({
                     color={saved ? colors.primary : colors.textPrimary}
                   />
                   <Text style={[styles.actionLabel, saved && styles.actionLabelActive]}>
-                    {saved ? 'Saved' : 'Save'}
+                    {saved ? t('place.saved') : t('place.save')}
                   </Text>
                 </PreviewActionButton>
               </Animated.View>
@@ -423,10 +424,10 @@ function PlacePreviewCardComponent({
                 <PreviewActionButton
                   onPress={onNavigate}
                   style={[styles.actionButton, styles.navigateButton]}
-                  accessibilityLabel="Navigate to place"
+                  accessibilityLabel={t('explore.preview.a11yNavigate')}
                 >
                   <Ionicons name="navigate" size={16} color={colors.white} />
-                  <Text style={styles.navigateLabel}>Navigate</Text>
+                  <Text style={styles.navigateLabel}>{t('explore.preview.navigate')}</Text>
                 </PreviewActionButton>
               </View>
             ) : (
@@ -434,10 +435,10 @@ function PlacePreviewCardComponent({
                 <PreviewActionButton
                   onPress={onDetails}
                   style={[styles.actionButton, styles.navigateButton]}
-                  accessibilityLabel="View details"
+                  accessibilityLabel={t('explore.preview.a11yDetails')}
                 >
                   <Ionicons name="arrow-forward" size={16} color={colors.white} />
-                  <Text style={styles.navigateLabel}>Details</Text>
+                  <Text style={styles.navigateLabel}>{t('explore.preview.details')}</Text>
                 </PreviewActionButton>
               </View>
             )}

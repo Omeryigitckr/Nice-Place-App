@@ -1,0 +1,1456 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "saved": "Saved",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "close": "Close",
+    "confirm": "Confirm",
+    "done": "Done",
+    "retry": "Try again",
+    "tryAgain": "Try again",
+    "error": "Something went wrong",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "remove": "Remove",
+    "refresh": "Refresh",
+    "search": "Search",
+    "next": "Next",
+    "skip": "Skip",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "optional": "Optional",
+    "required": "Required",
+    "seeAll": "See all",
+    "learnMore": "Learn more",
+    "notAvailable": "Not available",
+    "noResults": "No results",
+    "signIn": "Sign in",
+    "openSettings": "Open Settings",
+    "or": "or",
+    "connecting": "Connecting…",
+    "place_one": "place",
+    "place_other": "places",
+    "placesCount_one": "{{count}} place",
+    "placesCount_other": "{{count}} places",
+    "authRequired": {
+      "title": "Sign in required",
+      "message": "Sign in to use this feature. You can keep browsing as a guest."
+    },
+    "place_few": "places",
+    "place_many": "places",
+    "placesCount_few": "{{count}} places",
+    "placesCount_many": "{{count}} places",
+    "pleaseWait": "Please wait…",
+    "notNow": "Not now",
+    "create": "Create",
+    "dismiss": "Dismiss"
+  },
+  "navigation": {
+    "explore": "Explore",
+    "saved": "Saved",
+    "addPlace": "Add Place",
+    "profile": "Profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "admin": "Admin",
+    "savedPlaces": "Saved Places",
+    "allSavedPlaces": "All Saved Places",
+    "collection": "Collection",
+    "editPlace": "Edit Place",
+    "account": "Account",
+    "changePassword": "Change Password",
+    "changeEmail": "Change Email",
+    "appearance": "Appearance",
+    "privacyLocation": "Privacy & Location",
+    "about": "About",
+    "adminPanel": "Admin Panel",
+    "sendNotification": "Send Notification",
+    "reportedProfiles": "Reported Profiles",
+    "reviewProfile": "Review profile",
+    "reviewPlace": "Review place",
+    "reviewUpdate": "Review update",
+    "reports": "Reports",
+    "language": "Language"
+  },
+  "settings": {
+    "sections": {
+      "account": "Account",
+      "mapPreferences": "Map preferences",
+      "units": "Units",
+      "notifications": "Notifications",
+      "data": "Data",
+      "support": "Support",
+      "accountActions": "Account actions",
+      "appearance": "Appearance",
+      "location": "Location",
+      "about": "About Nice Place"
+    },
+    "theme": {
+      "title": "Theme",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark",
+      "setTo": "Theme set to {{label}}.",
+      "helper": "Preference is saved on this device. Status bar updates immediately; full light UI is limited for now.",
+      "groupLabel": "Appearance"
+    },
+    "mapStyle": {
+      "title": "Default map style",
+      "standard": "Standard",
+      "satellite": "Satellite",
+      "outdoors": "Outdoors",
+      "setTo": "Map style set to {{label}}."
+    },
+    "distanceUnit": {
+      "title": "Distance unit",
+      "kilometers": "Kilometers",
+      "miles": "Miles",
+      "setTo": "Distance unit set to {{label}}."
+    },
+    "account": {
+      "unlockHint": "Sign in to unlock account features",
+      "signedIn": "Signed in",
+      "changePassword": "Change password",
+      "changePasswordSubtitle": "Update your sign-in password",
+      "changeEmail": "Change email",
+      "changeEmailSubtitle": "Update your account email"
+    },
+    "notifications": {
+      "prefsLink": "Notification preferences",
+      "enabledDevice": "Enabled · Device: {{status}}",
+      "offDevice": "Off · Device: {{status}}",
+      "helper": "Choose which updates Nice Place can send as push notifications.",
+      "enable": "Enable notifications",
+      "statusEnabled": "Push notifications are enabled on this device.",
+      "statusFinishing": "Permission granted — finishing setup…",
+      "statusBlocked": "Permission is disabled in your device settings.",
+      "statusDenied": "Permission is disabled on this device.",
+      "statusDevice": "Device permission: {{status}}",
+      "blockedTitle": "Notifications disabled",
+      "blockedMessage": "Notifications are disabled in your device settings.",
+      "registerFailed": "Could not register for push notifications.",
+      "registerDeviceFailed": "Could not register this device for push notifications.",
+      "saveFailed": "Could not save notification preference.",
+      "prefs": {
+        "placeApproved": "Place approved",
+        "placeRejected": "Place rejected",
+        "placeUpdateApproved": "Place update approved",
+        "placeUpdateRejected": "Place update rejected",
+        "placeLiked": "Someone liked my place",
+        "systemAnnouncements": "System announcements",
+        "eventsNews": "Events & news"
+      },
+      "saveTokenFailed": "Could not save push token."
+    },
+    "data": {
+      "clearCache": "Clear local cache",
+      "clearCacheSubtitle": "Removes locally cached saved-place ids",
+      "resetPrefs": "Reset app preferences",
+      "resetPrefsSubtitle": "Restore default theme, map, units, and toggles",
+      "clearConfirmTitle": "Clear local cache?",
+      "clearConfirmBody": "This removes locally cached data on this device. Your account and cloud data stay intact.",
+      "clearConfirmAction": "Clear cache",
+      "resetConfirmTitle": "Reset preferences?",
+      "resetConfirmBody": "This restores default theme, map style, units, and notification toggles.",
+      "resetConfirmAction": "Reset",
+      "working": "Working…",
+      "cacheCleared": "Local cache cleared.",
+      "prefsReset": "App preferences reset."
+    },
+    "support": {
+      "contact": "Contact support",
+      "reportBug": "Report a bug",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "aboutNicePlace": "About Nice Place",
+      "reportGuidelines": "Report guidelines",
+      "appVersion": "App version",
+      "mailSubjectSupport": "Nice Place support",
+      "mailSubjectBug": "Nice Place bug report"
+    },
+    "session": {
+      "signOut": "Sign out",
+      "signingOut": "Signing out…",
+      "signedOut": "Signed out. You can keep browsing as a guest.",
+      "signedOutLocal": "Signed out locally. You can keep browsing as a guest.",
+      "signOutFailed": "Sign out failed."
+    },
+    "deleteAccount": {
+      "dangerTitle": "Danger Zone",
+      "dangerBody": "Permanently delete your account and anonymize profile data. This cannot be undone.",
+      "delete": "Delete Account",
+      "deleteAction": "Delete my account",
+      "deleting": "Deleting…",
+      "title": "Delete Account",
+      "instructionPassword": "Enter your password twice and type {{phrase}} to confirm.",
+      "instructionOAuth": "Type {{phrase}} to permanently delete your account.",
+      "confirmLabel": "Type {{phrase}}",
+      "confirmPassword": "Confirm password",
+      "passwordsDoNotMatch": "Passwords do not match.",
+      "success": "Your account has been deleted.",
+      "a11yDelete": "Delete account",
+      "a11yDismiss": "Dismiss",
+      "errors": {
+        "passwordRequired": "Password is required.",
+        "sessionInvalid": "Could not verify your session.",
+        "unavailable": "Account deletion is not available yet. Contact support@niceplace.site.",
+        "failed": "Could not delete account. Please try again."
+      }
+    },
+    "privacyLocation": {
+      "helper": "Nice Place uses your location to sort nearby places, show distance, and place submissions at your current position.",
+      "statusLabel": "Permission status",
+      "request": "Request permission",
+      "openDeviceSettings": "Open device settings",
+      "grantedToast": "Location permission granted.",
+      "deniedToast": "Location permission was not granted."
+    },
+    "permissionStatus": {
+      "granted": "Allowed",
+      "denied": "Denied",
+      "blocked": "Blocked in device settings",
+      "undetermined": "Not requested",
+      "unavailable": "Unavailable"
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose the language used throughout Nice Place. Your choice is saved on this device.",
+      "current": "Current language",
+      "select": "Select language",
+      "saveFailed": "Couldn't save language. Please try again."
+    },
+    "appPreferences": "App preferences",
+    "legal": {
+      "supportContact": "For support, bug reports, privacy questions, or account deletion requests, contact support@niceplace.site",
+      "about": {
+        "title": "About Nice Place",
+        "body": "Nice Place helps you discover quiet outdoor spots, sunset points, and hidden places worth visiting.\n\nThis beta focuses on map-based discovery, saving places, sharing spots, and community submissions reviewed before they appear publicly."
+      },
+      "terms": {
+        "title": "Terms of Service",
+        "body": "By using Nice Place you agree to share accurate place information, respect private property, and follow local access rules.\n\nCommunity submissions may be reviewed before publication. We may update these terms as the beta evolves.\n\n{{supportContact}}"
+      },
+      "privacy": {
+        "title": "Privacy Policy",
+        "body": "Last updated: July 2026\n\nNice Place is a mobile app that helps you discover and share outdoor places. This policy explains what data we collect during the beta and how we use it.\n\nAccount and authentication\nWhen you create an account, we store your email address and authentication details through Supabase Auth. We also store profile information you choose to provide, such as your display name.\n\nPlaces you submit\nWhen you add a place, we store the information you submit, including place name, description, category, approximate location coordinates, and any photos you upload.\n\nSaved and liked places\nWhen you are signed in, we store places you save and places you like so they sync with your account.\n\nLocation\nIf you grant permission, we use your device location to show nearby places on the map and sort results by distance. We do not track your location in the background.\n\nImages\nIf you upload a cover photo for a place, that image is stored so it can be shown in the app.\n\nDevice storage\nSome preferences, such as theme settings and recent searches, may be stored locally on your device.\n\nHow we use your data\nWe use this data to operate the app, display places on the map, sync your saved and liked places, and review community submissions.\n\nService provider\nWe use Supabase (supabase.com) for authentication, database storage, and file storage for uploaded images. Supabase processes data on our behalf.\n\nData sharing\nWe do not sell your personal data.\n\nData deletion\nYou can delete your account from Settings. This removes your account access and anonymizes your profile data.\n\n{{supportContact}}\n\nChildren\nNice Place is not directed at children under 13.\n\nContact\n{{supportEmail}}"
+      },
+      "guidelines": {
+        "title": "Report Guidelines",
+        "body": "Report inaccurate, unsafe, or inappropriate places so the community stays trustworthy.\n\nIn-app reporting is coming soon. For now, email support@niceplace.site if a place should be reviewed or removed."
+      }
+    }
+  },
+  "network": {
+    "offlineBanner": "You're offline — showing saved data",
+    "offline": "No internet connection. Check your connection and try again.",
+    "connectionLost": "Connection lost",
+    "connectionRestored": "Connection restored",
+    "checkConnection": "Check your connection"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "unknown": "Something went wrong",
+    "network": "No internet connection. Check your connection and try again.",
+    "timeout": "The request timed out. Please try again.",
+    "unauthorized": "Please sign in to continue.",
+    "forbidden": "You don't have permission to do that.",
+    "notFound": "We couldn't find what you're looking for.",
+    "server": "Server error. Please try again later.",
+    "validation": "Please check your input and try again.",
+    "sessionExpired": "Your session expired. Please sign in again.",
+    "permissionDenied": "Permission denied"
+  },
+  "permissions": {
+    "requiredTitle": "Permission required",
+    "blocked": {
+      "cancel": "Cancel",
+      "openSettings": "Open Settings"
+    },
+    "location": {
+      "title": "Enable location",
+      "description": "Nice Place uses your location to show nearby hidden spots, sunset points, and walking routes. Your location is only used to improve discovery.",
+      "featureNearby": "Find places near you",
+      "featureDistance": "Sort by distance",
+      "featurePrivate": "Never shared publicly",
+      "allow": "Allow Location",
+      "notNow": "Not now"
+    },
+    "photos": {
+      "blockedTitle": "Photos disabled",
+      "blockedMessage": "Photo library access is disabled in your device settings."
+    }
+  },
+  "auth": {
+    "social": {
+      "continueGoogle": "Continue with Google",
+      "continueApple": "Continue with Apple",
+      "connecting": "Connecting…"
+    },
+    "legal": {
+      "prefix": "By continuing, you agree to our",
+      "privacyPolicy": "Privacy Policy",
+      "suffix": "."
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to save places and share discoveries.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign In",
+      "submitting": "Signing in…",
+      "createAccount": "Create account",
+      "continueAsGuest": "Continue as guest",
+      "emailPasswordRequired": "Please enter your email and password."
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Start discovering beautiful places.",
+      "fullNameLabel": "Full name",
+      "fullNamePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Sign Up",
+      "submitting": "Creating account…",
+      "alreadyHaveAccount": "Already have an account",
+      "continueAsGuest": "Continue as guest"
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email and we will send you a reset link.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "backToSignIn": "Back to sign in",
+      "successMessage": "If an account exists for this email, a password reset link has been sent."
+    },
+    "resetPassword": {
+      "title": "Set new password",
+      "subtitle": "Choose a new password for your account.",
+      "newPasswordLabel": "New password",
+      "confirmPasswordLabel": "Confirm password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Update password",
+      "submitting": "Updating…",
+      "successMessage": "Password updated successfully."
+    },
+    "callback": {
+      "failedTitle": "Link verification failed",
+      "verifying": "Verifying link…",
+      "backToSignIn": "Back to sign in",
+      "emailConfirmed": "Email confirmed successfully."
+    },
+    "emailChange": {
+      "title": "Change email",
+      "description": "We will send a confirmation link to your new email address.",
+      "currentEmailLabel": "Current email",
+      "newEmailLabel": "New email",
+      "emailPlaceholder": "you@email.com",
+      "submit": "Send verification email",
+      "submitting": "Sending…",
+      "successMessage": "A verification email has been sent to your new address. Open the link on this device to confirm the change.",
+      "signInRequired": "Sign in to change your email.",
+      "differentEmailRequired": "Enter a different email address."
+    },
+    "guest": {
+      "continue": "Continue as guest"
+    },
+    "brand": {
+      "tagline": "Discover • Share • Remember"
+    },
+    "validation": {
+      "emailRequired": "Please enter your email.",
+      "emailInvalid": "Please enter a valid email address.",
+      "passwordRequired": "Please enter a password.",
+      "passwordMinLength": "Password must be at least 6 characters.",
+      "passwordHint": "Use at least 8 characters with one uppercase letter, one lowercase letter, and one number.",
+      "passwordsDoNotMatch": "Passwords do not match.",
+      "confirmPasswordRequired": "Please confirm your password.",
+      "currentPasswordRequired": "Please enter your current password.",
+      "passwordMustDiffer": "New password must be different from your current password."
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "signInFailed": "Sign in failed.",
+      "signUpFailed": "Sign up failed.",
+      "invalidCredentials": "Invalid email or password.",
+      "emailAlreadyRegistered": "This email is already registered.",
+      "emailNotConfirmed": "Please confirm your email before signing in.",
+      "weakPassword": "Please choose a stronger password.",
+      "invalidEmail": "Please enter a valid email address.",
+      "rateLimited": "Too many attempts. Please wait and try again.",
+      "sessionExpired": "Your session expired. Please sign in again.",
+      "network": "No internet connection. Check your connection and try again.",
+      "configMissing": "Supabase is not configured. Check your .env file.",
+      "resetEmailFailed": "Could not send reset email. Please try again.",
+      "updatePasswordFailed": "Could not update password. Please try again.",
+      "currentPasswordIncorrect": "Current password is incorrect.",
+      "emailChangeFailed": "Could not send verification email. Please try again.",
+      "linkExpired": "This link has expired. Please request a new one.",
+      "linkInvalid": "This link is invalid. Please try again.",
+      "linkDenied": "This link was denied or has already been used.",
+      "linkMissingData": "This link is invalid or missing verification data.",
+      "verifyFailed": "Could not verify this link. Please try again.",
+      "notAuthCallback": "Not an auth callback link.",
+      "oauthFailed": "Could not complete sign-in.",
+      "oauthCancelled": "Sign-in was cancelled.",
+      "googleStartFailed": "Could not start Google sign-in.",
+      "googleCancelled": "Google sign-in was cancelled.",
+      "googleFailed": "Google sign-in failed.",
+      "appleOnlyIos": "Apple sign-in is only available on iOS.",
+      "appleUnavailable": "Apple sign-in is not available on this device.",
+      "appleNoToken": "Apple sign-in did not return a token.",
+      "appleFailed": "Apple sign-in failed.",
+      "appleCancelled": "Apple sign-in was cancelled.",
+      "signInIncomplete": "Could not complete sign-in."
+    },
+    "a11y": {
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "changePassword": {
+      "title": "Change password",
+      "description": "Re-enter your current password, then choose a new one.",
+      "currentPasswordLabel": "Current password",
+      "newPasswordLabel": "New password",
+      "confirmPasswordLabel": "Confirm new password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Update password",
+      "submitting": "Updating…",
+      "successMessage": "Password updated successfully.",
+      "signInRequired": "Sign in to change your password."
+    }
+  },
+  "explore": {
+    "searchPlaceholder": "Search places, trails, views…",
+    "clearSearch": "Clear search",
+    "filterPlaces": "Filter places",
+    "filters": {
+      "title": "Filters",
+      "close": "Close filters",
+      "bestTime": "Best time",
+      "accessType": "Access type",
+      "difficulty": "Difficulty",
+      "crowdLevel": "Crowd level",
+      "facilities": "Facilities",
+      "apply": "Apply filters",
+      "clear": "Clear filters"
+    },
+    "quickFilters": {
+      "nearby": "Nearby",
+      "hiddenGems": "Hidden gems",
+      "sunset": "Sunset",
+      "camping": "Camping"
+    },
+    "search": {
+      "recent": "Recent",
+      "noResults": "No places found",
+      "noResultsHint": "Try another name, category, or clear filters.",
+      "a11ySearchRecent": "Search {{query}}",
+      "a11yRemoveRecent": "Remove {{query}}"
+    },
+    "empty": {
+      "noPlaces": "No places yet. Be the first to share a spot.",
+      "noFilterMatches": "No places match these filters.",
+      "offline": "No places available offline. Connect to load the map."
+    },
+    "load": {
+      "cached": "Showing cached places. Connect to refresh.",
+      "failed": "Could not load places. Check your connection and try again.",
+      "refreshFailed": "Could not refresh places. Showing last loaded data.",
+      "supabaseFailed": "Could not load places right now."
+    },
+    "auth": {
+      "save": "Sign in to save places to your collection.",
+      "like": "Sign in to like places.",
+      "saveShort": "Sign in to save places."
+    },
+    "preview": {
+      "verified": "Verified",
+      "discoveredBy": "Discovered by @{{username}}",
+      "navigate": "Navigate",
+      "details": "Details",
+      "a11yClose": "Close place preview",
+      "a11yLike": "Like place",
+      "a11yUnlike": "Unlike place",
+      "a11yNavigate": "Navigate to place",
+      "a11yDetails": "View details",
+      "a11yDismiss": "Dismiss place preview"
+    },
+    "a11y": {
+      "like": "Like place",
+      "unlike": "Unlike place",
+      "dismissKeyboard": "Dismiss keyboard"
+    }
+  },
+  "place": {
+    "save": "Save",
+    "saved": "Saved",
+    "saveA11y": "Save place",
+    "unsaveA11y": "Remove from saved",
+    "status": {
+      "pending": "Pending review",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "hidden": "Hidden",
+      "deleted": "Removed"
+    },
+    "categories": {
+      "selected": "Selected ({{count}}/{{max}})",
+      "selectRange": "Select {{min}}–{{max}} categories",
+      "removeA11y": "Remove {{label}}",
+      "maxReached": "Maximum {{max}} categories selected. Remove one to add another."
+    },
+    "toasts": {
+      "saved": "Place saved",
+      "removed": "Removed from saved"
+    },
+    "a11yLike": "Like place",
+    "a11yUnlike": "Unlike place",
+    "errors": {
+      "signInToLike": "Sign in to like places."
+    }
+  },
+  "saved": {
+    "allSavedPlaces": "All Saved Places",
+    "allSavedPlacesA11y": "All Saved Places, {{count}} places",
+    "home": {
+      "title": "Saved Places",
+      "subtitle": "Your bookmarks and custom lists in one place.",
+      "yourCollections": "Your Collections",
+      "createAction": "+ Create",
+      "toastRefreshed": "Saved updated"
+    },
+    "all": {
+      "title": "All Saved Places",
+      "subtitle": "Every place you have bookmarked.",
+      "toastRefreshed": "Saved places updated"
+    },
+    "empty": {
+      "noSavedTitle": "No saved places",
+      "noSavedBody": "Save places from the map to find them here later.",
+      "noCachedTitle": "No cached saved places",
+      "noCachedBody": "Connect to the internet to load your saved places.",
+      "guestTitle": "Sign in to save places",
+      "guestBodyHome": "Create an account to bookmark places and organize them into collections.",
+      "guestBodyList": "Create an account to bookmark places and find them here later."
+    },
+    "auth": {
+      "manage": "Sign in to manage saved places."
+    },
+    "viewOnMap": "View on map",
+    "unsave": "Unsave",
+    "list": {
+      "title": "Your collection",
+      "subtitle": "Places you want to visit later, all in one list."
+    }
+  },
+  "categories": {
+    "groups": {
+      "nature": "Nature",
+      "scenic": "Scenic",
+      "adventure": "Adventure",
+      "discovery": "Discovery",
+      "seasonal": "Seasonal / Special"
+    },
+    "waterfall": "Waterfall",
+    "lake": "Lake",
+    "river": "River",
+    "forest": "Forest",
+    "mountain": "Mountain",
+    "canyon": "Canyon",
+    "cave": "Cave",
+    "beach": "Beach",
+    "viewpoint": "Viewpoint",
+    "sunset_spot": "Sunset Spot",
+    "sunrise_spot": "Sunrise Spot",
+    "panorama": "Panorama",
+    "photography_spot": "Photography Spot",
+    "camping": "Camping",
+    "hiking": "Hiking",
+    "picnic": "Picnic",
+    "off_road": "Off-road",
+    "hidden_gem": "Hidden Gem",
+    "historical_site": "Historical Site",
+    "ancient_ruins": "Ancient Ruins",
+    "landmark": "Landmark",
+    "bridge": "Bridge",
+    "snow_area": "Snow Area",
+    "flower_field": "Flower Field",
+    "natural_wonder": "Natural Wonder",
+    "fallback": "Discovery"
+  },
+  "options": {
+    "bestTime": {
+      "Anytime": "Anytime",
+      "Morning": "Morning",
+      "Afternoon": "Afternoon",
+      "Sunset": "Sunset",
+      "Night": "Night"
+    },
+    "access": {
+      "walking": "Walking",
+      "car": "Car",
+      "bicycle": "Bicycle",
+      "unknown": "Unknown",
+      "public_transport": "Public transport",
+      "mixed": "Mixed"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "unknown": "Unknown",
+      "moderate": "Moderate"
+    },
+    "crowd": {
+      "quiet": "Quiet",
+      "normal": "Normal",
+      "crowded": "Crowded",
+      "unknown": "Unknown"
+    },
+    "facilities": {
+      "petFriendly": "Pet friendly",
+      "childFriendly": "Child friendly",
+      "carAccessible": "Car accessible",
+      "campAllowed": "Camping allowed",
+      "picnicSuitable": "Picnic suitable"
+    }
+  },
+  "onboarding": {
+    "actions": {
+      "skip": "Skip",
+      "next": "Next",
+      "continue": "Continue",
+      "getStarted": "Get Started"
+    },
+    "slides": {
+      "welcome": {
+        "headline": "Discover Hidden Places",
+        "subtitle": "Find beautiful locations shared by people around you."
+      },
+      "explore": {
+        "headline": "Explore Amazing Places",
+        "subtitle": "Search nearby, browse categories and discover unique places shared by the community."
+      },
+      "details": {
+        "headline": "Everything You Need",
+        "subtitle": "Photos, distance, best visiting time, difficulty and directions in one place."
+      },
+      "saveShare": {
+        "headline": "Save & Share",
+        "subtitle": "Build your own collections and help others discover new places."
+      },
+      "ready": {
+        "headline": "Ready to Explore?",
+        "subtitle": "Join the community and start discovering amazing places today."
+      }
+    },
+    "ready": {
+      "featureDiscover": "Discover hidden places",
+      "featureSave": "Save your favorite spots",
+      "featureShare": "Share places with others"
+    }
+  },
+  "map": {
+    "unavailable": "Map unavailable",
+    "loading": "Loading places…",
+    "configMissing": "Mapbox token is missing. Add EXPO_PUBLIC_MAPBOX_TOKEN to your .env file.",
+    "location": {
+      "enableForSort": "Enable location to sort by distance.",
+      "permissionDenied": "Location permission denied. Enable it in settings to see nearby places.",
+      "unavailable": "Could not get your location right now.",
+      "blockedTitle": "Location disabled",
+      "blockedMessage": "Location access is disabled in your device settings."
+    },
+    "directions": {
+      "failed": "Could not open Maps. Check that a maps app is installed."
+    },
+    "a11y": {
+      "myLocation": "Show my location"
+    },
+    "pickLocation": {
+      "instruction": "Move the map to position the pin",
+      "selected": "Selected location",
+      "confirm": "Use this location",
+      "goBack": "Go back"
+    }
+  },
+  "units": {
+    "m": "{{value}} m",
+    "km": "{{value}} km",
+    "ft": "{{value}} ft",
+    "mi": "{{value}} mi",
+    "distanceUnavailable": "Distance unavailable"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "subtitleUnread_one": "{{count}} unread",
+    "subtitleUnread_other": "{{count}} unread",
+    "subtitleCaughtUp": "You are all caught up",
+    "a11y": "Notifications",
+    "a11yUnread_one": "Notifications, {{count}} unread",
+    "a11yUnread_other": "Notifications, {{count}} unread",
+    "a11yBack": "Go back",
+    "a11yOpen": "Open notification",
+    "a11yUnreadItem": "Unread notification",
+    "a11yReadItem": "Read notification",
+    "empty": {
+      "title": "No notifications yet",
+      "description": "Updates about your places, likes, and announcements will appear here."
+    },
+    "errors": {
+      "notSignedIn": "Sign in to manage notifications.",
+      "markReadFailed": "Could not mark as read.",
+      "markAllFailed": "Could not mark all as read."
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo_one": "{{count}} minute ago",
+      "minutesAgo_other": "{{count}} minutes ago",
+      "hoursAgo_one": "{{count}} hour ago",
+      "hoursAgo_other": "{{count}} hours ago",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago",
+      "yesterday": "Yesterday",
+      "minutesAgo_few": "{{count}} minutes ago",
+      "minutesAgo_many": "{{count}} minutes ago",
+      "hoursAgo_few": "{{count}} hours ago",
+      "hoursAgo_many": "{{count}} hours ago",
+      "daysAgo_few": "{{count}} days ago",
+      "daysAgo_many": "{{count}} days ago"
+    },
+    "fallbacks": {
+      "yourPlace": "your place",
+      "someone": "Someone"
+    },
+    "types": {
+      "placeApproved": {
+        "title": "Place approved",
+        "body": "Your place \"{{place}}\" has been approved.",
+        "bodyGeneric": "Your place has been approved."
+      },
+      "placeRejected": {
+        "title": "Place not approved",
+        "body": "Your place \"{{place}}\" was not approved.",
+        "bodyGeneric": "Your place was not approved."
+      },
+      "placeUpdateApproved": {
+        "title": "Update approved",
+        "body": "Your update to \"{{place}}\" was approved.",
+        "bodyGeneric": "Your place update was approved."
+      },
+      "placeUpdateRejected": {
+        "title": "Update not approved",
+        "body": "Your update to \"{{place}}\" was not approved.",
+        "bodyGeneric": "Your place update was not approved."
+      },
+      "placeLiked": {
+        "title": "New like",
+        "body": "{{actor}} liked your place \"{{place}}\".",
+        "bodyGeneric": "Someone liked your place."
+      },
+      "system": {
+        "title": "Announcement",
+        "body": "You have a new announcement from Nice Place."
+      },
+      "event": {
+        "title": "Event",
+        "body": "Check out what is happening in Nice Place."
+      },
+      "profilePhotoRemoved": {
+        "title": "Profile photo removed",
+        "body": "Your profile photo was removed because it violated the community guidelines."
+      },
+      "profileUsernameReset": {
+        "title": "Username reset",
+        "body": "Your username was reset. Please choose a new username."
+      },
+      "profileSuspended": {
+        "title": "Account suspended",
+        "body": "Your account has been suspended.",
+        "bodyIndefinite": "Your account has been suspended indefinitely.",
+        "body24h": "Your account has been suspended for 24 hours.",
+        "body7d": "Your account has been suspended for 7 days.",
+        "body30d": "Your account has been suspended for 30 days."
+      },
+      "profileUnsuspended": {
+        "title": "Suspension removed",
+        "body": "Your account suspension has been removed."
+      },
+      "fallback": {
+        "title": "Notification",
+        "body": "You have a new notification."
+      }
+    },
+    "subtitleUnread_few": "{{count}} unread",
+    "subtitleUnread_many": "{{count}} unread",
+    "a11yUnread_few": "Notifications, {{count}} unread",
+    "a11yUnread_many": "Notifications, {{count}} unread"
+  },
+  "placeDetail": {
+    "about": "About this place",
+    "safetyTips": "Safety tips",
+    "tags": "Tags",
+    "similar": "Nearby similar places",
+    "edit": "Edit place",
+    "verified": "Verified",
+    "gallery": "Gallery",
+    "readMore": "Read more",
+    "showLess": "Show less",
+    "discoveredBy": "Discovered by",
+    "discoveredByNamed": "Discovered by {{name}}",
+    "communityFallback": "Nice Place community",
+    "userFallback": "Nice Place user",
+    "share": {
+      "message": "Check out {{title}} on Nice Place — {{category}}.",
+      "a11y": "Share place"
+    },
+    "quickInfo": {
+      "distance": "Distance",
+      "bestTime": "Best time",
+      "difficulty": "Difficulty",
+      "access": "Access",
+      "crowd": "Crowd"
+    },
+    "sticky": {
+      "navigate": "Navigate",
+      "likeA11y": "Like place, {{count}} likes",
+      "unlikeA11y": "Unlike place, {{count}} likes"
+    },
+    "notFound": {
+      "title": "Place not found",
+      "body": "This place may have been removed or is not approved yet."
+    },
+    "offline": {
+      "title": "Unavailable offline",
+      "body": "This place has not been cached yet. Connect to the internet and try again."
+    },
+    "admin": {
+      "section": "Admin actions",
+      "remove": "Remove from public view",
+      "removeA11y": "Delete place from public view",
+      "confirmTitle": "Remove this place from public view?",
+      "confirmBody": "It will be hidden from the map, saved lists, and public profiles. The place row and photos are kept for records.",
+      "removing": "Removing…",
+      "toastSuccess": "Place removed from public view.",
+      "toastError": "Couldn't remove this place from public view."
+    },
+    "photos": {
+      "viewPhoto": "View photo {{index}}",
+      "closeViewer": "Close photo viewer",
+      "imageNumber": "Photo {{current}} of {{total}}"
+    },
+    "a11y": {
+      "viewProfile": "View profile of {{name}}"
+    }
+  },
+  "placeForm": {
+    "sections": {
+      "basicInfo": "Basic Info",
+      "location": "Location",
+      "visitDetails": "Visit Details",
+      "facilities": "Facilities",
+      "safety": "Safety",
+      "photos": "Photos"
+    },
+    "fields": {
+      "placeName": "Place name *",
+      "placeNamePlaceholder": "e.g. Sunset Cliff",
+      "categories": "Categories *",
+      "description": "Description",
+      "descriptionPlaceholder": "Why is this place worth visiting?",
+      "bestTime": "Best time to visit",
+      "accessType": "Access type",
+      "difficulty": "Difficulty",
+      "crowdLevel": "Crowd level",
+      "safetyNote": "Safety note (optional)",
+      "safetyNotePlaceholder": "Any hazards, access warnings, or things to watch for?"
+    },
+    "location": {
+      "waiting": "Waiting for location…",
+      "loading": "Loading location…",
+      "usingGps": "Using your current location",
+      "usingDefault": "Using default map area — tap Set on Map to refine",
+      "adjusted": "Location adjusted on map",
+      "current": "Current place location",
+      "setOnMap": "Set on Map",
+      "adjustOnMap": "Adjust on map"
+    },
+    "photos": {
+      "cover": "Cover",
+      "setCover": "Set cover",
+      "setCoverA11y": "Set as cover photo",
+      "removeA11y": "Remove photo",
+      "addRequired": "Add photos (1–3 required)",
+      "addOptional": "Add photos (up to 3)",
+      "addMore": "Add photo ({{count}}/{{max}})",
+      "firstIsCover": "First photo becomes the cover",
+      "selectedHint": "{{count}}/{{max}} selected · reorder by tapping Set cover",
+      "changePhoto": "Change photo"
+    },
+    "validation": {
+      "nameRequired": "Place name is required.",
+      "categoriesMin": "Please select at least {{count}} category.",
+      "categoriesMin_one": "Please select at least {{count}} category.",
+      "categoriesMin_other": "Please select at least {{count}} categories.",
+      "categoriesMax": "You can select up to {{count}} categories.",
+      "locationRequired": "Location is required. Set on Map or enable location permission.",
+      "photosMin": "Please add at least {{count}} photo.",
+      "photosMin_one": "Please add at least {{count}} photo.",
+      "photosMin_other": "Please add at least {{count}} photos.",
+      "photosMax": "You can add up to {{count}} photos.",
+      "photosKeepMin": "Please keep at least {{count}} photo.",
+      "photosKeepMin_one": "Please keep at least {{count}} photo.",
+      "photosKeepMin_other": "Please keep at least {{count}} photos.",
+      "categoriesMin_few": "Please select at least {{count}} categories.",
+      "categoriesMin_many": "Please select at least {{count}} categories.",
+      "photosMin_few": "Please add at least {{count}} photos.",
+      "photosMin_many": "Please add at least {{count}} photos.",
+      "photosKeepMin_few": "Please keep at least {{count}} photos.",
+      "photosKeepMin_many": "Please keep at least {{count}} photos.",
+      "photosRange": "Please select between {{min}} and {{max}} photos.",
+      "categoriesRange": "Please select between {{min}} and {{max}} categories.",
+      "categoriesSetRange": "Category set must contain between {{min}} and {{max}} items.",
+      "photosSetRange": "Photo set must contain between {{min}} and {{max}} images."
+    },
+    "errors": {
+      "submitFailed": "Could not submit place.",
+      "updateFailed": "Could not submit your update for review.",
+      "photoUploadFailed": "Photo upload failed.",
+      "photoUploadUnknown": "Unknown upload error",
+      "noChanges": "No changes to submit.",
+      "profileMissing": "Your account is signed in, but your profile could not be loaded. Try signing out and back in.",
+      "signInToShare": "Sign in to share a place.",
+      "signInToEdit": "Sign in to edit a place.",
+      "pendingCannotEdit": "This place is still pending review and cannot be updated yet.",
+      "cannotEdit": "This place cannot be edited.",
+      "notFound": "Place not found or you do not have permission to edit it.",
+      "resubmitLimit": "You can only resubmit the same rejected place 2 times.",
+      "resubmitUnavailable": "Resubmit is not available yet. Please try again later.",
+      "resubmitFailed": "Could not resubmit this place. Please try again.",
+      "updatePermission": "Could not submit update. You may not have permission to edit this place.",
+      "updateSchema": "Update request schema is out of date. Please try again later.",
+      "photoSyncFailed": "Could not update place photos. Please try again.",
+      "categorySyncFailed": "Could not update place categories. Please try again.",
+      "submitProfileIssue": "Could not submit place. Your profile may not be set up correctly — try signing out and back in.",
+      "categoriesRequired": "Please select at least one category.",
+      "photoMissingData": "Missing data required for photo upload.",
+      "photoUrlUnresolved": "Could not resolve the uploaded image URL.",
+      "profileLookupMismatch": "Profile lookup returned the wrong id. Try signing out and back in.",
+      "photoReadFailed": "Could not read the selected image."
+    }
+  },
+  "addPlace": {
+    "title": "Share a place",
+    "subtitle": "Help others discover a hidden spot worth visiting.",
+    "submit": "Submit Place",
+    "submitting": "Submitting…",
+    "success": "Your place was saved and will appear on the map after review.",
+    "successPhotoPartial": "Place submitted, but photo upload failed.",
+    "authMessage": "Sign in to share a new place with the community."
+  },
+  "editPlace": {
+    "title": "Edit place",
+    "titleResubmit": "Resubmit place",
+    "subtitle": "Update details for a place you shared.",
+    "subtitleResubmit": "Update details and send this place back for review.",
+    "save": "Save changes",
+    "resubmit": "Resubmit for review",
+    "saving": "Saving…",
+    "loading": "Loading place…",
+    "blockedTitle": "Cannot update this place",
+    "successTitle": "Update request sent",
+    "successTitleResubmit": "Resubmitted",
+    "successBody": "Your changes were submitted for review.",
+    "successBodyResubmit": "Your place was sent back for review.",
+    "photoErrorTitle": "Photo upload failed",
+    "photoErrorBody": "Please try again before submitting your update.",
+    "authMessage": "Sign in to edit places you have shared."
+  },
+  "collections": {
+    "fallbackTitle": "Collection",
+    "defaultSubtitle": "Places you grouped together.",
+    "empty": {
+      "noCollectionsTitle": "No collections yet",
+      "noCollectionsBody": "Create a list to group saved places by trip, theme, or plan.",
+      "createCta": "Create collection",
+      "noPlacesTitle": "No places yet",
+      "noPlacesBody": "Add saved places to this collection from place detail or your saved list."
+    },
+    "form": {
+      "nameLabel": "Name *",
+      "namePlaceholder": "e.g. Antalya Trip",
+      "collectionNameLabel": "Collection name *",
+      "collectionNamePlaceholder": "e.g. Weekend Plan",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional note"
+    },
+    "actions": {
+      "add": "Add to collection",
+      "manage": "Collections",
+      "createNew": "Create new collection",
+      "remove": "Remove",
+      "removeA11y": "Remove from collection"
+    },
+    "modal": {
+      "titleSaved": "Saved",
+      "titleManage": "Manage collections",
+      "subtitlePostSave": "Add this place to a collection?",
+      "subtitleManage": "Add or remove this place from your lists.",
+      "emptyPostSave": "No collections yet. Create one or tap Not now.",
+      "emptyManage": "No collections yet. Create one to organize this place.",
+      "notNow": "Not now",
+      "loadError": "Could not load collections."
+    },
+    "alerts": {
+      "removeTitle": "Remove from collection?",
+      "removeBody": "The place stays in your saved list.",
+      "deleteTitle": "Delete collection?",
+      "deleteBody": "Places will stay saved. Only this collection and its grouping will be removed."
+    },
+    "toasts": {
+      "created": "Collection created",
+      "updated": "Collection updated",
+      "deleted": "Collection deleted",
+      "removedPlace": "Removed from collection",
+      "createFailed": "Could not create collection.",
+      "updateFailed": "Could not update collection.",
+      "deleteFailed": "Could not delete collection.",
+      "removeFailed": "Could not remove place."
+    },
+    "errors": {
+      "nameRequired": "Collection name is required.",
+      "nameTooLong": "Name must be {{max}} characters or less.",
+      "descriptionTooLong": "Description must be {{max}} characters or less.",
+      "duplicateName": "You already have a collection with this name.",
+      "noChanges": "No changes to save.",
+      "notFound": "Collection not found.",
+      "signInCreate": "Sign in to create collections.",
+      "signInUpdate": "Sign in to update collections.",
+      "signInDelete": "Sign in to delete collections.",
+      "signInManage": "Sign in to manage collections."
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "publicTitle": "Explorer",
+    "guestName": "Guest Explorer",
+    "explorerFallback": "Explorer",
+    "guestBio": "Sign in to save places, share discoveries, and build your explorer profile.",
+    "defaultBio": "Finding quiet places and sunset views.",
+    "pendingNote": "Pending places are visible only to you until approved.",
+    "checkingAdmin": "Checking admin access…",
+    "actions": {
+      "editProfile": "Edit profile",
+      "adminPanel": "Admin Panel",
+      "exploreMap": "Explore map",
+      "sharePlace": "Share a place"
+    },
+    "a11y": {
+      "openSettings": "Open settings",
+      "changePhoto": "Change profile photo",
+      "report": "Report profile",
+      "profilePhoto": "Profile photo",
+      "defaultAvatar": "Default profile avatar"
+    },
+    "stats": {
+      "shared": "Shared",
+      "saved": "Saved",
+      "likes": "Likes"
+    },
+    "tabs": {
+      "shared": "Shared",
+      "saved": "Saved"
+    },
+    "filters": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "toasts": {
+      "refreshed": "Profile updated",
+      "updated": "Profile updated.",
+      "photoUpdated": "Profile photo updated.",
+      "photoRemoved": "Profile photo removed.",
+      "noPhotoToRemove": "No profile photo to remove.",
+      "usernameUpdated": "Username updated",
+      "reportSubmitted": "Report submitted. Thank you."
+    },
+    "empty": {
+      "sharedOfflineTitle": "No cached shared places",
+      "sharedOfflineBody": "Connect to the internet to load your shared places.",
+      "noApprovedTitle": "No approved places",
+      "noApprovedBody": "Share a quiet spot or sunset view with the community.",
+      "noPendingTitle": "No pending places",
+      "noPendingBody": "Places waiting for review will show up here.",
+      "noRejectedTitle": "No rejected places",
+      "noRejectedBody": "Rejected submissions will show up here.",
+      "savedExploreBody": "Save places from Explore to build your collection."
+    },
+    "public": {
+      "notFoundTitle": "Profile not found",
+      "notFoundBody": "This explorer profile could not be loaded.",
+      "sectionTitle": "Approved places",
+      "sectionHint": "Only publicly approved discoveries are shown here.",
+      "emptyTitle": "No posts yet",
+      "emptyBody": "This explorer has not shared any approved places yet."
+    },
+    "auth": {
+      "edit": "Sign in to edit your profile.",
+      "report": "Sign in to report this profile.",
+      "addPhoto": "Sign in to add a profile photo.",
+      "editDetails": "Sign in to edit your display name, username, and bio.",
+      "changePhoto": "Sign in is required to change your profile photo.",
+      "removePhoto": "Sign in is required to remove your profile photo."
+    },
+    "photo": {
+      "sectionTitle": "Profile photo",
+      "tapHint": "Tap your photo to choose a new avatar.",
+      "remove": "Remove Profile Photo",
+      "removing": "Removing…",
+      "removeTitle": "Remove profile photo?",
+      "removeMessage": "Your photo will be deleted from your account. You can upload a new one anytime.",
+      "uploadFailedTitle": "Photo upload failed",
+      "permissionRequired": "Photo library permission is required to change your avatar.",
+      "uploadFailed": "Could not upload avatar.",
+      "updateFailed": "Could not update profile photo.",
+      "removeFailed": "Could not remove profile photo.",
+      "readFailed": "Could not read the selected image.",
+      "missingData": "Missing data required for avatar upload.",
+      "urlUnresolved": "Could not resolve the uploaded avatar URL.",
+      "saveFailed": "Could not save avatar to your profile. Please try again.",
+      "profileUpdateFailed": "Could not update your profile. Please try again."
+    },
+    "edit": {
+      "sectionTitle": "Account details",
+      "displayName": "Display name",
+      "displayNamePlaceholder": "Your name",
+      "username": "Username",
+      "usernamePlaceholder": "your_username",
+      "bio": "Bio",
+      "bioPlaceholder": "A short line about your exploring style",
+      "save": "Save account",
+      "saving": "Saving…",
+      "saveFailed": "Could not save profile."
+    },
+    "validation": {
+      "usernameRequired": "Username is required.",
+      "usernameTooShort": "Username must be at least 3 characters.",
+      "usernameTooLong": "Username must be 30 characters or fewer.",
+      "usernameCharset": "Use only lowercase letters, numbers, and underscores.",
+      "displayNameRequired": "Display name is required.",
+      "displayNameTooLong": "Display name must be 60 characters or fewer.",
+      "bioTooLong": "Bio must be 240 characters or fewer."
+    },
+    "errors": {
+      "usernameTaken": "That username is already taken."
+    },
+    "report": {
+      "title": "Report profile",
+      "subtitle": "Tell us what’s wrong with this profile.",
+      "subtitleNamed": "Tell us what’s wrong with @{{username}}.",
+      "detailsLabel": "Details (optional)",
+      "detailsPlaceholder": "Add context that helps our review",
+      "submit": "Submit report",
+      "reasons": {
+        "inappropriate_photo": "Inappropriate profile photo",
+        "inappropriate_username": "Inappropriate username",
+        "impersonation": "Impersonation or fake account",
+        "spam": "Spam",
+        "harassment_or_hate": "Harassment or hate speech",
+        "other": "Other"
+      },
+      "errors": {
+        "generic": "Could not submit the report. Please try again.",
+        "not_authenticated": "Sign in to report a profile.",
+        "self_report": "You cannot report your own profile.",
+        "daily_limit": "You can submit up to {{limit}} profile reports per day.",
+        "not_configured": "Sign in is unavailable right now.",
+        "rpc_error": "Could not submit the report. Please try again.",
+        "unknown": "Could not submit the report. Please try again."
+      }
+    },
+    "moderation": {
+      "suspended": {
+        "title": "Account suspended",
+        "body": "Your Nice Place account is currently suspended and cannot use community features.",
+        "reason": "Reason",
+        "duration": "Duration",
+        "until": "Until {{date}}",
+        "indefinite": "Indefinite",
+        "help": "If you believe this was a mistake, contact support@niceplace.site.",
+        "signOut": "Sign out"
+      },
+      "usernameReset": {
+        "title": "Choose a new username",
+        "body": "Your previous username was reset by moderation. Pick a new valid username to continue.",
+        "save": "Save username",
+        "saveFailed": "Could not save username.",
+        "invalid": "Use 3–30 lowercase letters, numbers, or underscores.",
+        "reserved": "Please choose a different username."
+      }
+    }
+  },
+  "admin": {
+    "checkingAccess": "Checking admin access…",
+    "loadingQueue": "Loading admin queue…",
+    "working": "Working…",
+    "untitledPlace": "Untitled place",
+    "uncategorized": "Uncategorized",
+    "unknownUser": "unknown",
+    "emDash": "—",
+    "deleteUserPhrase": "DELETE USER",
+    "defaultModerationReason": "No additional reason provided",
+    "access": {
+      "signInTitle": "Sign in required",
+      "signInBody": "Guests cannot access the admin panel. Sign in with an admin account.",
+      "signInBodyShort": "Guests cannot access the admin panel.",
+      "deniedTitle": "Access denied",
+      "deniedBody": "This panel is only available to administrators.",
+      "deniedShort": "Admins only."
+    },
+    "panel": {
+      "subtitle": "Review submissions before they go public.",
+      "sendNotification": "Send Notification",
+      "sendNotificationSubtitle": "Send announcements or event updates",
+      "reportedProfiles": "Reported Profiles",
+      "reportedProfilesSubtitle": "Review community reports and take action",
+      "filterPending": "Pending",
+      "filterRejected": "Rejected",
+      "tabPlaces": "Places",
+      "tabUpdates": "Updates",
+      "emptyPendingPlacesTitle": "No pending places",
+      "emptyPendingPlacesBody": "New place submissions will show up here for approval.",
+      "emptyRejectedPlacesTitle": "No rejected places",
+      "emptyRejectedPlacesBody": "Rejected places can be restored to pending from here.",
+      "emptyPendingUpdatesTitle": "No pending updates",
+      "emptyPendingUpdatesBody": "Place edit requests will show up here for review.",
+      "emptyRejectedUpdatesTitle": "No rejected updates",
+      "emptyRejectedUpdatesBody": "Rejected update requests can be restored to pending from here.",
+      "metaUpdate": "update",
+      "a11yReviewPlace": "Review place {{title}}",
+      "a11yReviewUpdate": "Review update for {{title}}"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "deleted": "Removed",
+      "open": "Open",
+      "resolved_no_action": "Resolved · no action",
+      "resolved_action_taken": "Resolved · action taken",
+      "dismissed_abuse": "Dismissed as abuse"
+    },
+    "fields": {
+      "description": "Description",
+      "bestTime": "Best time",
+      "access": "Access",
+      "accessType": "Access type",
+      "difficulty": "Difficulty",
+      "crowd": "Crowd",
+      "crowdLevel": "Crowd level",
+      "location": "Location",
+      "mapPreview": "Map preview",
+      "submitted": "Submitted",
+      "creatorId": "Creator id",
+      "safetyNote": "Safety note",
+      "title": "Title",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "coverPhotoUrl": "Cover photo URL",
+      "note": "Note",
+      "reason": "Reason",
+      "adminNoteOptional": "Admin note (optional)"
+    },
+    "flags": {
+      "petFriendly": "Pet friendly",
+      "childFriendly": "Child friendly",
+      "carAccessible": "Car accessible",
+      "campAllowed": "Camp allowed",
+      "picnicSuitable": "Picnic suitable"
+    },
+    "placeDetail": {
+      "loading": "Loading place…",
+      "notFoundTitle": "Place not found",
+      "notFoundBody": "This submission could not be loaded.",
+      "submittedPhotos": "Submitted photos",
+      "cover": "Cover",
+      "approve": "Approve place",
+      "reject": "Reject place",
+      "restore": "Restore to pending",
+      "alreadyStatus": "This place is already {{status}}. No further action is needed.",
+      "confirmApproveTitle": "Approve this place?",
+      "confirmApproveBody": "It will become visible on the public map. This does not delete any data.",
+      "confirmRejectTitle": "Reject this place?",
+      "confirmRejectBody": "It will stay in the database as rejected and will not appear publicly.",
+      "confirmRestoreTitle": "Move this place back to pending review?",
+      "confirmRestoreBody": "It will return to the pending queue for review.",
+      "successTitle": "Done",
+      "successApprove": "Place approved and will appear on the map.",
+      "successReject": "Place rejected. It will not appear publicly.",
+      "successRestore": "Place moved back to pending.",
+      "backToAdmin": "Back to admin",
+      "approveAction": "Approve",
+      "rejectAction": "Reject",
+      "restoreAction": "Restore"
+    },
+    "updateDetail": {
+      "loading": "Loading request…",
+      "loadFailedTitle": "Could not load request",
+      "notFoundTitle": "Request not found",
+      "notFoundBody": "This update request could not be loaded.",
+      "categories": "Categories",
+      "photos": "Photos",
+      "fieldComparison": "Field comparison",
+      "current": "Current",
+      "requested": "Requested",
+      "categoriesChanged": "Categories changed",
+      "photoSetChanged": "Photo set changed ({{from}} → {{to}})",
+      "notePlaceholder": "Reason for approval or rejection",
+      "approve": "Approve update",
+      "reject": "Reject update",
+      "restore": "Restore to pending",
+      "alreadyStatus": "This request is already {{status}}.",
+      "confirmApproveTitle": "Approve this update?",
+      "confirmApproveBody": "Requested fields will be applied to the live place. Nothing is deleted.",
+      "confirmRejectTitle": "Reject this update?",
+      "confirmRejectBody": "The live place will stay unchanged. The request will be marked rejected.",
+      "confirmRestoreTitle": "Move this update back to pending review?",
+      "confirmRestoreBody": "It will return to the Updates pending queue for review.",
+      "successTitle": "Review complete",
+      "successApprove": "Update approved.",
+      "successReject": "Update rejected.",
+      "successRestore": "Update moved back to pending.",
+      "approveAction": "Approve",
+      "rejectAction": "Reject",
+      "restoreAction": "Restore"
+    },
+    "reports": {
+      "emptyTitle": "No open profile reports",
+      "emptyBody": "Reported profiles with unresolved issues will appear here.",
+      "counts": "{{open}} open · {{total}} total",
+      "countsWithStrikes": "{{open}} open · {{total}} total · {{strikes}} strikes",
+      "noReasonSummary": "No open reason summary",
+      "lastReport": "Last report {{date}}",
+      "suspended": "Suspended",
+      "suspendedUntil": "Suspended until {{date}}",
+      "suspendedIndefinitely": "Suspended indefinitely",
+      "strikes_one": "{{count}} strike",
+      "strikes_other": "{{count}} strikes",
+      "strikes_few": "{{count}} strikes",
+      "strikes_many": "{{count}} strikes",
+      "reasonWithCount": "{{label}} ({{count}})",
+      "joined": "Joined {{date}}",
+      "idLabel": "ID: {{id}}",
+      "reporter": "Reporter: {{id}}…",
+      "actions": "Actions",
+      "severe": "Severe cases",
+      "severeHint": "Permanent account deletion. Requires typing {{phrase}}.",
+      "reportsSection": "Reports",
+      "history": "Moderation history",
+      "noHistory": "No prior actions.",
+      "notFoundTitle": "Profile not found",
+      "notFoundBody": "Could not load this report.",
+      "markOk": "Mark as OK",
+      "removePhoto": "Remove photo",
+      "resetUsername": "Reset username",
+      "suspend": "Suspend",
+      "unsuspend": "Unsuspend",
+      "dismissAbuse": "Dismiss abuse",
+      "deleteAccount": "Delete account",
+      "confirmModeration": "Confirm moderation",
+      "confirmDeleteTitle": "Delete account",
+      "typeDeletePhrase": "Type {{phrase}}",
+      "duration24h": "24 hours",
+      "duration7d": "7 days",
+      "duration30d": "30 days",
+      "durationIndefinite": "Indefinitely",
+      "deleteAlertTitle": "Delete this account?",
+      "deleteAlertBody": "This cannot be undone.",
+      "toastReasonRequired": "Please enter a moderation reason.",
+      "toastActionFailed": "Action failed.",
+      "toastApplied": "Moderation action applied",
+      "toastTypePhrase": "Type {{phrase}} to confirm.",
+      "toastReasonRequiredShort": "A reason is required.",
+      "toastCannotDeleteSelf": "You cannot delete your own account here.",
+      "toastDeleteFailed": "Delete failed.",
+      "toastDeleted": "Account deleted"
+    },
+    "actionLabels": {
+      "mark_ok": "Marked OK",
+      "remove_profile_photo": "Removed profile photo",
+      "reset_username": "Reset username",
+      "suspend_24h": "Suspended 24 hours",
+      "suspend_7d": "Suspended 7 days",
+      "suspend_30d": "Suspended 30 days",
+      "suspend_indefinite": "Suspended indefinitely",
+      "unsuspend": "Unsuspended",
+      "delete_account": "Deleted account",
+      "dismiss_report_abuse": "Dismissed as abuse"
+    },
+    "broadcast": {
+      "subtitleSystem": "Delivers to users who opted in to system announcements.",
+      "subtitleEvent": "Delivers to users who opted in to events and news.",
+      "kindSystem": "System announcement",
+      "kindEvent": "Event & news",
+      "titleLabel": "Title",
+      "messageLabel": "Message",
+      "preview": "Preview",
+      "previewTitlePlaceholder": "Announcement title",
+      "previewBodyPlaceholder": "Your message will appear here.",
+      "reviewSend": "Review and send",
+      "confirmTitle": "Send announcement?",
+      "confirmBody": "This will notify opted-in users immediately. This action cannot be undone.",
+      "sendNow": "Send now",
+      "sendFailed": "Could not send announcement.",
+      "sentRecipients_one": "Sent to {{count}} recipient.",
+      "sentRecipients_other": "Sent to {{count}} recipients.",
+      "sentRecipients_few": "Sent to {{count}} recipients.",
+      "sentRecipients_many": "Sent to {{count}} recipients.",
+      "sentGeneric": "Announcement sent."
+    },
+    "errors": {
+      "actionFailed": "Couldn't complete action. Please try again.",
+      "approvePlaceFailed": "Couldn't approve the place. Please try again.",
+      "rejectPlaceFailed": "Couldn't reject the place. Please try again.",
+      "approveUpdateFailed": "Couldn't approve the update. Please try again.",
+      "rejectUpdateFailed": "Couldn't reject the update. Please try again.",
+      "noAccess": "You do not have admin access.",
+      "placeNotFound": "Place not found.",
+      "requestNotFound": "Request not found.",
+      "removeNotEnabled": "Remove action is not enabled on the server yet. Run scripts/2026_07_10_admin_soft_delete_place.sql in Supabase.",
+      "removeFailed": "Couldn't remove this place from public view. Please try again.",
+      "notConfigured": "Supabase is not configured.",
+      "loadPlacesFailed": "Could not load places.",
+      "loadUpdatesFailed": "Could not load update requests.",
+      "loadUpdateFailed": "Could not load update request.",
+      "loadPlaceFailed": "Could not load place.",
+      "loadRejectedUpdatesFailed": "Could not load rejected update requests.",
+      "verifyFailed": "Could not verify admin access.",
+      "verifyFailedRetry": "Could not verify admin access. Check your connection and try again.",
+      "signInAsAdmin": "Sign in as an admin to continue.",
+      "actionFailedShort": "Action failed.",
+      "deleteAccountFailed": "Could not delete account.",
+      "broadcastFailed": "Could not send announcement."
+    }
+  },
+  "routes": {
+    "title": "Trail discovery",
+    "subtitle": "Outdoor routes shared by the community.",
+    "emptyTitle": "Coming after launch",
+    "emptyBody": "Community routes are postponed until after the first public release.",
+    "note": "Routes are not part of the launch scope. Navigation to places uses your device maps app."
+  }
+}

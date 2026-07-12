@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -13,12 +14,13 @@ import {
   ProfileAvatar,
   ProfileEntranceBlock,
   ProfileGridItem,
+  ReportProfileModal,
   ScreenContainer,
 } from '../components';
 import { MAP_ROUTES } from '../constants';
 import { useAuth, usePlaceLikes, useUserLocation } from '../hooks';
 import { getApprovedPlacesByCreator, getPublicProfile, getPublicProfileStats } from '../services';
-import { radius, spacing, typography } from '../theme';
+import { radius, spacing, touchTarget, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { MapStackParamList } from '../types';
 import { Place } from '../types/place';
@@ -30,15 +32,17 @@ import {
 } from '../types/publicProfile';
 import { navigateToAuth, requireAuth } from '../utils/authGuard';
 import { withPlaceDistances } from '../utils/distance';
+import { localizeProfileMessage } from '../utils/profileMessages';
 
 type Props = NativeStackScreenProps<MapStackParamList, typeof MAP_ROUTES.PUBLIC_PROFILE>;
 
 export function PublicProfileScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { colors, shadows } = useTheme();
   const { profileId } = route.params;
   const { location } = useUserLocation();
-  const { user } = useAuth();
+  const { user, profile: myProfile } = useAuth();
   const { isLiked, getLikeCount, isToggling, toggleLike } = usePlaceLikes();
 
   const [profile, setProfile] = useState<PublicProfileSummary | null>(null);
@@ -49,8 +53,9 @@ export function PublicProfileScreen({ navigation, route }: Props) {
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [authPromptVisible, setAuthPromptVisible] = useState(false);
+  const [authPromptMessage, setAuthPromptMessage] = useState('explore.auth.like');
+  const [reportVisible, setReportVisible] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -58,7 +63,6 @@ export function PublicProfileScreen({ navigation, route }: Props) {
     const load = async () => {
       setLoading(true);
       setNotFound(false);
-      setError(null);
 
       const publicProfile = await getPublicProfile(profileId);
 
@@ -69,7 +73,6 @@ export function PublicProfileScreen({ navigation, route }: Props) {
       if (!publicProfile) {
         setProfile(null);
         setNotFound(true);
-        setError('Profile not found');
         setLoading(false);
         return;
       }
@@ -113,6 +116,7 @@ export function PublicProfileScreen({ navigation, route }: Props) {
       }
 
       if (!requireAuth(user, 'like_place')) {
+        setAuthPromptMessage('explore.auth.like');
         setAuthPromptVisible(true);
         return;
       }
@@ -121,20 +125,22 @@ export function PublicProfileScreen({ navigation, route }: Props) {
       const previouslyLiked = isLiked(placeId);
       const fallbackCount = place?.likeCount ?? 0;
 
-      void toggleLike(placeId, fallbackCount).then((result) => {
-        if (result.success && typeof result.likeCount === 'number') {
-          const nextCount = Math.max(0, result.likeCount);
-          setPlaces((prev) =>
-            prev.map((item) =>
-              item.id === placeId ? { ...item, likeCount: nextCount } : item,
-            ),
-          );
-          setStats((prev) => ({
-            ...prev,
-            likesReceived: Math.max(0, prev.likesReceived + (previouslyLiked ? -1 : 1)),
-          }));
-        }
-      });
+      void toggleLike(placeId, fallbackCount)
+        .then((result) => {
+          if (result.success && typeof result.likeCount === 'number') {
+            const nextCount = Math.max(0, result.likeCount);
+            setPlaces((prev) =>
+              prev.map((item) =>
+                item.id === placeId ? { ...item, likeCount: nextCount } : item,
+              ),
+            );
+            setStats((prev) => ({
+              ...prev,
+              likesReceived: Math.max(0, prev.likesReceived + (previouslyLiked ? -1 : 1)),
+            }));
+          }
+        })
+        .catch(() => undefined);
     },
     [isLiked, isToggling, toggleLike, user],
   );
@@ -151,13 +157,15 @@ export function PublicProfileScreen({ navigation, route }: Props) {
     return (
       <ScreenContainer contentStyle={styles.centered}>
         <Text style={[styles.notFoundTitle, { color: colors.textPrimary }]}>
-          Profile not found
+          {t('profile.public.notFoundTitle')}
         </Text>
         <Text style={[styles.notFoundText, { color: colors.textSecondary }]}>
-          {error ?? 'This explorer profile could not be loaded.'}
+          {t('profile.public.notFoundBody')}
         </Text>
         <Pressable onPress={() => navigation.goBack()} style={styles.backLink}>
-          <Text style={[styles.backLinkText, { color: colors.primary }]}>Go back</Text>
+          <Text style={[styles.backLinkText, { color: colors.primary }]}>
+            {t('map.pickLocation.goBack')}
+          </Text>
         </Pressable>
       </ScreenContainer>
     );
@@ -166,6 +174,23 @@ export function PublicProfileScreen({ navigation, route }: Props) {
   const displayName = getPublicDisplayName(profile);
   const usernameLabel = getPublicUsernameLabel(profile);
   const bio = profile.bio?.trim() || null;
+  const isOwnProfile =
+    Boolean(user) &&
+    (myProfile?.id === profile.id ||
+      myProfile?.auth_user_id === profile.authUserId ||
+      user?.id === profile.authUserId);
+
+  const openReport = () => {
+    if (!requireAuth(user, 'report_profile')) {
+      setAuthPromptMessage('profile.auth.report');
+      setAuthPromptVisible(true);
+      return;
+    }
+    setReportVisible(true);
+  };
+
+  const authPromptLocalized =
+    localizeProfileMessage(authPromptMessage) ?? t(authPromptMessage as never);
 
   return (
     <ScreenContainer scrollable safeTop={false} reserveFloatingTabBar contentStyle={styles.content}>
@@ -187,8 +212,28 @@ export function PublicProfileScreen({ navigation, route }: Props) {
           >
             <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
           </Pressable>
-          <Text style={[styles.screenTitle, { color: colors.textSecondary }]}>Explorer</Text>
-          <View style={styles.backButtonSpacer} />
+          <Text style={[styles.screenTitle, { color: colors.textSecondary }]}>
+            {t('profile.publicTitle')}
+          </Text>
+          {!isOwnProfile ? (
+            <Pressable
+              onPress={openReport}
+              style={[
+                styles.backButton,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  ...shadows.sm,
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={t('profile.a11y.report')}
+            >
+              <Ionicons name="flag-outline" size={20} color={colors.textPrimary} />
+            </Pressable>
+          ) : (
+            <View style={styles.backButtonSpacer} />
+          )}
         </View>
       </ProfileEntranceBlock>
 
@@ -220,26 +265,32 @@ export function PublicProfileScreen({ navigation, route }: Props) {
               value={`${stats.sharedApprovedCount}`}
               color={colors.primary}
             />
-            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Shared</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>
+              {t('profile.stats.shared')}
+            </Text>
           </View>
           <View style={styles.statItem}>
             <AnimatedStatValue value={`${stats.likesReceived}`} color={colors.primary} />
-            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Likes</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>
+              {t('profile.stats.likes')}
+            </Text>
           </View>
         </View>
       </ProfileEntranceBlock>
 
       <ProfileEntranceBlock index={3}>
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Approved places</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+          {t('profile.public.sectionTitle')}
+        </Text>
         <Text style={[styles.sectionHint, { color: colors.textMuted }]}>
-          Only publicly approved discoveries are shown here.
+          {t('profile.public.sectionHint')}
         </Text>
 
         {places.length === 0 ? (
         <EmptyState
           icon="leaf-outline"
-          title="No posts yet"
-          description="This explorer has not shared any approved places yet."
+          title={t('profile.public.emptyTitle')}
+          description={t('profile.public.emptyBody')}
         />
         ) : (
           <View style={styles.list}>
@@ -247,7 +298,7 @@ export function PublicProfileScreen({ navigation, route }: Props) {
               <ProfileGridItem key={place.id} index={index}>
                 <PlaceListCard
                   place={place}
-                  compact
+                  variant="publicProfile"
                   liked={isLiked(place.id)}
                   likeCount={getLikeCount(place.id, place.likeCount)}
                   likeDisabled={isToggling(place.id)}
@@ -262,12 +313,19 @@ export function PublicProfileScreen({ navigation, route }: Props) {
 
       <AuthRequiredModal
         visible={authPromptVisible}
-        message="Sign in to like places."
+        message={authPromptLocalized}
         onSignIn={() => {
           setAuthPromptVisible(false);
           navigateToAuth(navigation);
         }}
         onCancel={() => setAuthPromptVisible(false)}
+      />
+
+      <ReportProfileModal
+        visible={reportVisible}
+        reportedAuthUserId={profile.authUserId}
+        reportedUsername={profile.username}
+        onClose={() => setReportVisible(false)}
       />
     </ScreenContainer>
   );
@@ -304,15 +362,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: touchTarget.min,
+    height: touchTarget.min,
+    borderRadius: touchTarget.min / 2,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
   backButtonSpacer: {
-    width: 40,
+    width: touchTarget.min,
   },
   screenTitle: {
     ...typography.subtitle,
@@ -340,6 +398,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: spacing.sm,
     marginHorizontal: spacing.xs,
+    /** Extra space below bio; applied on a real View (not Animated.View). */
+    marginTop: spacing.xxl,
   },
   statItem: {
     flex: 1,

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { AppButton, ScreenContainer } from '../components';
 import { ROOT_ROUTES } from '../constants';
@@ -10,31 +11,30 @@ import { RootStackParamList } from '../types';
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.LOCATION_PERMISSION>;
 
 export function LocationPermissionScreen({ navigation }: Props) {
+  const { t } = useTranslation();
+
   return (
     <ScreenContainer contentStyle={styles.content}>
       <View style={styles.iconWrap}>
         <Ionicons name="location" size={40} color={colors.primary} />
       </View>
 
-      <Text style={styles.title}>Enable location</Text>
-      <Text style={styles.description}>
-        Nice Place uses your location to show nearby hidden spots, sunset points,
-        and walking routes. Your location is only used to improve discovery.
-      </Text>
+      <Text style={styles.title}>{t('permissions.location.title')}</Text>
+      <Text style={styles.description}>{t('permissions.location.description')}</Text>
 
       <View style={styles.features}>
-        <FeatureRow text="Find places near you" />
-        <FeatureRow text="Sort by distance" />
-        <FeatureRow text="Never shared publicly" />
+        <FeatureRow text={t('permissions.location.featureNearby')} />
+        <FeatureRow text={t('permissions.location.featureDistance')} />
+        <FeatureRow text={t('permissions.location.featurePrivate')} />
       </View>
 
       <View style={styles.actions}>
         <AppButton
-          title="Allow Location"
+          title={t('permissions.location.allow')}
           onPress={() => navigation.replace(ROOT_ROUTES.MAIN)}
         />
         <AppButton
-          title="Not now"
+          title={t('permissions.location.notNow')}
           variant="secondary"
           onPress={() => navigation.replace(ROOT_ROUTES.MAIN)}
         />

@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { duration, radius, spacing, typography } from '../theme';
 import { useThemeColors } from '../theme/ThemeContext';
@@ -21,16 +22,23 @@ interface AppTextInputProps extends TextInputProps {
 
 const calmEasing = Easing.out(Easing.cubic);
 
+/** Strip all whitespace so spaces never enter password state (typing or paste). */
+function sanitizePasswordText(value: string): string {
+  return value.replace(/\s/g, '');
+}
+
 export function AppTextInput({
   label,
   error,
   style,
   onFocus,
   onBlur,
+  onChangeText,
   secureTextEntry,
   ...props
 }: AppTextInputProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const [focused, setFocused] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const focusProgress = useRef(new Animated.Value(0)).current;
@@ -114,7 +122,12 @@ export function AppTextInput({
             { color: colors.textPrimary },
             style,
           ]}
+          {...props}
           secureTextEntry={isPasswordField && !passwordVisible}
+          onChangeText={(text) => {
+            const next = isPasswordField ? sanitizePasswordText(text) : text;
+            onChangeText?.(next);
+          }}
           onFocus={(event) => {
             setFocused(true);
             onFocus?.(event);
@@ -123,13 +136,14 @@ export function AppTextInput({
             setFocused(false);
             onBlur?.(event);
           }}
-          {...props}
         />
         {isPasswordField ? (
           <Pressable
             onPress={() => setPasswordVisible((visible) => !visible)}
             accessibilityRole="button"
-            accessibilityLabel={passwordVisible ? 'Hide password' : 'Show password'}
+            accessibilityLabel={
+              passwordVisible ? t('auth.a11y.hidePassword') : t('auth.a11y.showPassword')
+            }
             hitSlop={8}
             style={styles.toggleButton}
           >

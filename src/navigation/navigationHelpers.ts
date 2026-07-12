@@ -39,3 +39,7 @@ export function resetToAuth(navigation: NavigationProp<ParamListBase>) {
 export function resetToLocationPermission(navigation: NavigationProp<ParamListBase>) {
   resetToRoute(navigation, ROOT_ROUTES.LOCATION_PERMISSION);
 }
+
+export function resetToNotificationPermission(navigation: NavigationProp<ParamListBase>) {
+  resetToRoute(navigation, ROOT_ROUTES.NOTIFICATION_PERMISSION);
+}

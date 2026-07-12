@@ -12,6 +12,7 @@ import {
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { devLog } from '../utils/devLog';
 
@@ -47,13 +48,14 @@ import {
 } from '../hooks';
 import { getLikesReceivedForProfile } from '../services/likesService';
 import { getMyPlaces, getSavedPlaces, ProfileStats } from '../services';
-import { radius, spacing, typography } from '../theme';
+import { radius, spacing, touchTarget, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { PlaceStatus } from '../types/database';
 import { OwnedPlace, Place } from '../types/place';
 import { MainTabParamList, ProfileStackParamList } from '../types';
 import { navigateToAuth, requireAuth } from '../utils/authGuard';
 import { withPlaceDistances } from '../utils/distance';
+import { localizeProfileMessage } from '../utils/profileMessages';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<ProfileStackParamList, typeof PROFILE_ROUTES.PROFILE_HOME>,
@@ -62,34 +64,54 @@ type Props = CompositeScreenProps<
 
 type ProfileTab = 'shared' | 'saved';
 type SharedStatusFilter = Extract<PlaceStatus, 'approved' | 'pending' | 'rejected'>;
+type StatKey = 'shared' | 'saved' | 'likes';
 type StatIcon = keyof typeof Ionicons.glyphMap;
 
-const SHARED_STATUS_FILTERS: { key: SharedStatusFilter; label: string }[] = [
-  { key: 'approved', label: 'Approved' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'rejected', label: 'Rejected' },
+const SHARED_STATUS_FILTERS: {
+  key: SharedStatusFilter;
+  labelKey:
+    | 'profile.filters.approved'
+    | 'profile.filters.pending'
+    | 'profile.filters.rejected';
+}[] = [
+  { key: 'approved', labelKey: 'profile.filters.approved' },
+  { key: 'pending', labelKey: 'profile.filters.pending' },
+  { key: 'rejected', labelKey: 'profile.filters.rejected' },
 ];
 
-const PROFILE_TABS: { key: ProfileTab; label: string }[] = [
-  { key: 'shared', label: 'Shared' },
-  { key: 'saved', label: 'Saved' },
+const PROFILE_TABS: {
+  key: ProfileTab;
+  labelKey: 'profile.tabs.shared' | 'profile.tabs.saved';
+}[] = [
+  { key: 'shared', labelKey: 'profile.tabs.shared' },
+  { key: 'saved', labelKey: 'profile.tabs.saved' },
 ];
 
-const GUEST_STATS: { label: string; value: string; icon: StatIcon }[] = [
-  { label: 'Shared', value: '—', icon: 'add-circle-outline' },
-  { label: 'Saved', value: '—', icon: 'bookmark-outline' },
-  { label: 'Likes', value: '—', icon: 'heart-outline' },
+const STAT_LABEL_KEYS: Record<
+  StatKey,
+  'profile.stats.shared' | 'profile.stats.saved' | 'profile.stats.likes'
+> = {
+  shared: 'profile.stats.shared',
+  saved: 'profile.stats.saved',
+  likes: 'profile.stats.likes',
+};
+
+const GUEST_STATS: { key: StatKey; value: string; icon: StatIcon }[] = [
+  { key: 'shared', value: '—', icon: 'add-circle-outline' },
+  { key: 'saved', value: '—', icon: 'bookmark-outline' },
+  { key: 'likes', value: '—', icon: 'heart-outline' },
 ];
 
-function buildUserStats(stats: ProfileStats): { label: string; value: string; icon: StatIcon }[] {
+function buildUserStats(stats: ProfileStats): { key: StatKey; value: string; icon: StatIcon }[] {
   return [
-    { label: 'Shared', value: `${stats.sharedPlacesCount}`, icon: 'add-circle-outline' },
-    { label: 'Saved', value: `${stats.savedPlacesCount}`, icon: 'bookmark-outline' },
-    { label: 'Likes', value: `${stats.likesReceived}`, icon: 'heart-outline' },
+    { key: 'shared', value: `${stats.sharedPlacesCount}`, icon: 'add-circle-outline' },
+    { key: 'saved', value: `${stats.savedPlacesCount}`, icon: 'bookmark-outline' },
+    { key: 'likes', value: `${stats.likesReceived}`, icon: 'heart-outline' },
   ];
 }
 
 export function ProfileScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { colors, shadows } = useTheme();
   const { user, profile, loading, refresh } = useAuth();
@@ -176,8 +198,8 @@ export function ProfileScreen({ navigation }: Props) {
     await refresh();
     await loadProfileData({ silent: true });
     setRefreshing(false);
-    showAppToast('Profile updated', { tone: 'success', durationMs: 1400 });
-  }, [loadProfileData, refresh]);
+    showAppToast(t('profile.toasts.refreshed'), { tone: 'success', durationMs: 1400 });
+  }, [loadProfileData, refresh, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -228,21 +250,23 @@ export function ProfileScreen({ navigation }: Props) {
       const place = savedPlacesRef.current.find((item) => item.id === placeId);
       const fallbackCount = place?.likeCount ?? 0;
 
-      void toggleLike(placeId, fallbackCount).then((result) => {
-        if (result.success && typeof result.likeCount === 'number') {
-          const nextCount = Math.max(0, result.likeCount);
-          setSavedPlaces((prev) =>
-            prev.map((item) =>
-              item.id === placeId ? { ...item, likeCount: nextCount } : item,
-            ),
-          );
-          setSharedPlaces((prev) =>
-            prev.map((item) =>
-              item.id === placeId ? { ...item, likeCount: nextCount } : item,
-            ),
-          );
-        }
-      });
+      void toggleLike(placeId, fallbackCount)
+        .then((result) => {
+          if (result.success && typeof result.likeCount === 'number') {
+            const nextCount = Math.max(0, result.likeCount);
+            setSavedPlaces((prev) =>
+              prev.map((item) =>
+                item.id === placeId ? { ...item, likeCount: nextCount } : item,
+              ),
+            );
+            setSharedPlaces((prev) =>
+              prev.map((item) =>
+                item.id === placeId ? { ...item, likeCount: nextCount } : item,
+              ),
+            );
+          }
+        })
+        .catch(() => undefined);
     },
     [isToggling, toggleLike, user],
   );
@@ -253,16 +277,20 @@ export function ProfileScreen({ navigation }: Props) {
     profile?.full_name?.trim() ||
     profile?.username?.trim() ||
     user?.email?.split('@')[0] ||
-    'Guest Explorer';
+    t('profile.guestName');
   const username = profile?.username?.trim();
   const bio = isGuest
-    ? 'Sign in to save places, share discoveries, and build your explorer profile.'
-    : profile?.bio?.trim() || 'Finding quiet places and sunset views.';
+    ? t('profile.guestBio')
+    : profile?.bio?.trim() || t('profile.defaultBio');
   const statItems = isGuest ? GUEST_STATS : buildUserStats(stats);
   const hasPendingPlaces = sharedPlaces.some((place) => place.status === 'pending');
   const filteredSharedPlaces = useMemo(
     () => sharedPlaces.filter((place) => place.status === sharedStatusFilter),
     [sharedPlaces, sharedStatusFilter],
+  );
+  const profileTabs = useMemo(
+    () => PROFILE_TABS.map((tab) => ({ key: tab.key, label: t(tab.labelKey) })),
+    [t],
   );
 
   const openAddPlace = useCallback(() => {
@@ -303,7 +331,9 @@ export function ProfileScreen({ navigation }: Props) {
 
       <ProfileEntranceBlock index={0}>
         <View style={styles.topBar}>
-          <Text style={[styles.screenTitle, { color: colors.textPrimary }]}>Profile</Text>
+          <Text style={[styles.screenTitle, { color: colors.textPrimary }]}>
+            {t('profile.title')}
+          </Text>
           <Pressable
             style={[
               styles.settingsButton,
@@ -315,7 +345,7 @@ export function ProfileScreen({ navigation }: Props) {
             ]}
             onPress={() => navigation.navigate(PROFILE_ROUTES.SETTINGS)}
             accessibilityRole="button"
-            accessibilityLabel="Open settings"
+            accessibilityLabel={t('profile.a11y.openSettings')}
           >
             <Ionicons name="settings-outline" size={22} color={colors.textPrimary} />
           </Pressable>
@@ -337,11 +367,11 @@ export function ProfileScreen({ navigation }: Props) {
               editable={!isGuest}
               onAvatarUpdated={async (avatarUrl) => {
                 await refresh();
-                showToast('Profile photo updated.');
+                showToast(t('profile.toasts.photoUpdated'));
                 devLog('[Nice Place Profile] profile avatar update success:', avatarUrl);
               }}
               onError={(message) => {
-                showToast(message);
+                showToast(localizeProfileMessage(message) ?? message);
               }}
             />
 
@@ -368,13 +398,15 @@ export function ProfileScreen({ navigation }: Props) {
           ]}
         >
           {statItems.map((stat) => (
-            <View key={stat.label} style={styles.statItem}>
+            <View key={stat.key} style={styles.statItem}>
               {contentLoading && !isGuest ? (
                 <ActivityIndicator size="small" color={colors.primary} style={styles.statSpinner} />
               ) : (
                 <AnimatedStatValue value={stat.value} color={colors.primary} />
               )}
-              <Text style={[styles.statLabel, { color: colors.textMuted }]}>{stat.label}</Text>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>
+                {t(STAT_LABEL_KEYS[stat.key])}
+              </Text>
             </View>
           ))}
         </View>
@@ -383,9 +415,13 @@ export function ProfileScreen({ navigation }: Props) {
       <ProfileEntranceBlock index={3}>
         {!isGuest ? (
           <View style={styles.actionRow}>
-            <AppButton title="Share a place" onPress={openAddPlace} fullWidth={false} />
             <AppButton
-              title="Edit profile"
+              title={t('addPlace.title')}
+              onPress={openAddPlace}
+              fullWidth={false}
+            />
+            <AppButton
+              title={t('profile.actions.editProfile')}
               variant="secondary"
               onPress={() => navigation.navigate(PROFILE_ROUTES.SETTINGS_ACCOUNT)}
               fullWidth={false}
@@ -393,7 +429,7 @@ export function ProfileScreen({ navigation }: Props) {
           </View>
         ) : (
           <AppButton
-            title="Sign in"
+            title={t('common.signIn')}
             onPress={() => navigateToAuth(navigation)}
             fullWidth={false}
           />
@@ -401,8 +437,9 @@ export function ProfileScreen({ navigation }: Props) {
 
         {showAdminEntry ? (
           <AppButton
-            title="Admin Panel"
+            title={t('navigation.adminPanel')}
             variant="secondary"
+            style={styles.adminPanelButton}
             onPress={() => {
               devLog('[Nice Place Admin] entry pressed', {
                 where: 'ProfileScreen',
@@ -417,21 +454,21 @@ export function ProfileScreen({ navigation }: Props) {
           />
         ) : adminLoading && user ? (
           <Text style={[styles.adminLoading, { color: colors.textMuted }]}>
-            Checking admin access…
+            {t('profile.checkingAdmin')}
           </Text>
         ) : null}
       </ProfileEntranceBlock>
 
       {!isGuest ? (
         <ProfileEntranceBlock index={4}>
-          <ProfileTabs tabs={PROFILE_TABS} activeKey={activeTab} onChange={setActiveTab} />
+          <ProfileTabs tabs={profileTabs} activeKey={activeTab} onChange={setActiveTab} />
 
           {activeTab === 'shared' ? (
             <View style={styles.statusFilters}>
               {SHARED_STATUS_FILTERS.map((filter) => (
                 <FilterChip
                   key={filter.key}
-                  label={filter.label}
+                  label={t(filter.labelKey)}
                   active={sharedStatusFilter === filter.key}
                   onPress={() => setSharedStatusFilter(filter.key)}
                 />
@@ -441,7 +478,7 @@ export function ProfileScreen({ navigation }: Props) {
 
           {activeTab === 'shared' && hasPendingPlaces && sharedStatusFilter === 'pending' ? (
             <Text style={[styles.pendingNote, { color: colors.warning }]}>
-              Pending places are visible only to you until approved.
+              {t('profile.pendingNote')}
             </Text>
           ) : null}
 
@@ -459,25 +496,29 @@ export function ProfileScreen({ navigation }: Props) {
                     icon={isOffline ? 'cloud-offline-outline' : 'map-outline'}
                     title={
                       isOffline
-                        ? 'No cached shared places'
+                        ? t('profile.empty.sharedOfflineTitle')
                         : sharedStatusFilter === 'approved'
-                          ? 'No approved places'
+                          ? t('profile.empty.noApprovedTitle')
                           : sharedStatusFilter === 'pending'
-                            ? 'No pending places'
-                            : 'No rejected places'
+                            ? t('profile.empty.noPendingTitle')
+                            : t('profile.empty.noRejectedTitle')
                     }
                     description={
                       isOffline
-                        ? 'Connect to the internet to load your shared places.'
+                        ? t('profile.empty.sharedOfflineBody')
                         : sharedStatusFilter === 'approved'
-                          ? 'Share a quiet spot or sunset view with the community.'
+                          ? t('profile.empty.noApprovedBody')
                           : sharedStatusFilter === 'pending'
-                            ? 'Places waiting for review will show up here.'
-                            : 'Rejected submissions will show up here.'
+                            ? t('profile.empty.noPendingBody')
+                            : t('profile.empty.noRejectedBody')
                     }
                     action={
                       isOffline || sharedStatusFilter !== 'approved' ? undefined : (
-                        <AppButton title="Share a place" onPress={openAddPlace} fullWidth={false} />
+                        <AppButton
+                          title={t('addPlace.title')}
+                          onPress={openAddPlace}
+                          fullWidth={false}
+                        />
                       )
                     }
                   />
@@ -503,16 +544,20 @@ export function ProfileScreen({ navigation }: Props) {
               ) : savedPlaces.length === 0 ? (
                 <EmptyState
                   icon={isOffline ? 'cloud-offline-outline' : 'bookmark-outline'}
-                  title={isOffline ? 'No cached saved places' : 'No saved places'}
+                  title={
+                    isOffline
+                      ? t('saved.empty.noCachedTitle')
+                      : t('saved.empty.noSavedTitle')
+                  }
                   description={
                     isOffline
-                      ? 'Connect to the internet to load your saved places.'
-                      : 'Save places from Explore to build your collection.'
+                      ? t('saved.empty.noCachedBody')
+                      : t('profile.empty.savedExploreBody')
                   }
                   action={
                     isOffline ? undefined : (
                       <AppButton
-                        title="Explore map"
+                        title={t('profile.actions.exploreMap')}
                         onPress={() => navigation.navigate(TAB_ROUTES.EXPLORE)}
                         fullWidth={false}
                       />
@@ -544,7 +589,7 @@ export function ProfileScreen({ navigation }: Props) {
 
       <AuthRequiredModal
         visible={authPromptVisible}
-        message="Sign in to like places."
+        message={t('explore.auth.like')}
         onSignIn={() => {
           setAuthPromptVisible(false);
           navigateToAuth(navigation);
@@ -569,8 +614,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   settingsButton: {
-    width: 40,
-    height: 40,
+    width: touchTarget.min,
+    height: touchTarget.min,
     borderRadius: radius.full,
     borderWidth: 1,
     alignItems: 'center',
@@ -620,6 +665,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.sm,
     justifyContent: 'center',
+  },
+  adminPanelButton: {
+    marginTop: spacing.md,
   },
   adminLoading: {
     ...typography.caption,

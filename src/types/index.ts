@@ -6,12 +6,21 @@ export type {
 export { getPublicDisplayName, getPublicUsernameLabel } from './publicProfile';
 export type { DbPlace, DbProfile, DbPlacePhoto } from './database';
 export type {
+  DbProfileReport,
+  DbProfileModerationAction,
+  ReportedProfileListItem,
+  ReportedProfileDetail,
+  ProfileModerationState,
+  ProfileModerationActionResult,
+} from './profileModeration';
+export type {
   AuthStackParamList,
   MapStackParamList,
   AddPlaceStackParamList,
   AddPlaceParams,
   PickLocationParams,
   ProfileStackParamList,
+  SavedStackParamList,
   MainTabParamList,
   RootStackParamList,
 } from './navigation';

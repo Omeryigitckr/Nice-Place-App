@@ -2,22 +2,38 @@ import { Ionicons } from '@expo/vector-icons';
 import Mapbox, { Camera, MapView, MarkerView, StyleURL } from '@rnmapbox/maps';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { AppButton, CachedImage, EmptyState, ScreenContainer } from '../../components';
+import { AppButton, CachedImage, EmptyState, PlaceCategoryChips, ScreenContainer } from '../../components';
 import { FeedbackModal } from '../../components/FeedbackModal';
 import { PROFILE_ROUTES } from '../../constants';
+import {
+  getAccessTypeLabel,
+  getBestTimeLabel,
+  getCrowdLevelLabel,
+  getDifficultyLabel,
+} from '../../constants/addPlaceOptions';
 import { useAdminAccess } from '../../hooks';
 import {
   approvePlace,
+  fetchPlaceCategoriesByPlaceIds,
   getPlaceForAdminReview,
+  getPlacePhotos,
   rejectPlace,
   restoreRejectedPlace,
 } from '../../services';
+import { normalizePlaceCategories } from '../../constants/placeCategories';
 import { radius, spacing, typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { DbPlace } from '../../types/database';
 import { ProfileStackParamList } from '../../types';
+import {
+  formatAdminDateTime,
+  getPlaceStatusLabel,
+  isAdminAccessGateMessage,
+  localizeAdminMessage,
+} from '../../utils/adminMessages';
 import { getMapboxConfigError, getMapboxToken } from '../../utils/mapbox';
 
 type Props = NativeStackScreenProps<
@@ -26,14 +42,6 @@ type Props = NativeStackScreenProps<
 >;
 
 type ConfirmAction = 'approve' | 'reject' | 'restore' | null;
-
-function formatDate(value: string): string {
-  try {
-    return new Date(value).toLocaleString();
-  } catch {
-    return value;
-  }
-}
 
 function DetailRow({
   label,
@@ -144,16 +152,21 @@ function AdminLocationPreview({
 
 export function AdminPlaceDetailScreen({ navigation, route }: Props) {
   const { placeId } = route.params;
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const { isAdmin, loading: adminLoading, authUserId } = useAdminAccess();
 
   const [place, setPlace] = useState<DbPlace | null>(null);
+  const [categoryKeys, setCategoryKeys] = useState<string[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [acting, setActing] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const [successVisible, setSuccessVisible] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessageKey, setSuccessMessageKey] = useState('');
+
+  const emDash = t('admin.emDash');
 
   const loadPlace = useCallback(async () => {
     if (adminLoading || !isAdmin) {
@@ -165,11 +178,8 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
     const result = await getPlaceForAdminReview(placeId);
     if (result.error || !result.place) {
       setPlace(null);
-      const message = result.error ?? 'Place not found.';
-      if (
-        !message.toLowerCase().includes('admin access') &&
-        !message.toLowerCase().includes('sign in as an admin')
-      ) {
+      const message = result.error ?? 'admin.errors.placeNotFound';
+      if (!isAdminAccessGateMessage(message)) {
         setError(message);
       }
       setLoading(false);
@@ -177,6 +187,18 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
     }
 
     setPlace(result.place);
+    const categoryMap = await fetchPlaceCategoriesByPlaceIds([placeId]);
+    const keys = categoryMap[placeId] ?? normalizePlaceCategories([result.place.category ?? '']);
+    setCategoryKeys(keys);
+    const photos = await getPlacePhotos(placeId, { includePending: true });
+    const urls = photos.map((photo) => photo.imageUrl);
+    setPhotoUrls(
+      urls.length > 0
+        ? urls
+        : result.place.cover_photo_url
+          ? [result.place.cover_photo_url]
+          : [],
+    );
     setLoading(false);
   }, [adminLoading, isAdmin, placeId]);
 
@@ -210,22 +232,22 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
       setError(
         result.error ??
           (action === 'restore'
-            ? "Couldn't complete action. Please try again."
+            ? 'admin.errors.actionFailed'
             : action === 'reject'
-              ? "Couldn't reject the place. Please try again."
-              : "Couldn't approve the place. Please try again."),
+              ? 'admin.errors.rejectPlaceFailed'
+              : 'admin.errors.approvePlaceFailed'),
       );
       return;
     }
 
     if (action === 'restore') {
       setPlace((current) => (current ? { ...current, status: 'pending' } : current));
-      setSuccessMessage('Place moved back to pending.');
+      setSuccessMessageKey('admin.placeDetail.successRestore');
     } else {
-      setSuccessMessage(
+      setSuccessMessageKey(
         action === 'approve'
-          ? 'Place approved and will appear on the map.'
-          : 'Place rejected. It will not appear publicly.',
+          ? 'admin.placeDetail.successApprove'
+          : 'admin.placeDetail.successReject',
       );
     }
     setSuccessVisible(true);
@@ -236,7 +258,7 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} contentStyle={styles.centered}>
         <ActivityIndicator color={colors.primary} size="large" />
         <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Checking admin access…
+          {t('admin.checkingAccess')}
         </Text>
       </ScreenContainer>
     );
@@ -247,8 +269,8 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} contentStyle={styles.centered}>
         <EmptyState
           icon="person-outline"
-          title="Sign in required"
-          description="Guests cannot access the admin panel."
+          title={t('admin.access.signInTitle')}
+          description={t('admin.access.signInBodyShort')}
         />
       </ScreenContainer>
     );
@@ -259,8 +281,8 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} contentStyle={styles.centered}>
         <EmptyState
           icon="lock-closed-outline"
-          title="Access denied"
-          description="This panel is only available to administrators."
+          title={t('admin.access.deniedTitle')}
+          description={t('admin.access.deniedBody')}
         />
       </ScreenContainer>
     );
@@ -271,7 +293,7 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} contentStyle={styles.centered}>
         <ActivityIndicator color={colors.primary} size="large" />
         <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Loading place…
+          {t('admin.placeDetail.loading')}
         </Text>
       </ScreenContainer>
     );
@@ -282,10 +304,14 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} contentStyle={styles.centered}>
         <EmptyState
           icon="alert-circle-outline"
-          title="Place not found"
-          description={error ?? 'This submission could not be loaded.'}
+          title={t('admin.placeDetail.notFoundTitle')}
+          description={localizeAdminMessage(error) ?? t('admin.placeDetail.notFoundBody')}
           action={
-            <AppButton title="Go back" onPress={() => navigation.goBack()} fullWidth={false} />
+            <AppButton
+              title={t('common.back')}
+              onPress={() => navigation.goBack()}
+              fullWidth={false}
+            />
           }
         />
       </ScreenContainer>
@@ -294,6 +320,7 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
 
   const isPending = place.status === 'pending';
   const isRejected = place.status === 'rejected';
+  const statusLabel = getPlaceStatusLabel(place.status);
 
   return (
     <>
@@ -303,19 +330,56 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
         reserveFloatingTabBar
         contentStyle={styles.content}
       >
-        <CachedImage
-          uri={place.cover_photo_url}
-          width="100%"
-          height={200}
-          borderRadius={radius.lg}
-          recyclingKey={place.id}
-          priority="high"
-        />
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+          {t('admin.placeDetail.submittedPhotos')}
+        </Text>
+        {photoUrls.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.photoStrip}
+          >
+            {photoUrls.map((uri, index) => (
+              <View key={`${uri}-${index}`} style={styles.photoThumbWrap}>
+                <CachedImage
+                  uri={uri}
+                  width={160}
+                  height={120}
+                  borderRadius={radius.lg}
+                  recyclingKey={`admin-place-${place.id}-${index}`}
+                  priority="high"
+                />
+                {index === 0 ? (
+                  <View style={[styles.coverBadge, { backgroundColor: colors.primary }]}>
+                    <Text style={[styles.coverBadgeText, { color: colors.textInverse }]}>
+                      {t('admin.placeDetail.cover')}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            ))}
+          </ScrollView>
+        ) : (
+          <CachedImage
+            uri={place.cover_photo_url}
+            width="100%"
+            height={200}
+            borderRadius={radius.lg}
+            recyclingKey={place.id}
+            priority="high"
+          />
+        )}
 
         <Text style={[styles.title, { color: colors.textPrimary }]}>{place.title}</Text>
-        <Text style={[styles.meta, { color: colors.textSecondary }]}>
-          {place.category} · {place.status}
-        </Text>
+        <PlaceCategoryChips
+          place={{
+            categories: categoryKeys,
+            categorySlug: place.category ?? '',
+            category: place.category ?? '',
+          }}
+          maxVisible={8}
+        />
+        <Text style={[styles.meta, { color: colors.textSecondary }]}>{statusLabel}</Text>
 
         <View
           style={[
@@ -324,43 +388,67 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
           ]}
         >
           <DetailRow
-            label="Description"
-            value={place.description?.trim() || '—'}
+            label={t('admin.fields.description')}
+            value={place.description?.trim() || emDash}
             colors={colors}
           />
-          <DetailRow label="Best time" value={place.best_time ?? '—'} colors={colors} />
-          <DetailRow label="Access" value={String(place.access_type ?? '—')} colors={colors} />
           <DetailRow
-            label="Difficulty"
-            value={String(place.difficulty_level ?? '—')}
+            label={t('admin.fields.bestTime')}
+            value={place.best_time ? getBestTimeLabel(place.best_time) : emDash}
             colors={colors}
           />
-          <DetailRow label="Crowd" value={String(place.crowd_level ?? '—')} colors={colors} />
           <DetailRow
-            label="Location"
+            label={t('admin.fields.access')}
+            value={place.access_type ? getAccessTypeLabel(place.access_type) : emDash}
+            colors={colors}
+          />
+          <DetailRow
+            label={t('admin.fields.difficulty')}
+            value={
+              place.difficulty_level ? getDifficultyLabel(place.difficulty_level) : emDash
+            }
+            colors={colors}
+          />
+          <DetailRow
+            label={t('admin.fields.crowd')}
+            value={place.crowd_level ? getCrowdLevelLabel(place.crowd_level) : emDash}
+            colors={colors}
+          />
+          <DetailRow
+            label={t('admin.fields.location')}
             value={`${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`}
             colors={colors}
           />
           <View style={styles.mapSection}>
-            <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Map preview</Text>
+            <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+              {t('admin.fields.mapPreview')}
+            </Text>
             <AdminLocationPreview latitude={place.latitude} longitude={place.longitude} />
           </View>
-          <DetailRow label="Submitted" value={formatDate(place.created_at)} colors={colors} />
-          <DetailRow label="Creator id" value={place.created_by ?? '—'} colors={colors} />
           <DetailRow
-            label="Safety note"
-            value={place.safety_note?.trim() || '—'}
+            label={t('admin.fields.submitted')}
+            value={formatAdminDateTime(place.created_at, i18n.language)}
+            colors={colors}
+          />
+          <DetailRow
+            label={t('admin.fields.creatorId')}
+            value={place.created_by ?? emDash}
+            colors={colors}
+          />
+          <DetailRow
+            label={t('admin.fields.safetyNote')}
+            value={place.safety_note?.trim() || emDash}
             colors={colors}
           />
         </View>
 
         <View style={styles.flags}>
           {[
-            place.is_pet_friendly && 'Pet friendly',
-            place.is_child_friendly && 'Child friendly',
-            place.is_car_accessible && 'Car accessible',
-            place.is_camp_allowed && 'Camp allowed',
-            place.is_picnic_suitable && 'Picnic suitable',
+            place.is_pet_friendly && t('admin.flags.petFriendly'),
+            place.is_child_friendly && t('admin.flags.childFriendly'),
+            place.is_car_accessible && t('admin.flags.carAccessible'),
+            place.is_camp_allowed && t('admin.flags.campAllowed'),
+            place.is_picnic_suitable && t('admin.flags.picnicSuitable'),
           ]
             .filter(Boolean)
             .map((label) => (
@@ -376,17 +464,21 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
             ))}
         </View>
 
-        {error ? <Text style={[styles.error, { color: colors.error }]}>{error}</Text> : null}
+        {error ? (
+          <Text style={[styles.error, { color: colors.error }]}>
+            {localizeAdminMessage(error)}
+          </Text>
+        ) : null}
 
         {isPending ? (
           <View style={styles.actions}>
             <AppButton
-              title="Approve place"
+              title={t('admin.placeDetail.approve')}
               onPress={() => setConfirmAction('approve')}
               disabled={acting}
             />
             <AppButton
-              title="Reject place"
+              title={t('admin.placeDetail.reject')}
               variant="secondary"
               onPress={() => setConfirmAction('reject')}
               disabled={acting}
@@ -395,7 +487,7 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
         ) : isRejected ? (
           <View style={styles.actions}>
             <AppButton
-              title="Restore to pending"
+              title={t('admin.placeDetail.restore')}
               onPress={() => setConfirmAction('restore')}
               disabled={acting}
             />
@@ -404,7 +496,7 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
           <View style={styles.statusBanner}>
             <Ionicons name="information-circle-outline" size={18} color={colors.textSecondary} />
             <Text style={[styles.statusNote, { color: colors.textSecondary }]}>
-              This place is already {place.status}. No further action is needed.
+              {t('admin.placeDetail.alreadyStatus', { status: statusLabel })}
             </Text>
           </View>
         )}
@@ -415,31 +507,31 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
         variant={confirmAction === 'reject' ? 'error' : 'success'}
         title={
           confirmAction === 'approve'
-            ? 'Approve this place?'
+            ? t('admin.placeDetail.confirmApproveTitle')
             : confirmAction === 'reject'
-              ? 'Reject this place?'
-              : 'Move this place back to pending review?'
+              ? t('admin.placeDetail.confirmRejectTitle')
+              : t('admin.placeDetail.confirmRestoreTitle')
         }
         subtitle={
           confirmAction === 'approve'
-            ? 'It will become visible on the public map. This does not delete any data.'
+            ? t('admin.placeDetail.confirmApproveBody')
             : confirmAction === 'reject'
-              ? 'It will stay in the database as rejected and will not appear publicly.'
-              : 'It will return to the pending queue for review.'
+              ? t('admin.placeDetail.confirmRejectBody')
+              : t('admin.placeDetail.confirmRestoreBody')
         }
         primaryLabel={
           acting
-            ? 'Working…'
+            ? t('admin.working')
             : confirmAction === 'approve'
-              ? 'Approve'
+              ? t('admin.placeDetail.approveAction')
               : confirmAction === 'reject'
-                ? 'Reject'
-                : 'Restore'
+                ? t('admin.placeDetail.rejectAction')
+                : t('admin.placeDetail.restoreAction')
         }
         onPrimary={() => {
           void runAction();
         }}
-        secondaryLabel="Cancel"
+        secondaryLabel={t('common.cancel')}
         onSecondary={() => {
           if (!acting) {
             setConfirmAction(null);
@@ -450,9 +542,9 @@ export function AdminPlaceDetailScreen({ navigation, route }: Props) {
       <FeedbackModal
         visible={successVisible}
         variant="success"
-        title="Done"
-        subtitle={successMessage}
-        primaryLabel="Back to admin"
+        title={t('admin.placeDetail.successTitle')}
+        subtitle={successMessageKey ? t(successMessageKey as never) : ''}
+        primaryLabel={t('admin.placeDetail.backToAdmin')}
         onPrimary={() => {
           setSuccessVisible(false);
           navigation.goBack();
@@ -476,6 +568,30 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     ...typography.bodySmall,
+  },
+  sectionTitle: {
+    ...typography.subtitle,
+    fontSize: 16,
+  },
+  photoStrip: {
+    gap: spacing.sm,
+    paddingBottom: spacing.xs,
+  },
+  photoThumbWrap: {
+    position: 'relative',
+  },
+  coverBadge: {
+    position: 'absolute',
+    left: spacing.xs,
+    bottom: spacing.xs,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+  },
+  coverBadgeText: {
+    ...typography.caption,
+    fontSize: 10,
+    fontWeight: '700',
   },
   title: {
     ...typography.screenTitle,

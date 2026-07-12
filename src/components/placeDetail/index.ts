@@ -1,4 +1,5 @@
 export { PlaceDetailHero, PLACE_DETAIL_HERO_HEIGHT } from './PlaceDetailHero';
+export { PlaceDetailHeroCarousel } from './PlaceDetailHeroCarousel';
 export { PlaceQuickInfoCard } from './PlaceQuickInfoCard';
 export type { QuickInfoItem } from './PlaceQuickInfoCard';
 export { PlaceDescriptionBlock } from './PlaceDescriptionBlock';

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import {
   AppButton,
@@ -20,8 +21,9 @@ import { signInWithApple, signInWithGoogle } from '../services/socialAuthService
 import { spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { AuthStackParamList } from '../types';
+import { getLocalizedAuthError, isAuthCancellationError } from '../utils/authErrors';
 import {
-  REGISTRATION_PASSWORD_HINT,
+  getRegistrationPasswordHint,
   validateEmail,
   validateRegistrationPassword,
 } from '../utils/authValidation';
@@ -30,6 +32,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, typeof AUTH_ROUTES.REGIS
 
 export function RegisterScreen({ navigation }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,7 +62,7 @@ export function RegisterScreen({ navigation }: Props) {
     setLoading(false);
 
     if (!result.success) {
-      setError(result.error ?? 'Sign up failed.');
+      setError(getLocalizedAuthError(result.error, 'auth.errors.signUpFailed'));
       return;
     }
 
@@ -73,8 +76,8 @@ export function RegisterScreen({ navigation }: Props) {
     setSocialLoading(null);
 
     if (!result.success) {
-      if (result.error && !result.error.toLowerCase().includes('cancelled')) {
-        setError(result.error);
+      if (!isAuthCancellationError(result.error)) {
+        setError(getLocalizedAuthError(result.error, 'auth.errors.googleFailed'));
       }
       return;
     }
@@ -89,8 +92,8 @@ export function RegisterScreen({ navigation }: Props) {
     setSocialLoading(null);
 
     if (!result.success) {
-      if (result.error && !result.error.toLowerCase().includes('cancelled')) {
-        setError(result.error);
+      if (!isAuthCancellationError(result.error)) {
+        setError(getLocalizedAuthError(result.error, 'auth.errors.appleFailed'));
       }
       return;
     }
@@ -102,20 +105,22 @@ export function RegisterScreen({ navigation }: Props) {
     <AuthScreenLayout>
       <AppCard elevated style={styles.card}>
         <AuthStaggerItem index={0}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Create account</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            {t('auth.register.title')}
+          </Text>
         </AuthStaggerItem>
 
         <AuthStaggerItem index={1}>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Start discovering beautiful places.
+            {t('auth.register.subtitle')}
           </Text>
         </AuthStaggerItem>
 
         <View style={styles.form}>
           <AuthStaggerItem index={2}>
             <AppTextInput
-              label="Full name"
-              placeholder="Your name"
+              label={t('auth.register.fullNameLabel')}
+              placeholder={t('auth.register.fullNamePlaceholder')}
               autoComplete="name"
               value={fullName}
               onChangeText={setFullName}
@@ -123,8 +128,8 @@ export function RegisterScreen({ navigation }: Props) {
           </AuthStaggerItem>
           <AuthStaggerItem index={3}>
             <AppTextInput
-              label="Email"
-              placeholder="you@email.com"
+              label={t('auth.register.emailLabel')}
+              placeholder={t('auth.register.emailPlaceholder')}
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
@@ -134,15 +139,15 @@ export function RegisterScreen({ navigation }: Props) {
           </AuthStaggerItem>
           <AuthStaggerItem index={4}>
             <AppTextInput
-              label="Password"
-              placeholder="••••••••"
+              label={t('auth.register.passwordLabel')}
+              placeholder={t('auth.register.passwordPlaceholder')}
               secureTextEntry
               autoComplete="new-password"
               value={password}
               onChangeText={setPassword}
             />
             <Text style={[styles.passwordHint, { color: colors.textMuted }]}>
-              {REGISTRATION_PASSWORD_HINT}
+              {getRegistrationPasswordHint()}
             </Text>
           </AuthStaggerItem>
         </View>
@@ -154,7 +159,7 @@ export function RegisterScreen({ navigation }: Props) {
         <View style={styles.actions}>
           <AuthStaggerItem index={6}>
             <AppButton
-              title={loading ? 'Creating account…' : 'Sign Up'}
+              title={loading ? t('auth.register.submitting') : t('auth.register.submit')}
               onPress={handleSignUp}
               disabled={isBusy}
             />
@@ -172,7 +177,7 @@ export function RegisterScreen({ navigation }: Props) {
           </AuthStaggerItem>
           <AuthStaggerItem index={9}>
             <AppButton
-              title="Already have an account"
+              title={t('auth.register.alreadyHaveAccount')}
               variant="ghost"
               onPress={() => navigation.navigate(AUTH_ROUTES.LOGIN)}
               disabled={isBusy}
@@ -180,7 +185,7 @@ export function RegisterScreen({ navigation }: Props) {
           </AuthStaggerItem>
           <AuthStaggerItem index={10}>
             <AppButton
-              title="Continue as guest"
+              title={t('auth.guest.continue')}
               variant="secondary"
               onPress={() => resetToMain(navigation)}
               disabled={isBusy}

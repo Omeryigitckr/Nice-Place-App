@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
@@ -14,6 +15,7 @@ import { useTheme } from '../theme/ThemeContext';
 export function OfflineBanner() {
   const { isOffline } = useNetworkStatus();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
   const translateY = useRef(new Animated.Value(-48)).current;
@@ -77,7 +79,7 @@ export function OfflineBanner() {
       >
         <Ionicons name="cloud-offline-outline" size={16} color={colors.warning} />
         <Text style={[styles.text, { color: colors.textPrimary }]}>
-          You're offline — showing saved data
+          {t('network.offlineBanner')}
         </Text>
       </View>
     </Animated.View>

@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { MAP_ROUTES } from '../constants';
 import { AddPlaceScreen, PickLocationScreen } from '../screens';
@@ -8,6 +9,8 @@ import { AddPlaceStackParamList } from '../types';
 const Stack = createNativeStackNavigator<AddPlaceStackParamList>();
 
 export function AddPlaceStackNavigator() {
+  const { t } = useTranslation();
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -20,7 +23,7 @@ export function AddPlaceStackNavigator() {
       <Stack.Screen
         name={MAP_ROUTES.ADD_PLACE}
         component={AddPlaceScreen}
-        options={{ title: 'Add Place' }}
+        options={{ title: t('navigation.addPlace') }}
       />
       <Stack.Screen
         name={MAP_ROUTES.PICK_LOCATION}

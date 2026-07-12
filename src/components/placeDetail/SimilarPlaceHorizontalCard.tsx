@@ -2,21 +2,30 @@ import { Ionicons } from '@expo/vector-icons';
 import { memo, useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { categoryKeyListsEqual } from '../../constants/placeCategories';
 import { radius, spacing, typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { Place } from '../../types/place';
 import { CachedImage } from '../CachedImage';
+import { getPlacePrimaryCategoryLabel } from '../PlaceCategoryChips';
+import { PlaceSaveButton } from '../PlaceSaveButton';
 
 interface SimilarPlaceHorizontalCardProps {
   place: Place;
   onPress?: () => void;
   onPressId?: (placeId: string) => void;
+  showSaveAction?: boolean;
+  onRequiresAuth?: () => void;
+  onSaveCountChange?: (saveCount: number) => void;
 }
 
 function SimilarPlaceHorizontalCardComponent({
   place,
   onPress,
   onPressId,
+  showSaveAction = true,
+  onRequiresAuth,
+  onSaveCountChange,
 }: SimilarPlaceHorizontalCardProps) {
   const { colors, shadows } = useTheme();
 
@@ -46,9 +55,21 @@ function SimilarPlaceHorizontalCardComponent({
         recyclingKey={place.id}
         priority="low"
       />
+      {showSaveAction ? (
+        <View style={styles.saveButtonWrap}>
+          <PlaceSaveButton
+            placeId={place.id}
+            saveCount={place.saveCount}
+            onRequiresAuth={onRequiresAuth}
+            onSaveCountChange={onSaveCountChange}
+            compact
+            showLabel={false}
+          />
+        </View>
+      ) : null}
       <View style={styles.content}>
         <Text style={[styles.category, { color: colors.primary }]} numberOfLines={1}>
-          {place.category}
+          {getPlacePrimaryCategoryLabel(place)}
         </Text>
         <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
           {place.title}
@@ -74,8 +95,12 @@ function areSimilarPlacePropsEqual(
     prev.place.image === next.place.image &&
     prev.place.distance === next.place.distance &&
     prev.place.category === next.place.category &&
+    categoryKeyListsEqual(prev.place.categories, next.place.categories) &&
     prev.onPress === next.onPress &&
-    prev.onPressId === next.onPressId
+    prev.onPressId === next.onPressId &&
+    prev.showSaveAction === next.showSaveAction &&
+    prev.onRequiresAuth === next.onRequiresAuth &&
+    prev.onSaveCountChange === next.onSaveCountChange
   );
 }
 
@@ -90,6 +115,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     overflow: 'hidden',
     borderWidth: 1,
+    position: 'relative',
   },
   pressed: {
     opacity: 0.9,
@@ -117,5 +143,10 @@ const styles = StyleSheet.create({
   metaText: {
     ...typography.caption,
     fontSize: 11,
+  },
+  saveButtonWrap: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.xs,
   },
 });

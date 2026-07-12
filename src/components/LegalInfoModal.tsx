@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { radius, spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
@@ -21,6 +22,7 @@ interface LegalInfoModalProps {
 export function LegalInfoModal({ visible, content, onClose }: LegalInfoModalProps) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   if (!content) {
     return null;
@@ -32,7 +34,7 @@ export function LegalInfoModal({ visible, content, onClose }: LegalInfoModalProp
         <Pressable
           style={[styles.backdrop, { backgroundColor: colors.scrim }]}
           onPress={onClose}
-          accessibilityLabel="Close"
+          accessibilityLabel={t('common.close')}
         />
         <View
           style={[
@@ -50,7 +52,7 @@ export function LegalInfoModal({ visible, content, onClose }: LegalInfoModalProp
               onPress={onClose}
               hitSlop={10}
               accessibilityRole="button"
-              accessibilityLabel="Close"
+              accessibilityLabel={t('common.close')}
               style={styles.closeHit}
             >
               <Ionicons name="close" size={22} color={colors.textSecondary} />
@@ -59,7 +61,7 @@ export function LegalInfoModal({ visible, content, onClose }: LegalInfoModalProp
           <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
             <Text style={[styles.body, { color: colors.textSecondary }]}>{content.body}</Text>
           </ScrollView>
-          <AppButton title="Close" variant="secondary" onPress={onClose} />
+          <AppButton title={t('common.close')} variant="secondary" onPress={onClose} />
         </View>
       </View>
     </Modal>

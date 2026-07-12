@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { radius, spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
@@ -32,6 +33,7 @@ export function FeedbackModal({
 }: FeedbackModalProps) {
   const insets = useSafeAreaInsets();
   const { colors, shadows } = useTheme();
+  const { t } = useTranslation();
   const isSuccess = variant === 'success';
 
   return (
@@ -47,7 +49,7 @@ export function FeedbackModal({
         <Pressable
           style={[styles.backdrop, { backgroundColor: colors.scrimHeavy }]}
           onPress={onSecondary ?? onPrimary}
-          accessibilityLabel="Dismiss"
+          accessibilityLabel={t('common.dismiss')}
         />
         <View
           style={[

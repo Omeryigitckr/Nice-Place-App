@@ -1,16 +1,31 @@
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { AppButton, AppTextInput, EmptyState, ScreenContainer } from '../../components';
+import { AppButton, AppTextInput, CachedImage, EmptyState, PlaceCategoryChips, ScreenContainer } from '../../components';
 import { FeedbackModal } from '../../components/FeedbackModal';
 import { PROFILE_ROUTES } from '../../constants';
+import {
+  getAccessTypeLabel,
+  getBestTimeLabel,
+  getCrowdLevelLabel,
+  getDifficultyLabel,
+} from '../../constants/addPlaceOptions';
+import {
+  categoryKeyListsEqual,
+  formatCategoryDisplayLabels,
+  normalizePlaceCategories,
+} from '../../constants/placeCategories';
 import { useAdminAccess } from '../../hooks';
 import {
   approvePlaceUpdateRequest,
+  fetchPlaceCategoriesByPlaceIds,
   getPlaceForAdminReview,
+  getPlacePhotoUrls,
   getPlaceUpdateRequestById,
+  normalizePlacePhotoUrls,
   rejectPlaceUpdateRequest,
   restoreRejectedPlaceUpdateRequest,
 } from '../../services';
@@ -18,72 +33,114 @@ import { radius, spacing, typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { DbPlace, DbPlaceUpdateRequest } from '../../types/database';
 import { ProfileStackParamList } from '../../types';
+import {
+  getPlaceStatusLabel,
+  isAdminAccessGateMessage,
+  localizeAdminMessage,
+} from '../../utils/adminMessages';
 
 type Props = NativeStackScreenProps<
   ProfileStackParamList,
   typeof PROFILE_ROUTES.ADMIN_UPDATE_REQUEST
 >;
 
+type TranslateFn = (key: string) => string;
+
 type CompareField = {
   key: string;
-  label: string;
+  labelKey: string;
   oldValue: string;
   newValue: string;
   changed: boolean;
 };
 
-function formatValue(value: unknown): string {
+function formatValue(value: unknown, t: TranslateFn, fieldKey?: string): string {
   if (value == null || value === '') {
-    return '—';
+    return t('admin.emDash');
   }
   if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No';
+    return value ? t('common.yes') : t('common.no');
   }
-  return String(value);
+  const asString = String(value);
+  if (fieldKey === 'best_time') {
+    return getBestTimeLabel(asString);
+  }
+  if (fieldKey === 'access_type') {
+    return getAccessTypeLabel(asString);
+  }
+  if (fieldKey === 'difficulty_level') {
+    return getDifficultyLabel(asString);
+  }
+  if (fieldKey === 'crowd_level') {
+    return getCrowdLevelLabel(asString);
+  }
+  return asString;
 }
 
-function buildComparisons(place: DbPlace, request: DbPlaceUpdateRequest): CompareField[] {
-  const fields: Array<{ key: keyof DbPlaceUpdateRequest | string; label: string; placeKey: keyof DbPlace }> = [
-    { key: 'title', label: 'Title', placeKey: 'title' },
-    { key: 'description', label: 'Description', placeKey: 'description' },
-    { key: 'category', label: 'Category', placeKey: 'category' },
-    { key: 'latitude', label: 'Latitude', placeKey: 'latitude' },
-    { key: 'longitude', label: 'Longitude', placeKey: 'longitude' },
-    { key: 'access_type', label: 'Access type', placeKey: 'access_type' },
-    { key: 'best_time', label: 'Best time', placeKey: 'best_time' },
-    { key: 'difficulty_level', label: 'Difficulty', placeKey: 'difficulty_level' },
-    { key: 'crowd_level', label: 'Crowd level', placeKey: 'crowd_level' },
-    { key: 'cover_photo_url', label: 'Cover photo URL', placeKey: 'cover_photo_url' },
-    { key: 'safety_note', label: 'Safety note', placeKey: 'safety_note' },
-    { key: 'is_pet_friendly', label: 'Pet friendly', placeKey: 'is_pet_friendly' },
-    { key: 'is_child_friendly', label: 'Child friendly', placeKey: 'is_child_friendly' },
-    { key: 'is_car_accessible', label: 'Car accessible', placeKey: 'is_car_accessible' },
-    { key: 'is_camp_allowed', label: 'Camp allowed', placeKey: 'is_camp_allowed' },
-    { key: 'is_picnic_suitable', label: 'Picnic suitable', placeKey: 'is_picnic_suitable' },
+function buildComparisons(
+  place: DbPlace,
+  request: DbPlaceUpdateRequest,
+  t: TranslateFn,
+): CompareField[] {
+  const fields: Array<{
+    key: keyof DbPlaceUpdateRequest | string;
+    labelKey: string;
+    placeKey: keyof DbPlace;
+  }> = [
+    { key: 'title', labelKey: 'admin.fields.title', placeKey: 'title' },
+    { key: 'description', labelKey: 'admin.fields.description', placeKey: 'description' },
+    { key: 'latitude', labelKey: 'admin.fields.latitude', placeKey: 'latitude' },
+    { key: 'longitude', labelKey: 'admin.fields.longitude', placeKey: 'longitude' },
+    { key: 'access_type', labelKey: 'admin.fields.accessType', placeKey: 'access_type' },
+    { key: 'best_time', labelKey: 'admin.fields.bestTime', placeKey: 'best_time' },
+    { key: 'difficulty_level', labelKey: 'admin.fields.difficulty', placeKey: 'difficulty_level' },
+    { key: 'crowd_level', labelKey: 'admin.fields.crowdLevel', placeKey: 'crowd_level' },
+    { key: 'cover_photo_url', labelKey: 'admin.fields.coverPhotoUrl', placeKey: 'cover_photo_url' },
+    { key: 'safety_note', labelKey: 'admin.fields.safetyNote', placeKey: 'safety_note' },
+    { key: 'is_pet_friendly', labelKey: 'admin.flags.petFriendly', placeKey: 'is_pet_friendly' },
+    {
+      key: 'is_child_friendly',
+      labelKey: 'admin.flags.childFriendly',
+      placeKey: 'is_child_friendly',
+    },
+    {
+      key: 'is_car_accessible',
+      labelKey: 'admin.flags.carAccessible',
+      placeKey: 'is_car_accessible',
+    },
+    { key: 'is_camp_allowed', labelKey: 'admin.flags.campAllowed', placeKey: 'is_camp_allowed' },
+    {
+      key: 'is_picnic_suitable',
+      labelKey: 'admin.flags.picnicSuitable',
+      placeKey: 'is_picnic_suitable',
+    },
   ];
 
   return fields.map((field) => {
     const oldRaw = place[field.placeKey];
     const newRaw = request[field.key as keyof DbPlaceUpdateRequest];
-    const oldValue = formatValue(oldRaw);
-    const newValue = formatValue(newRaw);
+    const oldValue = formatValue(oldRaw, t, String(field.key));
+    const newValue = formatValue(newRaw, t, String(field.key));
     return {
-      key: field.key,
-      label: field.label,
+      key: String(field.key),
+      labelKey: field.labelKey,
       oldValue,
       newValue,
-      changed: oldValue !== newValue && newRaw != null,
+      changed: String(oldRaw ?? '') !== String(newRaw ?? '') && newRaw != null,
     };
   });
 }
 
 export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
   const { requestId } = route.params;
+  const { t } = useTranslation();
   const { colors, shadows } = useTheme();
   const { isAdmin, loading: adminLoading, authUserId } = useAdminAccess();
 
   const [request, setRequest] = useState<DbPlaceUpdateRequest | null>(null);
   const [place, setPlace] = useState<DbPlace | null>(null);
+  const [currentPhotoUrls, setCurrentPhotoUrls] = useState<string[]>([]);
+  const [currentCategoryKeys, setCurrentCategoryKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [adminNote, setAdminNote] = useState('');
@@ -92,7 +149,9 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
     null,
   );
   const [successVisible, setSuccessVisible] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessageKey, setSuccessMessageKey] = useState('');
+
+  const emDash = t('admin.emDash');
 
   const load = useCallback(async () => {
     if (adminLoading || !isAdmin) {
@@ -104,11 +163,8 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
 
     const requestResult = await getPlaceUpdateRequestById(requestId);
     if (requestResult.error || !requestResult.request) {
-      const message = requestResult.error ?? 'Request not found.';
-      if (
-        !message.toLowerCase().includes('admin access') &&
-        !message.toLowerCase().includes('sign in as an admin')
-      ) {
+      const message = requestResult.error ?? 'admin.errors.requestNotFound';
+      if (!isAdminAccessGateMessage(message)) {
         setError(message);
       }
       setLoading(false);
@@ -117,11 +173,8 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
 
     const placeResult = await getPlaceForAdminReview(requestResult.request.place_id);
     if (placeResult.error || !placeResult.place) {
-      const message = placeResult.error ?? 'Place not found.';
-      if (
-        !message.toLowerCase().includes('admin access') &&
-        !message.toLowerCase().includes('sign in as an admin')
-      ) {
+      const message = placeResult.error ?? 'admin.errors.placeNotFound';
+      if (!isAdminAccessGateMessage(message)) {
         setError(message);
       }
       setLoading(false);
@@ -130,6 +183,16 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
 
     setRequest(requestResult.request);
     setPlace(placeResult.place);
+    const currentPhotos = await getPlacePhotoUrls(
+      placeResult.place.id,
+      placeResult.place.cover_photo_url,
+    );
+    setCurrentPhotoUrls(currentPhotos);
+    const categoryMap = await fetchPlaceCategoriesByPlaceIds([placeResult.place.id]);
+    setCurrentCategoryKeys(
+      categoryMap[placeResult.place.id] ??
+        normalizePlaceCategories([placeResult.place.category ?? '']),
+    );
     setAdminNote(requestResult.request.admin_note ?? '');
     setLoading(false);
   }, [adminLoading, isAdmin, requestId]);
@@ -162,10 +225,10 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
       setError(
         result.error ??
           (action === 'restore'
-            ? "Couldn't complete action. Please try again."
+            ? 'admin.errors.actionFailed'
             : action === 'approve'
-              ? "Couldn't approve the update. Please try again."
-              : "Couldn't reject the update. Please try again."),
+              ? 'admin.errors.approveUpdateFailed'
+              : 'admin.errors.rejectUpdateFailed'),
       );
       return;
     }
@@ -183,7 +246,7 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
           : current,
       );
       setAdminNote('');
-      setSuccessMessage('Update moved back to pending.');
+      setSuccessMessageKey('admin.updateDetail.successRestore');
     } else {
       setRequest((current) =>
         current
@@ -194,7 +257,11 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
             }
           : current,
       );
-      setSuccessMessage(action === 'approve' ? 'Update approved.' : 'Update rejected.');
+      setSuccessMessageKey(
+        action === 'approve'
+          ? 'admin.updateDetail.successApprove'
+          : 'admin.updateDetail.successReject',
+      );
     }
     setSuccessVisible(true);
   };
@@ -204,7 +271,7 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
         <ActivityIndicator color={colors.primary} size="large" />
         <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Checking admin access…
+          {t('admin.checkingAccess')}
         </Text>
       </ScreenContainer>
     );
@@ -215,8 +282,8 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
         <EmptyState
           icon="person-outline"
-          title="Sign in required"
-          description="Guests cannot access the admin panel."
+          title={t('admin.access.signInTitle')}
+          description={t('admin.access.signInBodyShort')}
         />
       </ScreenContainer>
     );
@@ -227,8 +294,8 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
         <EmptyState
           icon="lock-closed-outline"
-          title="Access denied"
-          description="This panel is only available to administrators."
+          title={t('admin.access.deniedTitle')}
+          description={t('admin.access.deniedBody')}
         />
       </ScreenContainer>
     );
@@ -239,7 +306,7 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
         <ActivityIndicator color={colors.primary} size="large" />
         <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-          Loading request…
+          {t('admin.updateDetail.loading')}
         </Text>
       </ScreenContainer>
     );
@@ -248,7 +315,11 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
   if (error && (!request || !place)) {
     return (
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
-        <EmptyState icon="alert-circle-outline" title="Could not load request" description={error} />
+        <EmptyState
+          icon="alert-circle-outline"
+          title={t('admin.updateDetail.loadFailedTitle')}
+          description={localizeAdminMessage(error) ?? t('admin.updateDetail.notFoundBody')}
+        />
       </ScreenContainer>
     );
   }
@@ -258,24 +329,101 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
       <ScreenContainer safeTop={false} reserveFloatingTabBar contentStyle={styles.centered}>
         <EmptyState
           icon="alert-circle-outline"
-          title="Request not found"
-          description="This update request could not be loaded."
+          title={t('admin.updateDetail.notFoundTitle')}
+          description={t('admin.updateDetail.notFoundBody')}
         />
       </ScreenContainer>
     );
   }
 
-  const comparisons = buildComparisons(place, request);
+  const comparisons = buildComparisons(place, request, (key) => String(t(key as never)));
+  const requestedPhotoUrls = normalizePlacePhotoUrls(
+    Array.isArray(request.photo_urls)
+      ? request.photo_urls
+      : request.cover_photo_url
+        ? [request.cover_photo_url]
+        : [],
+  );
+  const photosChanged =
+    requestedPhotoUrls.length > 0 &&
+    JSON.stringify(currentPhotoUrls) !== JSON.stringify(requestedPhotoUrls);
+
+  const requestedCategoryKeys = Array.isArray(request.category_keys)
+    ? normalizePlaceCategories(request.category_keys)
+    : [];
+  const categoriesChanged =
+    requestedCategoryKeys.length > 0 &&
+    !categoryKeyListsEqual(currentCategoryKeys, requestedCategoryKeys);
 
   return (
     <>
       <ScreenContainer scrollable safeTop={false} reserveFloatingTabBar contentStyle={styles.content}>
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Cover photos</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            {t('admin.updateDetail.categories')}
+          </Text>
           <View style={styles.photoRow}>
             <View style={styles.photoCol}>
-              <Text style={[styles.photoLabel, { color: colors.textMuted }]}>Current</Text>
-              {place.cover_photo_url ? (
+              <Text style={[styles.photoLabel, { color: colors.textMuted }]}>
+                {t('admin.updateDetail.current')}
+              </Text>
+              <PlaceCategoryChips
+                place={{
+                  categories: currentCategoryKeys,
+                  categorySlug: place.category ?? '',
+                  category: place.category ?? '',
+                }}
+                maxVisible={8}
+              />
+            </View>
+            <View style={styles.photoCol}>
+              <Text style={[styles.photoLabel, { color: colors.textMuted }]}>
+                {t('admin.updateDetail.requested')}
+              </Text>
+              {requestedCategoryKeys.length > 0 ? (
+                <PlaceCategoryChips
+                  place={{
+                    categories: requestedCategoryKeys,
+                    categorySlug: requestedCategoryKeys[0] ?? '',
+                    category: formatCategoryDisplayLabels(requestedCategoryKeys)[0] ?? emDash,
+                  }}
+                  maxVisible={8}
+                />
+              ) : (
+                <Text style={[styles.photoLabel, { color: colors.textMuted }]}>{emDash}</Text>
+              )}
+            </View>
+          </View>
+          {categoriesChanged ? (
+            <Text style={[styles.photoChangeNote, { color: colors.primary }]}>
+              {t('admin.updateDetail.categoriesChanged')}
+            </Text>
+          ) : null}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            {t('admin.updateDetail.photos')}
+          </Text>
+          <View style={styles.photoRow}>
+            <View style={styles.photoCol}>
+              <Text style={[styles.photoLabel, { color: colors.textMuted }]}>
+                {t('admin.updateDetail.current')}
+              </Text>
+              {currentPhotoUrls.length > 0 ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoStrip}>
+                  {currentPhotoUrls.map((uri, index) => (
+                    <CachedImage
+                      key={`current-${uri}-${index}`}
+                      uri={uri}
+                      width={120}
+                      height={90}
+                      borderRadius={radius.md}
+                      recyclingKey={`current-${uri}-${index}`}
+                    />
+                  ))}
+                </ScrollView>
+              ) : place.cover_photo_url ? (
                 <Image
                   source={{ uri: place.cover_photo_url }}
                   style={[styles.photo, { backgroundColor: colors.surfaceSecondary }]}
@@ -294,8 +442,23 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
               )}
             </View>
             <View style={styles.photoCol}>
-              <Text style={[styles.photoLabel, { color: colors.textMuted }]}>Requested</Text>
-              {request.cover_photo_url ? (
+              <Text style={[styles.photoLabel, { color: colors.textMuted }]}>
+                {t('admin.updateDetail.requested')}
+              </Text>
+              {requestedPhotoUrls.length > 0 ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoStrip}>
+                  {requestedPhotoUrls.map((uri, index) => (
+                    <CachedImage
+                      key={`requested-${uri}-${index}`}
+                      uri={uri}
+                      width={120}
+                      height={90}
+                      borderRadius={radius.md}
+                      recyclingKey={`requested-${uri}-${index}`}
+                    />
+                  ))}
+                </ScrollView>
+              ) : request.cover_photo_url ? (
                 <Image
                   source={{ uri: request.cover_photo_url }}
                   style={[styles.photo, { backgroundColor: colors.surfaceSecondary }]}
@@ -314,10 +477,20 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
               )}
             </View>
           </View>
+          {photosChanged ? (
+            <Text style={[styles.photoChangeNote, { color: colors.primary }]}>
+              {t('admin.updateDetail.photoSetChanged', {
+                from: currentPhotoUrls.length,
+                to: requestedPhotoUrls.length,
+              })}
+            </Text>
+          ) : null}
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Field comparison</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            {t('admin.updateDetail.fieldComparison')}
+          </Text>
           {comparisons.map((field) => (
             <View
               key={field.key}
@@ -330,16 +503,22 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
                 },
               ]}
             >
-              <Text style={[styles.fieldLabel, { color: colors.textPrimary }]}>{field.label}</Text>
+              <Text style={[styles.fieldLabel, { color: colors.textPrimary }]}>
+                {t(field.labelKey as never)}
+              </Text>
               <View style={styles.compareRow}>
                 <View style={styles.compareCol}>
-                  <Text style={[styles.compareHeading, { color: colors.textMuted }]}>Current</Text>
+                  <Text style={[styles.compareHeading, { color: colors.textMuted }]}>
+                    {t('admin.updateDetail.current')}
+                  </Text>
                   <Text style={[styles.compareValue, { color: colors.textSecondary }]}>
                     {field.oldValue}
                   </Text>
                 </View>
                 <View style={styles.compareCol}>
-                  <Text style={[styles.compareHeading, { color: colors.textMuted }]}>Requested</Text>
+                  <Text style={[styles.compareHeading, { color: colors.textMuted }]}>
+                    {t('admin.updateDetail.requested')}
+                  </Text>
                   <Text
                     style={[
                       styles.compareValue,
@@ -357,28 +536,32 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            Admin note (optional)
+            {t('admin.fields.adminNoteOptional')}
           </Text>
           <AppTextInput
-            label="Note"
-            placeholder="Reason for approval or rejection"
+            label={t('admin.fields.note')}
+            placeholder={t('admin.updateDetail.notePlaceholder')}
             value={adminNote}
             onChangeText={setAdminNote}
             multiline
           />
         </View>
 
-        {error ? <Text style={[styles.error, { color: colors.error }]}>{error}</Text> : null}
+        {error ? (
+          <Text style={[styles.error, { color: colors.error }]}>
+            {localizeAdminMessage(error)}
+          </Text>
+        ) : null}
 
         {request.status === 'pending' ? (
           <View style={styles.actions}>
             <AppButton
-              title="Approve update"
+              title={t('admin.updateDetail.approve')}
               onPress={() => setConfirmAction('approve')}
               disabled={acting}
             />
             <AppButton
-              title="Reject update"
+              title={t('admin.updateDetail.reject')}
               variant="secondary"
               onPress={() => setConfirmAction('reject')}
               disabled={acting}
@@ -387,14 +570,16 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
         ) : request.status === 'rejected' ? (
           <View style={styles.actions}>
             <AppButton
-              title="Restore to pending"
+              title={t('admin.updateDetail.restore')}
               onPress={() => setConfirmAction('restore')}
               disabled={acting}
             />
           </View>
         ) : (
           <Text style={[styles.statusNote, { color: colors.textSecondary }]}>
-            This request is already {request.status}.
+            {t('admin.updateDetail.alreadyStatus', {
+              status: getPlaceStatusLabel(request.status),
+            })}
           </Text>
         )}
       </ScreenContainer>
@@ -404,31 +589,31 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
         variant={confirmAction === 'reject' ? 'error' : 'success'}
         title={
           confirmAction === 'approve'
-            ? 'Approve this update?'
+            ? t('admin.updateDetail.confirmApproveTitle')
             : confirmAction === 'reject'
-              ? 'Reject this update?'
-              : 'Move this update back to pending review?'
+              ? t('admin.updateDetail.confirmRejectTitle')
+              : t('admin.updateDetail.confirmRestoreTitle')
         }
         subtitle={
           confirmAction === 'approve'
-            ? 'Requested fields will be applied to the live place. Nothing is deleted.'
+            ? t('admin.updateDetail.confirmApproveBody')
             : confirmAction === 'reject'
-              ? 'The live place will stay unchanged. The request will be marked rejected.'
-              : 'It will return to the Updates pending queue for review.'
+              ? t('admin.updateDetail.confirmRejectBody')
+              : t('admin.updateDetail.confirmRestoreBody')
         }
         primaryLabel={
           acting
-            ? 'Working…'
+            ? t('admin.working')
             : confirmAction === 'approve'
-              ? 'Approve'
+              ? t('admin.updateDetail.approveAction')
               : confirmAction === 'reject'
-                ? 'Reject'
-                : 'Restore'
+                ? t('admin.updateDetail.rejectAction')
+                : t('admin.updateDetail.restoreAction')
         }
         onPrimary={() => {
           void runAction();
         }}
-        secondaryLabel="Cancel"
+        secondaryLabel={t('common.cancel')}
         onSecondary={() => {
           if (!acting) {
             setConfirmAction(null);
@@ -439,9 +624,9 @@ export function AdminUpdateRequestDetailScreen({ navigation, route }: Props) {
       <FeedbackModal
         visible={successVisible}
         variant="success"
-        title="Review complete"
-        subtitle={successMessage}
-        primaryLabel="Done"
+        title={t('admin.updateDetail.successTitle')}
+        subtitle={successMessageKey ? t(successMessageKey as never) : ''}
+        primaryLabel={t('common.done')}
         onPrimary={() => {
           setSuccessVisible(false);
           navigation.goBack();
@@ -490,6 +675,13 @@ const styles = StyleSheet.create({
   photoPlaceholder: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  photoStrip: {
+    gap: spacing.sm,
+  },
+  photoChangeNote: {
+    ...typography.caption,
+    fontWeight: '600',
   },
   compareCard: {
     borderRadius: radius.md,

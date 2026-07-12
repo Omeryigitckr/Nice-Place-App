@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import {
   AppButton,
@@ -14,16 +15,15 @@ import { requestEmailChange } from '../../services';
 import { spacing } from '../../theme';
 import { useThemeColors } from '../../theme/ThemeContext';
 import { ProfileStackParamList } from '../../types';
+import { getLocalizedAuthError } from '../../utils/authErrors';
 import { validateEmail } from '../../utils/authValidation';
 import { SettingsSection, settingsStyles } from './settingsShared';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, typeof PROFILE_ROUTES.CHANGE_EMAIL>;
 
-const SUCCESS_MESSAGE =
-  'A verification email has been sent to your new address. Open the link on this device to confirm the change.';
-
 export function ChangeEmailScreen(_props: Props) {
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [newEmail, setNewEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export function ChangeEmailScreen(_props: Props) {
     setSuccess(null);
 
     if (!user?.email) {
-      setError('Sign in to change your email.');
+      setError(t('auth.emailChange.signInRequired'));
       return;
     }
 
@@ -46,7 +46,7 @@ export function ChangeEmailScreen(_props: Props) {
     }
 
     if (newEmail.trim().toLowerCase() === user.email.trim().toLowerCase()) {
-      setError('Enter a different email address.');
+      setError(t('auth.emailChange.differentEmailRequired'));
       return;
     }
 
@@ -55,30 +55,32 @@ export function ChangeEmailScreen(_props: Props) {
     setLoading(false);
 
     if (!result.success) {
-      setError(result.error ?? 'Could not send verification email. Please try again.');
+      setError(getLocalizedAuthError(result.error, 'auth.errors.emailChangeFailed'));
       return;
     }
 
     setNewEmail('');
-    setSuccess(SUCCESS_MESSAGE);
+    setSuccess(t('auth.emailChange.successMessage'));
   };
 
   return (
     <ScreenContainer scrollable safeTop={false} reserveFloatingTabBar contentStyle={settingsStyles.content}>
-      <SettingsSection title="Change email" entranceIndex={0}>
+      <SettingsSection title={t('auth.emailChange.title')} entranceIndex={0}>
         <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
-          We will send a confirmation link to your new email address.
+          {t('auth.emailChange.description')}
         </Text>
 
         <View style={styles.form}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>Current email</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            {t('auth.emailChange.currentEmailLabel')}
+          </Text>
           <Text style={[styles.currentEmail, { color: colors.textPrimary }]}>
-            {user?.email ?? 'Not available'}
+            {user?.email ?? t('common.notAvailable')}
           </Text>
 
           <AppTextInput
-            label="New email"
-            placeholder="you@email.com"
+            label={t('auth.emailChange.newEmailLabel')}
+            placeholder={t('auth.emailChange.emailPlaceholder')}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
@@ -94,7 +96,7 @@ export function ChangeEmailScreen(_props: Props) {
           <AuthErrorMessage message={error} />
 
           <AppButton
-            title={loading ? 'Sending…' : 'Send verification email'}
+            title={loading ? t('auth.emailChange.submitting') : t('auth.emailChange.submit')}
             onPress={handleSubmit}
             disabled={loading}
             fullWidth={false}

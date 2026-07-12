@@ -1,4 +1,5 @@
 import { MOCK_PLACES } from '../constants/mockPlaces';
+import { resolvePlaceCategoryKeys } from '../constants/placeCategories';
 import { Place, QuickFilter } from '../types/place';
 
 import { Coordinates, getPlaceDistanceKm } from './distance';
@@ -39,11 +40,17 @@ export function getSimilarPlaces(
   allPlaces: Place[] = MOCK_PLACES,
   limit = 3,
 ): Place[] {
-  const sameCategory = allPlaces.filter(
-    (p) => p.id !== place.id && p.category === place.category,
-  );
+  const placeKeys = new Set(resolvePlaceCategoryKeys(place));
+  const withSharedCategory = allPlaces.filter((candidate) => {
+    if (candidate.id === place.id) {
+      return false;
+    }
+    return resolvePlaceCategoryKeys(candidate).some((key) => placeKeys.has(key));
+  });
   const others = allPlaces.filter(
-    (p) => p.id !== place.id && p.category !== place.category,
+    (candidate) =>
+      candidate.id !== place.id &&
+      !withSharedCategory.some((shared) => shared.id === candidate.id),
   );
-  return [...sameCategory, ...others].slice(0, limit);
+  return [...withSharedCategory, ...others].slice(0, limit);
 }

@@ -1,22 +1,24 @@
+import { i18n } from '../i18n/instance';
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export function getRegistrationPasswordHint(): string {
+  return i18n.t('auth.validation.passwordHint');
+}
 export function validateEmail(email: string): string | null {
   const trimmed = email.trim();
   if (!trimmed) {
-    return 'Please enter your email.';
+    return i18n.t('auth.validation.emailRequired');
   }
   if (!EMAIL_REGEX.test(trimmed)) {
-    return 'Please enter a valid email address.';
+    return i18n.t('auth.validation.emailInvalid');
   }
   return null;
 }
 
-export const REGISTRATION_PASSWORD_HINT =
-  'Use at least 8 characters with one uppercase letter, one lowercase letter, and one number.';
-
 export function validateRegistrationPassword(password: string): string | null {
   if (!password) {
-    return 'Please enter a password.';
+    return i18n.t('auth.validation.passwordRequired');
   }
 
   const meetsLength = password.length >= 8;
@@ -25,7 +27,7 @@ export function validateRegistrationPassword(password: string): string | null {
   const hasNumber = /[0-9]/.test(password);
 
   if (!meetsLength || !hasUppercase || !hasLowercase || !hasNumber) {
-    return REGISTRATION_PASSWORD_HINT;
+    return i18n.t('auth.validation.passwordHint');
   }
 
   return null;
@@ -33,10 +35,10 @@ export function validateRegistrationPassword(password: string): string | null {
 
 export function validateNewPassword(password: string): string | null {
   if (!password) {
-    return 'Please enter a password.';
+    return i18n.t('auth.validation.passwordRequired');
   }
   if (password.length < 6) {
-    return 'Password must be at least 6 characters.';
+    return i18n.t('auth.validation.passwordMinLength');
   }
   return null;
 }
@@ -50,7 +52,7 @@ export function validatePasswordConfirmation(
     return passwordError;
   }
   if (password !== confirmPassword) {
-    return 'Passwords do not match.';
+    return i18n.t('auth.validation.passwordsDoNotMatch');
   }
   return null;
 }

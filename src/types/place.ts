@@ -16,10 +16,16 @@ export interface MapPosition {
 export interface Place {
   id: string;
   title: string;
+  /** Primary category display label (legacy + multi-category). */
   category: string;
+  /** Primary category slug (first selected). */
   categorySlug: string;
+  /** All category slugs in selection order. */
+  categories: string[];
   description: string;
   image: string;
+  /** Ordered photo URLs when loaded (cover/first photo matches image). */
+  photos?: string[];
   distance: string;
   bestTime: string;
   accessType: AccessType;

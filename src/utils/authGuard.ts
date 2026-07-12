@@ -10,6 +10,7 @@ export type ProtectedAction =
   | 'save_place'
   | 'like_place'
   | 'profile_action'
+  | 'report_profile'
   | 'admin_panel';
 
 /**

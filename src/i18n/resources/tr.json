@@ -1,0 +1,1456 @@
+{
+  "common": {
+    "loading": "Yükleniyor...",
+    "save": "Kaydet",
+    "saved": "Kaydedildi",
+    "cancel": "İptal",
+    "continue": "Devam",
+    "back": "Geri",
+    "close": "Kapat",
+    "confirm": "Onayla",
+    "done": "Tamam",
+    "retry": "Tekrar dene",
+    "tryAgain": "Tekrar dene",
+    "error": "Bir şeyler ters gitti",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "add": "Ekle",
+    "remove": "Kaldır",
+    "refresh": "Yenile",
+    "search": "Ara",
+    "next": "İleri",
+    "skip": "Atla",
+    "yes": "Evet",
+    "no": "Hayır",
+    "ok": "Tamam",
+    "optional": "İsteğe bağlı",
+    "required": "Zorunlu",
+    "seeAll": "Tümünü gör",
+    "learnMore": "Daha fazla",
+    "notAvailable": "Kullanılamıyor",
+    "noResults": "Sonuç bulunamadı",
+    "signIn": "Giriş yap",
+    "openSettings": "Ayarları aç",
+    "or": "veya",
+    "connecting": "Bağlanıyor…",
+    "place_one": "mekan",
+    "place_other": "mekan",
+    "placesCount_one": "{{count}} mekan",
+    "placesCount_other": "{{count}} mekan",
+    "authRequired": {
+      "title": "Giriş gerekli",
+      "message": "Bu özelliği kullanmak için giriş yap. Misafir olarak gezmeye devam edebilirsin."
+    },
+    "place_few": "mekan",
+    "place_many": "mekan",
+    "placesCount_few": "{{count}} mekan",
+    "placesCount_many": "{{count}} mekan",
+    "pleaseWait": "Lütfen bekle…",
+    "notNow": "Şimdi değil",
+    "create": "Oluştur",
+    "dismiss": "Kapat"
+  },
+  "navigation": {
+    "explore": "Keşfet",
+    "saved": "Kayıtlı",
+    "addPlace": "Mekan Ekle",
+    "profile": "Profil",
+    "settings": "Ayarlar",
+    "notifications": "Bildirimler",
+    "admin": "Yönetim",
+    "savedPlaces": "Kayıtlı Mekanlar",
+    "allSavedPlaces": "Tüm Kayıtlı Mekanlar",
+    "collection": "Koleksiyon",
+    "editPlace": "Mekanı Düzenle",
+    "account": "Hesap",
+    "changePassword": "Şifre Değiştir",
+    "changeEmail": "E-posta Değiştir",
+    "appearance": "Görünüm",
+    "privacyLocation": "Gizlilik ve Konum",
+    "about": "Hakkında",
+    "adminPanel": "Yönetim Paneli",
+    "sendNotification": "Bildirim Gönder",
+    "reportedProfiles": "Şikayet Edilen Profiller",
+    "reviewProfile": "Profili incele",
+    "reviewPlace": "Mekanı incele",
+    "reviewUpdate": "Güncellemeyi incele",
+    "reports": "Şikayetler",
+    "language": "Dil"
+  },
+  "settings": {
+    "sections": {
+      "account": "Hesap",
+      "mapPreferences": "Harita tercihleri",
+      "units": "Birimler",
+      "notifications": "Bildirimler",
+      "data": "Veri",
+      "support": "Destek",
+      "accountActions": "Hesap işlemleri",
+      "appearance": "Görünüm",
+      "location": "Konum",
+      "about": "Nice Place hakkında"
+    },
+    "theme": {
+      "title": "Tema",
+      "system": "Sistem",
+      "light": "Açık",
+      "dark": "Koyu",
+      "setTo": "Tema {{label}} olarak ayarlandı.",
+      "helper": "Tercih bu cihazda kaydedilir. Durum çubuğu hemen güncellenir; tam açık tema arayüzü şimdilik sınırlıdır.",
+      "groupLabel": "Görünüm"
+    },
+    "mapStyle": {
+      "title": "Varsayılan harita stili",
+      "standard": "Standart",
+      "satellite": "Uydu",
+      "outdoors": "Doğa",
+      "setTo": "Harita stili {{label}} olarak ayarlandı."
+    },
+    "distanceUnit": {
+      "title": "Mesafe birimi",
+      "kilometers": "Kilometre",
+      "miles": "Mil",
+      "setTo": "Mesafe birimi {{label}} olarak ayarlandı."
+    },
+    "account": {
+      "unlockHint": "Hesap özelliklerini açmak için giriş yap",
+      "signedIn": "Oturum açık",
+      "changePassword": "Şifreyi değiştir",
+      "changePasswordSubtitle": "Giriş şifreni güncelle",
+      "changeEmail": "E-postayı değiştir",
+      "changeEmailSubtitle": "Hesap e-postanı güncelle"
+    },
+    "notifications": {
+      "prefsLink": "Bildirim tercihleri",
+      "enabledDevice": "Açık · Cihaz: {{status}}",
+      "offDevice": "Kapalı · Cihaz: {{status}}",
+      "helper": "Nice Place’in hangi güncellemeleri anlık bildirim olarak gönderebileceğini seç.",
+      "enable": "Bildirimleri aç",
+      "statusEnabled": "Anlık bildirimler bu cihazda açık.",
+      "statusFinishing": "İzin verildi — kurulum tamamlanıyor…",
+      "statusBlocked": "İzin cihaz ayarlarında kapalı.",
+      "statusDenied": "İzin bu cihazda kapalı.",
+      "statusDevice": "Cihaz izni: {{status}}",
+      "blockedTitle": "Bildirimler kapalı",
+      "blockedMessage": "Bildirimler cihaz ayarlarında kapalı.",
+      "registerFailed": "Anlık bildirimler için kayıt yapılamadı.",
+      "registerDeviceFailed": "Bu cihaz anlık bildirimler için kaydedilemedi.",
+      "saveFailed": "Bildirim tercihi kaydedilemedi.",
+      "prefs": {
+        "placeApproved": "Yer onaylandı",
+        "placeRejected": "Yer reddedildi",
+        "placeUpdateApproved": "Yer güncellemesi onaylandı",
+        "placeUpdateRejected": "Yer güncellemesi reddedildi",
+        "placeLiked": "Birisi yerimi beğendi",
+        "systemAnnouncements": "Sistem duyuruları",
+        "eventsNews": "Etkinlikler ve haberler"
+      },
+      "saveTokenFailed": "Push jetonu kaydedilemedi."
+    },
+    "data": {
+      "clearCache": "Yerel önbelleği temizle",
+      "clearCacheSubtitle": "Yerel kaydedilen yer kimliklerini kaldırır",
+      "resetPrefs": "Uygulama tercihlerini sıfırla",
+      "resetPrefsSubtitle": "Varsayılan tema, harita, birimler ve anahtarları geri yükle",
+      "clearConfirmTitle": "Yerel önbellek temizlensin mi?",
+      "clearConfirmBody": "Bu, cihazındaki yerel önbelleği kaldırır. Hesabın ve bulut verilerin korunur.",
+      "clearConfirmAction": "Önbelleği temizle",
+      "resetConfirmTitle": "Tercihler sıfırlansın mı?",
+      "resetConfirmBody": "Bu, varsayılan tema, harita stili, birimler ve bildirim anahtarlarını geri yükler.",
+      "resetConfirmAction": "Sıfırla",
+      "working": "İşleniyor…",
+      "cacheCleared": "Yerel önbellek temizlendi.",
+      "prefsReset": "Uygulama tercihleri sıfırlandı."
+    },
+    "support": {
+      "contact": "Destekle iletişime geç",
+      "reportBug": "Hata bildir",
+      "privacyPolicy": "Gizlilik Politikası",
+      "termsOfService": "Kullanım Koşulları",
+      "aboutNicePlace": "Nice Place hakkında",
+      "reportGuidelines": "Bildirim yönergeleri",
+      "appVersion": "Uygulama sürümü",
+      "mailSubjectSupport": "Nice Place destek",
+      "mailSubjectBug": "Nice Place hata bildirimi"
+    },
+    "session": {
+      "signOut": "Çıkış yap",
+      "signingOut": "Çıkış yapılıyor…",
+      "signedOut": "Çıkış yapıldı. Misafir olarak gezmeye devam edebilirsin.",
+      "signedOutLocal": "Yerel olarak çıkış yapıldı. Misafir olarak gezmeye devam edebilirsin.",
+      "signOutFailed": "Çıkış yapılamadı."
+    },
+    "deleteAccount": {
+      "dangerTitle": "Tehlikeli alan",
+      "dangerBody": "Hesabını kalıcı olarak siler ve profil verilerini anonimleştirir. Bu geri alınamaz.",
+      "delete": "Hesabı Sil",
+      "deleteAction": "Hesabımı sil",
+      "deleting": "Siliniyor…",
+      "title": "Hesabı Sil",
+      "instructionPassword": "Şifreni iki kez gir ve onaylamak için {{phrase}} yaz.",
+      "instructionOAuth": "Hesabını kalıcı olarak silmek için {{phrase}} yaz.",
+      "confirmLabel": "{{phrase}} yaz",
+      "confirmPassword": "Şifreyi onayla",
+      "passwordsDoNotMatch": "Şifreler eşleşmiyor.",
+      "success": "Hesabın silindi.",
+      "a11yDelete": "Hesabı sil",
+      "a11yDismiss": "Kapat",
+      "errors": {
+        "passwordRequired": "Şifre gerekli.",
+        "sessionInvalid": "Oturumun doğrulanamadı.",
+        "unavailable": "Hesap silme henüz kullanılamıyor. support@niceplace.site ile iletişime geç.",
+        "failed": "Hesap silinemedi. Lütfen tekrar dene."
+      }
+    },
+    "privacyLocation": {
+      "helper": "Nice Place konumunu yakındaki yerleri sıralamak, mesafe göstermek ve gönderileri mevcut konumuna yerleştirmek için kullanır.",
+      "statusLabel": "İzin durumu",
+      "request": "İzin iste",
+      "openDeviceSettings": "Cihaz ayarlarını aç",
+      "grantedToast": "Konum izni verildi.",
+      "deniedToast": "Konum izni verilmedi."
+    },
+    "permissionStatus": {
+      "granted": "İzin verildi",
+      "denied": "Reddedildi",
+      "blocked": "Cihaz ayarlarında engelli",
+      "undetermined": "İstenmedi",
+      "unavailable": "Kullanılamıyor"
+    },
+    "language": {
+      "title": "Dil",
+      "description": "Nice Place genelinde kullanılacak dili seç. Seçimin bu cihazda kaydedilir.",
+      "current": "Geçerli dil",
+      "select": "Dil seç",
+      "saveFailed": "Dil kaydedilemedi. Lütfen tekrar dene."
+    },
+    "appPreferences": "Uygulama tercihleri",
+    "legal": {
+      "supportContact": "Destek, hata bildirimleri, gizlilik soruları veya hesap silme talepleri için support@niceplace.site ile iletişime geçin",
+      "about": {
+        "title": "Nice Place hakkında",
+        "body": "Nice Place, sakin açık hava noktalarını, gün batımı manzaralarını ve keşfedilmeye değer gizli yerleri bulmana yardımcı olur.\n\nBu beta; harita keşfi, yer kaydetme, yer paylaşma ve herkese açık görünmeden önce incelenen topluluk gönderilerine odaklanır."
+      },
+      "terms": {
+        "title": "Kullanım Koşulları",
+        "body": "Nice Place’i kullanarak doğru yer bilgisi paylaşmayı, özel mülke saygı duymayı ve yerel erişim kurallarına uymayı kabul edersin.\n\nTopluluk gönderileri yayınlanmadan önce incelenebilir. Beta geliştikçe bu koşulları güncelleyebiliriz.\n\n{{supportContact}}"
+      },
+      "privacy": {
+        "title": "Gizlilik Politikası",
+        "body": "Son güncelleme: Temmuz 2026\n\nNice Place, açık hava yerlerini keşfetmene ve paylaşmana yardımcı olan bir mobil uygulamadır. Bu politika, beta sırasında hangi verileri topladığımızı ve nasıl kullandığımızı açıklar.\n\nHesap ve kimlik doğrulama\nHesap oluşturduğunda e-posta adresin ve kimlik doğrulama bilgilerin Supabase Auth üzerinden saklanır. Ayrıca görünen ad gibi sağladığın profil bilgileri de saklanır.\n\nGönderdiğin yerler\nBir yer eklediğinde yer adı, açıklama, kategori, yaklaşık konum koordinatları ve yüklediğin fotoğraflar dahil gönderdiğin bilgiler saklanır.\n\nKaydedilen ve beğenilen yerler\nGiriş yaptığında kaydettiğin ve beğendiğin yerler hesabınla eşitlensin diye saklanır.\n\nKonum\nİzin verirsen cihaz konumun yakındaki yerleri göstermek ve mesafeye göre sıralamak için kullanılır. Konumunu arka planda izlemeyiz.\n\nGörseller\nBir yer için kapak fotoğrafı yüklersen, görsel uygulamada gösterilmek üzere saklanır.\n\nCihaz depolama\nTema ayarları ve son aramalar gibi bazı tercihler cihazında yerel olarak saklanabilir.\n\nVerilerini nasıl kullanırız\nBu verileri uygulamayı işletmek, yerleri haritada göstermek, kaydedilen ve beğenilen yerleri eşitlemek ve topluluk gönderilerini incelemek için kullanırız.\n\nHizmet sağlayıcı\nKimlik doğrulama, veritabanı ve yüklenen görseller için Supabase (supabase.com) kullanırız. Supabase verileri bizim adımıza işler.\n\nVeri paylaşımı\nKişisel verilerini satmayız.\n\nVeri silme\nHesabını Ayarlar’dan silebilirsin. Bu, hesap erişimini kaldırır ve profil verilerini anonimleştirir.\n\n{{supportContact}}\n\nÇocuklar\nNice Place 13 yaşından küçük çocuklara yönelik değildir.\n\nİletişim\n{{supportEmail}}"
+      },
+      "guidelines": {
+        "title": "Bildirim Yönergeleri",
+        "body": "Topluluğun güvenilir kalması için hatalı, güvensiz veya uygunsuz yerleri bildir.\n\nUygulama içi bildirim yakında gelecek. Şimdilik bir yerin incelenmesi veya kaldırılması gerekiyorsa support@niceplace.site adresine e-posta gönder."
+      }
+    }
+  },
+  "network": {
+    "offlineBanner": "Çevrimdışısın — kayıtlı veriler gösteriliyor",
+    "offline": "İnternet bağlantısı yok. Bağlantını kontrol edip tekrar dene.",
+    "connectionLost": "Bağlantı kesildi",
+    "connectionRestored": "Bağlantı yeniden kuruldu",
+    "checkConnection": "Bağlantını kontrol et"
+  },
+  "errors": {
+    "generic": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+    "unknown": "Bir şeyler ters gitti",
+    "network": "İnternet bağlantısı yok. Bağlantını kontrol edip tekrar dene.",
+    "timeout": "İstek zaman aşımına uğradı. Lütfen tekrar dene.",
+    "unauthorized": "Devam etmek için giriş yap.",
+    "forbidden": "Bunu yapmak için yetkin yok.",
+    "notFound": "Aradığını bulamadık.",
+    "server": "Sunucu hatası. Lütfen daha sonra tekrar dene.",
+    "validation": "Girdilerini kontrol edip tekrar dene.",
+    "sessionExpired": "Oturumun sona erdi. Lütfen yeniden giriş yap.",
+    "permissionDenied": "İzin reddedildi"
+  },
+  "permissions": {
+    "requiredTitle": "İzin gerekli",
+    "blocked": {
+      "cancel": "İptal",
+      "openSettings": "Ayarları aç"
+    },
+    "location": {
+      "title": "Konumu aç",
+      "description": "Nice Place, yakındaki gizli noktaları, gün batımı yerlerini ve yürüyüş rotalarını göstermek için konumunu kullanır. Konumun yalnızca keşfi iyileştirmek için kullanılır.",
+      "featureNearby": "Yakınındaki mekanları bul",
+      "featureDistance": "Mesafeye göre sırala",
+      "featurePrivate": "Asla herkese açık paylaşılmaz",
+      "allow": "Konuma izin ver",
+      "notNow": "Şimdi değil"
+    },
+    "photos": {
+      "blockedTitle": "Fotoğraflar kapalı",
+      "blockedMessage": "Cihaz ayarlarında fotoğraf kitaplığı erişimi kapalı."
+    }
+  },
+  "auth": {
+    "social": {
+      "continueGoogle": "Google ile devam et",
+      "continueApple": "Apple ile devam et",
+      "connecting": "Bağlanıyor…"
+    },
+    "legal": {
+      "prefix": "Devam ederek",
+      "privacyPolicy": "Gizlilik Politikamızı",
+      "suffix": " kabul etmiş olursun."
+    },
+    "login": {
+      "title": "Tekrar hoş geldin",
+      "subtitle": "Mekanları kaydetmek ve keşiflerini paylaşmak için giriş yap.",
+      "emailLabel": "E-posta",
+      "emailPlaceholder": "ornek@email.com",
+      "passwordLabel": "Şifre",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Şifreni mi unuttun?",
+      "submit": "Giriş yap",
+      "submitting": "Giriş yapılıyor…",
+      "createAccount": "Hesap oluştur",
+      "continueAsGuest": "Misafir olarak devam et",
+      "emailPasswordRequired": "Lütfen e-posta ve şifreni gir."
+    },
+    "register": {
+      "title": "Hesap oluştur",
+      "subtitle": "Güzel mekanları keşfetmeye başla.",
+      "fullNameLabel": "Ad soyad",
+      "fullNamePlaceholder": "Adın",
+      "emailLabel": "E-posta",
+      "emailPlaceholder": "ornek@email.com",
+      "passwordLabel": "Şifre",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Kayıt ol",
+      "submitting": "Hesap oluşturuluyor…",
+      "alreadyHaveAccount": "Zaten hesabım var",
+      "continueAsGuest": "Misafir olarak devam et"
+    },
+    "forgotPassword": {
+      "title": "Şifremi unuttum",
+      "subtitle": "E-postanı gir, sana bir sıfırlama bağlantısı gönderelim.",
+      "emailLabel": "E-posta",
+      "emailPlaceholder": "ornek@email.com",
+      "submit": "Sıfırlama bağlantısı gönder",
+      "submitting": "Gönderiliyor…",
+      "backToSignIn": "Girişe dön",
+      "successMessage": "Bu e-posta için bir hesap varsa, şifre sıfırlama bağlantısı gönderildi."
+    },
+    "resetPassword": {
+      "title": "Yeni şifre belirle",
+      "subtitle": "Hesabın için yeni bir şifre seç.",
+      "newPasswordLabel": "Yeni şifre",
+      "confirmPasswordLabel": "Şifreyi onayla",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Şifreyi güncelle",
+      "submitting": "Güncelleniyor…",
+      "successMessage": "Şifren başarıyla güncellendi."
+    },
+    "callback": {
+      "failedTitle": "Bağlantı doğrulanamadı",
+      "verifying": "Bağlantı doğrulanıyor…",
+      "backToSignIn": "Girişe dön",
+      "emailConfirmed": "E-posta başarıyla onaylandı."
+    },
+    "emailChange": {
+      "title": "E-postayı değiştir",
+      "description": "Yeni e-posta adresine bir onay bağlantısı göndereceğiz.",
+      "currentEmailLabel": "Mevcut e-posta",
+      "newEmailLabel": "Yeni e-posta",
+      "emailPlaceholder": "ornek@email.com",
+      "submit": "Doğrulama e-postası gönder",
+      "submitting": "Gönderiliyor…",
+      "successMessage": "Yeni adresine bir doğrulama e-postası gönderildi. Değişikliği onaylamak için bağlantıyı bu cihazda aç.",
+      "signInRequired": "E-postanı değiştirmek için giriş yap.",
+      "differentEmailRequired": "Farklı bir e-posta adresi gir."
+    },
+    "guest": {
+      "continue": "Misafir olarak devam et"
+    },
+    "brand": {
+      "tagline": "Keşfet • Paylaş • Hatırla"
+    },
+    "validation": {
+      "emailRequired": "Lütfen e-postanı gir.",
+      "emailInvalid": "Lütfen geçerli bir e-posta adresi gir.",
+      "passwordRequired": "Lütfen bir şifre gir.",
+      "passwordMinLength": "Şifre en az 6 karakter olmalı.",
+      "passwordHint": "En az 8 karakter, bir büyük harf, bir küçük harf ve bir rakam kullan.",
+      "passwordsDoNotMatch": "Şifreler eşleşmiyor.",
+      "confirmPasswordRequired": "Lütfen şifreni onayla.",
+      "currentPasswordRequired": "Lütfen mevcut şifreni gir.",
+      "passwordMustDiffer": "Yeni şifre mevcut şifrenden farklı olmalı."
+    },
+    "errors": {
+      "generic": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+      "signInFailed": "Giriş başarısız.",
+      "signUpFailed": "Kayıt başarısız.",
+      "invalidCredentials": "E-posta veya şifre hatalı.",
+      "emailAlreadyRegistered": "Bu e-posta zaten kayıtlı.",
+      "emailNotConfirmed": "Giriş yapmadan önce e-postanı onayla.",
+      "weakPassword": "Lütfen daha güçlü bir şifre seç.",
+      "invalidEmail": "Lütfen geçerli bir e-posta adresi gir.",
+      "rateLimited": "Çok fazla deneme. Lütfen biraz bekleyip tekrar dene.",
+      "sessionExpired": "Oturumun sona erdi. Lütfen yeniden giriş yap.",
+      "network": "İnternet bağlantısı yok. Bağlantını kontrol edip tekrar dene.",
+      "configMissing": "Supabase yapılandırılmamış. .env dosyanı kontrol et.",
+      "resetEmailFailed": "Sıfırlama e-postası gönderilemedi. Lütfen tekrar dene.",
+      "updatePasswordFailed": "Şifre güncellenemedi. Lütfen tekrar dene.",
+      "currentPasswordIncorrect": "Mevcut şifre hatalı.",
+      "emailChangeFailed": "Doğrulama e-postası gönderilemedi. Lütfen tekrar dene.",
+      "linkExpired": "Bu bağlantının süresi dolmuş. Lütfen yeni bir tane iste.",
+      "linkInvalid": "Bu bağlantı geçersiz. Lütfen tekrar dene.",
+      "linkDenied": "Bu bağlantı reddedildi veya daha önce kullanıldı.",
+      "linkMissingData": "Bu bağlantı geçersiz veya doğrulama verisi eksik.",
+      "verifyFailed": "Bu bağlantı doğrulanamadı. Lütfen tekrar dene.",
+      "notAuthCallback": "Bu bir kimlik doğrulama bağlantısı değil.",
+      "oauthFailed": "Giriş tamamlanamadı.",
+      "oauthCancelled": "Giriş iptal edildi.",
+      "googleStartFailed": "Google girişi başlatılamadı.",
+      "googleCancelled": "Google girişi iptal edildi.",
+      "googleFailed": "Google girişi başarısız.",
+      "appleOnlyIos": "Apple ile giriş yalnızca iOS’ta kullanılabilir.",
+      "appleUnavailable": "Bu cihazda Apple ile giriş kullanılamıyor.",
+      "appleNoToken": "Apple girişi bir jeton döndürmedi.",
+      "appleFailed": "Apple girişi başarısız.",
+      "appleCancelled": "Apple girişi iptal edildi.",
+      "signInIncomplete": "Giriş tamamlanamadı."
+    },
+    "a11y": {
+      "showPassword": "Şifreyi göster",
+      "hidePassword": "Şifreyi gizle"
+    },
+    "changePassword": {
+      "title": "Şifreyi değiştir",
+      "description": "Mevcut şifreni gir, ardından yeni bir şifre seç.",
+      "currentPasswordLabel": "Mevcut şifre",
+      "newPasswordLabel": "Yeni şifre",
+      "confirmPasswordLabel": "Yeni şifreyi onayla",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Şifreyi güncelle",
+      "submitting": "Güncelleniyor…",
+      "successMessage": "Şifren başarıyla güncellendi.",
+      "signInRequired": "Şifreni değiştirmek için giriş yap."
+    }
+  },
+  "explore": {
+    "searchPlaceholder": "Mekan, parkur, manzara ara…",
+    "clearSearch": "Aramayı temizle",
+    "filterPlaces": "Mekanları filtrele",
+    "filters": {
+      "title": "Filtreler",
+      "close": "Filtreleri kapat",
+      "bestTime": "En iyi zaman",
+      "accessType": "Erişim türü",
+      "difficulty": "Zorluk",
+      "crowdLevel": "Kalabalık",
+      "facilities": "Olanaklar",
+      "apply": "Filtreleri uygula",
+      "clear": "Filtreleri temizle"
+    },
+    "quickFilters": {
+      "nearby": "Yakınımda",
+      "hiddenGems": "Gizli yerler",
+      "sunset": "Gün batımı",
+      "camping": "Kamp"
+    },
+    "search": {
+      "recent": "Son aramalar",
+      "noResults": "Yer bulunamadı",
+      "noResultsHint": "Başka bir ad veya kategori dene ya da filtreleri temizle.",
+      "a11ySearchRecent": "{{query}} ara",
+      "a11yRemoveRecent": "{{query}} öğesini kaldır"
+    },
+    "empty": {
+      "noPlaces": "Henüz yer yok. İlk paylaşımı sen yap.",
+      "noFilterMatches": "Bu filtrelere uyan yer yok.",
+      "offline": "Çevrimdışıyken yer yok. Haritayı yüklemek için bağlan."
+    },
+    "load": {
+      "cached": "Önbellekteki yerler gösteriliyor. Yenilemek için bağlan.",
+      "failed": "Yerler yüklenemedi. Bağlantını kontrol edip tekrar dene.",
+      "refreshFailed": "Yerler yenilenemedi. Son yüklenen veriler gösteriliyor.",
+      "supabaseFailed": "Yerler şu an yüklenemedi."
+    },
+    "auth": {
+      "save": "Mekanları kaydetmek için giriş yap.",
+      "like": "Mekanları beğenmek için giriş yap.",
+      "saveShort": "Mekanları kaydetmek için giriş yap."
+    },
+    "preview": {
+      "verified": "Doğrulandı",
+      "discoveredBy": "@{{username}} tarafından keşfedildi",
+      "navigate": "Yol tarifi",
+      "details": "Detaylar",
+      "a11yClose": "Önizlemeyi kapat",
+      "a11yLike": "Mekanı beğen",
+      "a11yUnlike": "Beğeniyi kaldır",
+      "a11yNavigate": "Mekana yol tarifi al",
+      "a11yDetails": "Detayları gör",
+      "a11yDismiss": "Önizlemeyi kapat"
+    },
+    "a11y": {
+      "like": "Mekanı beğen",
+      "unlike": "Beğeniyi kaldır",
+      "dismissKeyboard": "Klavyeyi kapat"
+    }
+  },
+  "place": {
+    "save": "Kaydet",
+    "saved": "Kaydedildi",
+    "saveA11y": "Mekanı kaydet",
+    "unsaveA11y": "Kayıtlardan kaldır",
+    "status": {
+      "pending": "İnceleme bekliyor",
+      "approved": "Onaylandı",
+      "rejected": "Reddedildi",
+      "hidden": "Gizli",
+      "deleted": "Kaldırıldı"
+    },
+    "categories": {
+      "selected": "Seçilen ({{count}}/{{max}})",
+      "selectRange": "{{min}}–{{max}} kategori seç",
+      "removeA11y": "{{label}} kategorisini kaldır",
+      "maxReached": "En fazla {{max}} kategori seçilebilir. Yenisini eklemek için birini kaldır."
+    },
+    "toasts": {
+      "saved": "Mekan kaydedildi",
+      "removed": "Kayıtlardan çıkarıldı"
+    },
+    "a11yLike": "Mekanı beğen",
+    "a11yUnlike": "Beğeniyi kaldır",
+    "errors": {
+      "signInToLike": "Yerleri beğenmek için giriş yap."
+    }
+  },
+  "saved": {
+    "allSavedPlaces": "Tüm Kayıtlı Mekanlar",
+    "allSavedPlacesA11y": "Tüm Kayıtlı Mekanlar, {{count}} mekan",
+    "home": {
+      "title": "Kaydedilen Yerler",
+      "subtitle": "Yer işaretlerin ve özel listelerin tek yerde.",
+      "yourCollections": "Koleksiyonların",
+      "createAction": "+ Oluştur",
+      "toastRefreshed": "Kayıtlar güncellendi"
+    },
+    "all": {
+      "title": "Tüm Kaydedilen Yerler",
+      "subtitle": "Yer işaretlediğin tüm yerler.",
+      "toastRefreshed": "Kaydedilen yerler güncellendi"
+    },
+    "empty": {
+      "noSavedTitle": "Henüz kaydedilen yer yok",
+      "noSavedBody": "Daha sonra bulmak için haritadan yer kaydet.",
+      "noCachedTitle": "Önbellekte kaydedilen yer yok",
+      "noCachedBody": "Kaydedilen yerlerini yüklemek için internete bağlan.",
+      "guestTitle": "Yer kaydetmek için giriş yap",
+      "guestBodyHome": "Yerleri yer işaretlemek ve koleksiyonlara ayırmak için hesap oluştur.",
+      "guestBodyList": "Yerleri yer işaretlemek ve burada bulmak için hesap oluştur."
+    },
+    "auth": {
+      "manage": "Kaydedilen yerleri yönetmek için giriş yap."
+    },
+    "viewOnMap": "Haritada gör",
+    "unsave": "Kaydı kaldır",
+    "list": {
+      "title": "Koleksiyonun",
+      "subtitle": "Daha sonra ziyaret etmek istediğin yerler, tek listede."
+    }
+  },
+  "categories": {
+    "groups": {
+      "nature": "Doğa",
+      "scenic": "Manzara",
+      "adventure": "Macera",
+      "discovery": "Keşif",
+      "seasonal": "Mevsimsel / Özel"
+    },
+    "waterfall": "Şelale",
+    "lake": "Göl",
+    "river": "Nehir",
+    "forest": "Orman",
+    "mountain": "Dağ",
+    "canyon": "Kanyon",
+    "cave": "Mağara",
+    "beach": "Plaj",
+    "viewpoint": "Seyir noktası",
+    "sunset_spot": "Gün batımı",
+    "sunrise_spot": "Gün doğumu",
+    "panorama": "Panorama",
+    "photography_spot": "Fotoğraf noktası",
+    "camping": "Kamp",
+    "hiking": "Yürüyüş",
+    "picnic": "Piknik",
+    "off_road": "Off-road",
+    "hidden_gem": "Gizli cennet",
+    "historical_site": "Tarihi alan",
+    "ancient_ruins": "Antik kalıntılar",
+    "landmark": "Simge yapı",
+    "bridge": "Köprü",
+    "snow_area": "Kar alanı",
+    "flower_field": "Çiçek tarlası",
+    "natural_wonder": "Doğa harikası",
+    "fallback": "Keşif"
+  },
+  "options": {
+    "bestTime": {
+      "Anytime": "Her zaman",
+      "Morning": "Sabah",
+      "Afternoon": "Öğleden sonra",
+      "Sunset": "Gün batımı",
+      "Night": "Gece"
+    },
+    "access": {
+      "walking": "Yürüyerek",
+      "car": "Araçla",
+      "bicycle": "Bisikletle",
+      "unknown": "Bilinmiyor",
+      "public_transport": "Toplu taşıma",
+      "mixed": "Karma"
+    },
+    "difficulty": {
+      "easy": "Kolay",
+      "medium": "Orta",
+      "hard": "Zor",
+      "unknown": "Bilinmiyor",
+      "moderate": "Orta"
+    },
+    "crowd": {
+      "quiet": "Sakin",
+      "normal": "Normal",
+      "crowded": "Kalabalık",
+      "unknown": "Bilinmiyor"
+    },
+    "facilities": {
+      "petFriendly": "Evcil hayvan dostu",
+      "childFriendly": "Çocuk dostu",
+      "carAccessible": "Araçla ulaşılabilir",
+      "campAllowed": "Kamp yapılabilir",
+      "picnicSuitable": "Pikniğe uygun"
+    }
+  },
+  "onboarding": {
+    "actions": {
+      "skip": "Atla",
+      "next": "İleri",
+      "continue": "Devam",
+      "getStarted": "Başla"
+    },
+    "slides": {
+      "welcome": {
+        "headline": "Gizli Mekanları Keşfet",
+        "subtitle": "Çevrende insanların paylaştığı güzel yerleri bul."
+      },
+      "explore": {
+        "headline": "Harika Yerleri Keşfet",
+        "subtitle": "Yakındakileri ara, kategorilere göz at ve topluluğun paylaştığı eşsiz mekanları keşfet."
+      },
+      "details": {
+        "headline": "İhtiyacın Olan Her Şey",
+        "subtitle": "Fotoğraflar, mesafe, en iyi ziyaret zamanı, zorluk ve yol tarifi tek yerde."
+      },
+      "saveShare": {
+        "headline": "Kaydet ve Paylaş",
+        "subtitle": "Kendi koleksiyonlarını oluştur ve başkalarının yeni yerler bulmasına yardım et."
+      },
+      "ready": {
+        "headline": "Keşfe Hazır mısın?",
+        "subtitle": "Topluluğa katıl ve bugün harika mekanları keşfetmeye başla."
+      }
+    },
+    "ready": {
+      "featureDiscover": "Gizli mekanları keşfet",
+      "featureSave": "Favori noktalarını kaydet",
+      "featureShare": "Mekanları başkalarıyla paylaş"
+    }
+  },
+  "map": {
+    "unavailable": "Harita kullanılamıyor",
+    "loading": "Yerler yükleniyor…",
+    "configMissing": "Mapbox jetonu eksik. .env dosyana EXPO_PUBLIC_MAPBOX_TOKEN ekle.",
+    "location": {
+      "enableForSort": "Mesafeye göre sıralamak için konumu aç.",
+      "permissionDenied": "Konum izni reddedildi. Yakındaki yerleri görmek için ayarlardan aç.",
+      "unavailable": "Konumun şu an alınamadı.",
+      "blockedTitle": "Konum kapalı",
+      "blockedMessage": "Cihaz ayarlarında konum erişimi kapalı."
+    },
+    "directions": {
+      "failed": "Haritalar açılamadı. Bir harita uygulaması yüklü olduğundan emin ol."
+    },
+    "a11y": {
+      "myLocation": "Konumumu göster"
+    },
+    "pickLocation": {
+      "instruction": "Pini konumlandırmak için haritayı kaydır",
+      "selected": "Seçilen konum",
+      "confirm": "Bu konumu kullan",
+      "goBack": "Geri dön"
+    }
+  },
+  "units": {
+    "m": "{{value}} m",
+    "km": "{{value}} km",
+    "ft": "{{value}} ft",
+    "mi": "{{value}} mi",
+    "distanceUnavailable": "Mesafe yok"
+  },
+  "notifications": {
+    "title": "Bildirimler",
+    "markAllRead": "Tümünü okundu işaretle",
+    "subtitleUnread_one": "{{count}} okunmamış",
+    "subtitleUnread_other": "{{count}} okunmamış",
+    "subtitleCaughtUp": "Hepsi okundu",
+    "a11y": "Bildirimler",
+    "a11yUnread_one": "Bildirimler, {{count}} okunmamış",
+    "a11yUnread_other": "Bildirimler, {{count}} okunmamış",
+    "a11yBack": "Geri git",
+    "a11yOpen": "Bildirimi aç",
+    "a11yUnreadItem": "Okunmamış bildirim",
+    "a11yReadItem": "Okunmuş bildirim",
+    "empty": {
+      "title": "Henüz bildirimin yok",
+      "description": "Yerlerin, beğeniler ve duyurularla ilgili güncellemeler burada görünür."
+    },
+    "errors": {
+      "notSignedIn": "Bildirimleri yönetmek için giriş yap.",
+      "markReadFailed": "Okundu olarak işaretlenemedi.",
+      "markAllFailed": "Tümü okundu olarak işaretlenemedi."
+    },
+    "time": {
+      "justNow": "Az önce",
+      "minutesAgo_one": "{{count}} dakika önce",
+      "minutesAgo_other": "{{count}} dakika önce",
+      "hoursAgo_one": "{{count}} saat önce",
+      "hoursAgo_other": "{{count}} saat önce",
+      "daysAgo_one": "{{count}} gün önce",
+      "daysAgo_other": "{{count}} gün önce",
+      "yesterday": "Dün",
+      "minutesAgo_few": "{{count}} dakika önce",
+      "minutesAgo_many": "{{count}} dakika önce",
+      "hoursAgo_few": "{{count}} saat önce",
+      "hoursAgo_many": "{{count}} saat önce",
+      "daysAgo_few": "{{count}} gün önce",
+      "daysAgo_many": "{{count}} gün önce"
+    },
+    "fallbacks": {
+      "yourPlace": "yerin",
+      "someone": "Birisi"
+    },
+    "types": {
+      "placeApproved": {
+        "title": "Yerin onaylandı",
+        "body": "\"{{place}}\" yerin onaylandı.",
+        "bodyGeneric": "Yerin onaylandı."
+      },
+      "placeRejected": {
+        "title": "Yerin onaylanmadı",
+        "body": "\"{{place}}\" yerin onaylanmadı.",
+        "bodyGeneric": "Yerin onaylanmadı."
+      },
+      "placeUpdateApproved": {
+        "title": "Güncelleme onaylandı",
+        "body": "\"{{place}}\" için güncellemen onaylandı.",
+        "bodyGeneric": "Yer güncellemen onaylandı."
+      },
+      "placeUpdateRejected": {
+        "title": "Güncelleme onaylanmadı",
+        "body": "\"{{place}}\" için güncellemen onaylanmadı.",
+        "bodyGeneric": "Yer güncellemen onaylanmadı."
+      },
+      "placeLiked": {
+        "title": "Yeni beğeni",
+        "body": "{{actor}}, \"{{place}}\" yerini beğendi.",
+        "bodyGeneric": "Birisi yerini beğendi."
+      },
+      "system": {
+        "title": "Duyuru",
+        "body": "Nice Place'ten yeni bir duyurun var."
+      },
+      "event": {
+        "title": "Etkinlik",
+        "body": "Nice Place'te neler olduğunu keşfet."
+      },
+      "profilePhotoRemoved": {
+        "title": "Profil fotoğrafı kaldırıldı",
+        "body": "Profil fotoğrafın topluluk kurallarını ihlal ettiği için kaldırıldı."
+      },
+      "profileUsernameReset": {
+        "title": "Kullanıcı adı sıfırlandı",
+        "body": "Kullanıcı adın sıfırlandı. Lütfen yeni bir kullanıcı adı seç."
+      },
+      "profileSuspended": {
+        "title": "Hesap askıya alındı",
+        "body": "Hesabın askıya alındı.",
+        "bodyIndefinite": "Hesabın süresiz olarak askıya alındı.",
+        "body24h": "Hesabın 24 saat süreyle askıya alındı.",
+        "body7d": "Hesabın 7 gün süreyle askıya alındı.",
+        "body30d": "Hesabın 30 gün süreyle askıya alındı."
+      },
+      "profileUnsuspended": {
+        "title": "Askı kaldırıldı",
+        "body": "Hesap askın kaldırıldı."
+      },
+      "fallback": {
+        "title": "Bildirim",
+        "body": "Yeni bir bildirimin var."
+      }
+    },
+    "subtitleUnread_few": "{{count}} okunmamış",
+    "subtitleUnread_many": "{{count}} okunmamış",
+    "a11yUnread_few": "Bildirimler, {{count}} okunmamış",
+    "a11yUnread_many": "Bildirimler, {{count}} okunmamış"
+  },
+  "placeDetail": {
+    "about": "Bu yer hakkında",
+    "safetyTips": "Güvenlik notları",
+    "tags": "Etiketler",
+    "similar": "Yakındaki benzer yerler",
+    "edit": "Yeri düzenle",
+    "verified": "Doğrulandı",
+    "gallery": "Galeri",
+    "readMore": "Devamını oku",
+    "showLess": "Daha az göster",
+    "discoveredBy": "Keşfeden",
+    "discoveredByNamed": "{{name}} tarafından keşfedildi",
+    "communityFallback": "Nice Place topluluğu",
+    "userFallback": "Nice Place kullanıcısı",
+    "share": {
+      "message": "Nice Place’te {{title}} adlı yere göz at — {{category}}.",
+      "a11y": "Yeri paylaş"
+    },
+    "quickInfo": {
+      "distance": "Mesafe",
+      "bestTime": "En uygun zaman",
+      "difficulty": "Zorluk",
+      "access": "Ulaşım",
+      "crowd": "Kalabalık"
+    },
+    "sticky": {
+      "navigate": "Yol tarifi",
+      "likeA11y": "Beğen, {{count}} beğeni",
+      "unlikeA11y": "Beğeniyi kaldır, {{count}} beğeni"
+    },
+    "notFound": {
+      "title": "Yer bulunamadı",
+      "body": "Bu yer kaldırılmış veya henüz onaylanmamış olabilir."
+    },
+    "offline": {
+      "title": "Çevrimdışı kullanılamıyor",
+      "body": "Bu yer henüz önbelleğe alınmamış. İnternete bağlanıp tekrar dene."
+    },
+    "admin": {
+      "section": "Yönetici işlemleri",
+      "remove": "Herkese açık görünümden kaldır",
+      "removeA11y": "Yeri herkese açık görünümden sil",
+      "confirmTitle": "Bu yer herkese açık görünümden kaldırılsın mı?",
+      "confirmBody": "Haritadan, kayıtlı listelerden ve herkese açık profillerden gizlenir. Yer kaydı ve fotoğraflar kayıt için tutulur.",
+      "removing": "Kaldırılıyor…",
+      "toastSuccess": "Yer herkese açık görünümden kaldırıldı.",
+      "toastError": "Yer herkese açık görünümden kaldırılamadı."
+    },
+    "photos": {
+      "viewPhoto": "Fotoğraf {{index}}",
+      "closeViewer": "Fotoğraf görüntüleyiciyi kapat",
+      "imageNumber": "Fotoğraf {{current}} / {{total}}"
+    },
+    "a11y": {
+      "viewProfile": "{{name}} profilini görüntüle"
+    }
+  },
+  "placeForm": {
+    "sections": {
+      "basicInfo": "Temel bilgiler",
+      "location": "Konum",
+      "visitDetails": "Ziyaret detayları",
+      "facilities": "Olanaklar",
+      "safety": "Güvenlik",
+      "photos": "Fotoğraflar"
+    },
+    "fields": {
+      "placeName": "Yer adı *",
+      "placeNamePlaceholder": "örn. Gün Batımı Uçurumu",
+      "categories": "Kategoriler *",
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Bu yer neden ziyaret edilmeli?",
+      "bestTime": "En uygun ziyaret zamanı",
+      "accessType": "Ulaşım türü",
+      "difficulty": "Zorluk",
+      "crowdLevel": "Kalabalık seviyesi",
+      "safetyNote": "Güvenlik notu (isteğe bağlı)",
+      "safetyNotePlaceholder": "Tehlikeler, erişim uyarıları veya dikkat edilmesi gerekenler?"
+    },
+    "location": {
+      "waiting": "Konum bekleniyor…",
+      "loading": "Konum yükleniyor…",
+      "usingGps": "Mevcut konumun kullanılıyor",
+      "usingDefault": "Varsayılan harita alanı — düzenlemek için Haritada Ayarla’ya dokun",
+      "adjusted": "Konum haritada ayarlandı",
+      "current": "Mevcut yer konumu",
+      "setOnMap": "Haritada ayarla",
+      "adjustOnMap": "Haritada düzenle"
+    },
+    "photos": {
+      "cover": "Kapak",
+      "setCover": "Kapak yap",
+      "setCoverA11y": "Kapak fotoğrafı yap",
+      "removeA11y": "Fotoğrafı kaldır",
+      "addRequired": "Fotoğraf ekle (1–3 zorunlu)",
+      "addOptional": "Fotoğraf ekle (en fazla 3)",
+      "addMore": "Fotoğraf ekle ({{count}}/{{max}})",
+      "firstIsCover": "İlk fotoğraf kapak olur",
+      "selectedHint": "{{count}}/{{max}} seçildi · sıralamak için Kapak yap’a dokun",
+      "changePhoto": "Fotoğrafı değiştir"
+    },
+    "validation": {
+      "nameRequired": "Yer adı gerekli.",
+      "categoriesMin": "En az {{count}} kategori seç.",
+      "categoriesMin_one": "En az {{count}} kategori seç.",
+      "categoriesMin_other": "En az {{count}} kategori seç.",
+      "categoriesMax": "En fazla {{count}} kategori seçebilirsin.",
+      "locationRequired": "Konum gerekli. Haritada ayarla veya konum iznini aç.",
+      "photosMin": "En az {{count}} fotoğraf ekle.",
+      "photosMin_one": "En az {{count}} fotoğraf ekle.",
+      "photosMin_other": "En az {{count}} fotoğraf ekle.",
+      "photosMax": "En fazla {{count}} fotoğraf ekleyebilirsin.",
+      "photosKeepMin": "En az {{count}} fotoğraf bırak.",
+      "photosKeepMin_one": "En az {{count}} fotoğraf bırak.",
+      "photosKeepMin_other": "En az {{count}} fotoğraf bırak.",
+      "categoriesMin_few": "En az {{count}} kategori seç.",
+      "categoriesMin_many": "En az {{count}} kategori seç.",
+      "photosMin_few": "En az {{count}} fotoğraf ekle.",
+      "photosMin_many": "En az {{count}} fotoğraf ekle.",
+      "photosKeepMin_few": "En az {{count}} fotoğraf bırak.",
+      "photosKeepMin_many": "En az {{count}} fotoğraf bırak.",
+      "photosRange": "{{min}}–{{max}} fotoğraf seç.",
+      "categoriesRange": "Lütfen {{min}} ile {{max}} arasında kategori seç.",
+      "categoriesSetRange": "Kategori seti {{min}}–{{max}} öğe içermelidir.",
+      "photosSetRange": "Fotoğraf seti {{min}}–{{max}} görsel içermelidir."
+    },
+    "errors": {
+      "submitFailed": "Yer gönderilemedi.",
+      "updateFailed": "Güncelleme inceleme için gönderilemedi.",
+      "photoUploadFailed": "Fotoğraf yüklemesi başarısız.",
+      "photoUploadUnknown": "Bilinmeyen yükleme hatası",
+      "noChanges": "Gönderilecek bir değişiklik yok.",
+      "profileMissing": "Hesabın açık ama profilin yüklenemedi. Çıkış yapıp tekrar giriş dene.",
+      "signInToShare": "Yer paylaşmak için giriş yap.",
+      "signInToEdit": "Yeri düzenlemek için giriş yap.",
+      "pendingCannotEdit": "Bu yer hâlâ incelemede; henüz güncellenemez.",
+      "cannotEdit": "Bu yer düzenlenemez.",
+      "notFound": "Yer bulunamadı veya düzenleme iznin yok.",
+      "resubmitLimit": "Aynı reddedilmiş yeri yalnızca 2 kez yeniden gönderebilirsin.",
+      "resubmitUnavailable": "Yeniden gönderme henüz kullanılamıyor. Daha sonra dene.",
+      "resubmitFailed": "Bu yer yeniden gönderilemedi. Tekrar dene.",
+      "updatePermission": "Güncelleme gönderilemedi. Bu yeri düzenleme iznin olmayabilir.",
+      "updateSchema": "Güncelleme şeması güncel değil. Daha sonra dene.",
+      "photoSyncFailed": "Yer fotoğrafları güncellenemedi. Tekrar dene.",
+      "categorySyncFailed": "Yer kategorileri güncellenemedi. Tekrar dene.",
+      "submitProfileIssue": "Yer gönderilemedi. Profilin düzgün kurulmamış olabilir — çıkış yapıp tekrar giriş dene.",
+      "categoriesRequired": "En az bir kategori seç.",
+      "photoMissingData": "Fotoğraf yüklemesi için gerekli veriler eksik.",
+      "photoUrlUnresolved": "Yüklenen görsel URL’si çözülemedi.",
+      "profileLookupMismatch": "Profil kimliği eşleşmedi. Çıkış yapıp tekrar giriş dene.",
+      "photoReadFailed": "Seçilen görsel okunamadı."
+    }
+  },
+  "addPlace": {
+    "title": "Yer paylaş",
+    "subtitle": "Başkalarının keşfetmeye değer gizli yerleri bulmasına yardım et.",
+    "submit": "Yeri gönder",
+    "submitting": "Gönderiliyor…",
+    "success": "Yerin kaydedildi ve incelemeden sonra haritada görünecek.",
+    "successPhotoPartial": "Yer gönderildi ama fotoğraf yüklemesi başarısız oldu.",
+    "authMessage": "Toplulukla yeni bir yer paylaşmak için giriş yap."
+  },
+  "editPlace": {
+    "title": "Yeri düzenle",
+    "titleResubmit": "Yeri yeniden gönder",
+    "subtitle": "Paylaştığın yerin detaylarını güncelle.",
+    "subtitleResubmit": "Detayları güncelle ve yeri yeniden incelemeye gönder.",
+    "save": "Değişiklikleri kaydet",
+    "resubmit": "İncelemeye yeniden gönder",
+    "saving": "Kaydediliyor…",
+    "loading": "Yer yükleniyor…",
+    "blockedTitle": "Bu yer güncellenemiyor",
+    "successTitle": "Güncelleme isteği gönderildi",
+    "successTitleResubmit": "Yeniden gönderildi",
+    "successBody": "Değişikliklerin inceleme için gönderildi.",
+    "successBodyResubmit": "Yerin yeniden incelemeye gönderildi.",
+    "photoErrorTitle": "Fotoğraf yüklemesi başarısız",
+    "photoErrorBody": "Güncellemeyi göndermeden önce tekrar dene.",
+    "authMessage": "Paylaştığın yerleri düzenlemek için giriş yap."
+  },
+  "collections": {
+    "fallbackTitle": "Koleksiyon",
+    "defaultSubtitle": "Bir araya getirdiğin yerler.",
+    "empty": {
+      "noCollectionsTitle": "Henüz koleksiyon yok",
+      "noCollectionsBody": "Kaydedilen yerleri geziye, temaya veya plana göre gruplamak için bir liste oluştur.",
+      "createCta": "Koleksiyon oluştur",
+      "noPlacesTitle": "Henüz yer yok",
+      "noPlacesBody": "Bu koleksiyona yer detayından veya kaydedilen listenden yer ekle."
+    },
+    "form": {
+      "nameLabel": "Ad *",
+      "namePlaceholder": "örn. Antalya Gezisi",
+      "collectionNameLabel": "Koleksiyon adı *",
+      "collectionNamePlaceholder": "örn. Hafta Sonu Planı",
+      "descriptionLabel": "Açıklama",
+      "descriptionPlaceholder": "İsteğe bağlı not"
+    },
+    "actions": {
+      "add": "Koleksiyona ekle",
+      "manage": "Koleksiyonlar",
+      "createNew": "Yeni koleksiyon oluştur",
+      "remove": "Kaldır",
+      "removeA11y": "Koleksiyondan kaldır"
+    },
+    "modal": {
+      "titleSaved": "Kaydedildi",
+      "titleManage": "Koleksiyonları yönet",
+      "subtitlePostSave": "Bu yeri bir koleksiyona eklemek ister misin?",
+      "subtitleManage": "Bu yeri listelerine ekle veya listelerinden çıkar.",
+      "emptyPostSave": "Henüz koleksiyon yok. Bir tane oluştur veya Şimdi değil’e dokun.",
+      "emptyManage": "Henüz koleksiyon yok. Bu yeri düzenlemek için bir tane oluştur.",
+      "notNow": "Şimdi değil",
+      "loadError": "Koleksiyonlar yüklenemedi."
+    },
+    "alerts": {
+      "removeTitle": "Koleksiyondan kaldırılsın mı?",
+      "removeBody": "Yer kaydedilen listende kalır.",
+      "deleteTitle": "Koleksiyon silinsin mi?",
+      "deleteBody": "Yerler kaydedilmiş olarak kalır. Yalnızca bu koleksiyon ve gruplaması kaldırılır."
+    },
+    "toasts": {
+      "created": "Koleksiyon oluşturuldu",
+      "updated": "Koleksiyon güncellendi",
+      "deleted": "Koleksiyon silindi",
+      "removedPlace": "Koleksiyondan kaldırıldı",
+      "createFailed": "Koleksiyon oluşturulamadı.",
+      "updateFailed": "Koleksiyon güncellenemedi.",
+      "deleteFailed": "Koleksiyon silinemedi.",
+      "removeFailed": "Yer kaldırılamadı."
+    },
+    "errors": {
+      "nameRequired": "Koleksiyon adı gerekli.",
+      "nameTooLong": "Ad en fazla {{max}} karakter olabilir.",
+      "descriptionTooLong": "Açıklama en fazla {{max}} karakter olabilir.",
+      "duplicateName": "Bu adda bir koleksiyonun zaten var.",
+      "noChanges": "Kaydedilecek değişiklik yok.",
+      "notFound": "Koleksiyon bulunamadı.",
+      "signInCreate": "Koleksiyon oluşturmak için giriş yap.",
+      "signInUpdate": "Koleksiyonları güncellemek için giriş yap.",
+      "signInDelete": "Koleksiyon silmek için giriş yap.",
+      "signInManage": "Koleksiyonları yönetmek için giriş yap."
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "publicTitle": "Kaşif",
+    "guestName": "Misafir Kaşif",
+    "explorerFallback": "Kaşif",
+    "guestBio": "Yer kaydetmek, keşifleri paylaşmak ve kaşif profilini oluşturmak için giriş yap.",
+    "defaultBio": "Sakin yerler ve gün batımı manzaraları arıyorum.",
+    "pendingNote": "Bekleyen yerler onaylanana kadar yalnızca sana görünür.",
+    "checkingAdmin": "Yönetici erişimi kontrol ediliyor…",
+    "actions": {
+      "editProfile": "Profili düzenle",
+      "adminPanel": "Yönetici Paneli",
+      "exploreMap": "Haritayı keşfet",
+      "sharePlace": "Yer paylaş"
+    },
+    "a11y": {
+      "openSettings": "Ayarları aç",
+      "changePhoto": "Profil fotoğrafını değiştir",
+      "report": "Profili bildir",
+      "profilePhoto": "Profil fotoğrafı",
+      "defaultAvatar": "Varsayılan profil avatarı"
+    },
+    "stats": {
+      "shared": "Paylaşılan",
+      "saved": "Kaydedilen",
+      "likes": "Beğeniler"
+    },
+    "tabs": {
+      "shared": "Paylaşılan",
+      "saved": "Kaydedilen"
+    },
+    "filters": {
+      "approved": "Onaylı",
+      "pending": "Bekleyen",
+      "rejected": "Reddedilen"
+    },
+    "toasts": {
+      "refreshed": "Profil güncellendi",
+      "updated": "Profil güncellendi.",
+      "photoUpdated": "Profil fotoğrafı güncellendi.",
+      "photoRemoved": "Profil fotoğrafı kaldırıldı.",
+      "noPhotoToRemove": "Kaldırılacak profil fotoğrafı yok.",
+      "usernameUpdated": "Kullanıcı adı güncellendi",
+      "reportSubmitted": "Bildirim gönderildi. Teşekkürler."
+    },
+    "empty": {
+      "sharedOfflineTitle": "Önbellekte paylaşılan yer yok",
+      "sharedOfflineBody": "Paylaşılan yerlerini yüklemek için internete bağlan.",
+      "noApprovedTitle": "Onaylı yer yok",
+      "noApprovedBody": "Toplulukla sakin bir nokta veya gün batımı manzarası paylaş.",
+      "noPendingTitle": "Bekleyen yer yok",
+      "noPendingBody": "İnceleme bekleyen yerler burada görünür.",
+      "noRejectedTitle": "Reddedilen yer yok",
+      "noRejectedBody": "Reddedilen gönderiler burada görünür.",
+      "savedExploreBody": "Koleksiyonunu oluşturmak için Keşfet’ten yer kaydet."
+    },
+    "public": {
+      "notFoundTitle": "Profil bulunamadı",
+      "notFoundBody": "Bu kaşif profili yüklenemedi.",
+      "sectionTitle": "Onaylı yerler",
+      "sectionHint": "Burada yalnızca herkese açık onaylı keşifler gösterilir.",
+      "emptyTitle": "Henüz gönderi yok",
+      "emptyBody": "Bu kaşif henüz onaylı bir yer paylaşmadı."
+    },
+    "auth": {
+      "edit": "Profilini düzenlemek için giriş yap.",
+      "report": "Bu profili bildirmek için giriş yap.",
+      "addPhoto": "Profil fotoğrafı eklemek için giriş yap.",
+      "editDetails": "Görünen ad, kullanıcı adı ve biyografini düzenlemek için giriş yap.",
+      "changePhoto": "Profil fotoğrafını değiştirmek için giriş yapman gerekir.",
+      "removePhoto": "Profil fotoğrafını kaldırmak için giriş yapman gerekir."
+    },
+    "photo": {
+      "sectionTitle": "Profil fotoğrafı",
+      "tapHint": "Yeni bir avatar seçmek için fotoğrafına dokun.",
+      "remove": "Profil Fotoğrafını Kaldır",
+      "removing": "Kaldırılıyor…",
+      "removeTitle": "Profil fotoğrafı kaldırılsın mı?",
+      "removeMessage": "Fotoğrafın hesabından silinecek. İstediğin zaman yeni bir tane yükleyebilirsin.",
+      "uploadFailedTitle": "Fotoğraf yüklenemedi",
+      "permissionRequired": "Avatarını değiştirmek için fotoğraf kütüphanesi izni gerekli.",
+      "uploadFailed": "Avatar yüklenemedi.",
+      "updateFailed": "Profil fotoğrafı güncellenemedi.",
+      "removeFailed": "Profil fotoğrafı kaldırılamadı.",
+      "readFailed": "Seçilen görsel okunamadı.",
+      "missingData": "Avatar yüklemesi için gerekli veriler eksik.",
+      "urlUnresolved": "Yüklenen avatar URL’si çözülemedi.",
+      "saveFailed": "Avatar profiline kaydedilemedi. Lütfen tekrar dene.",
+      "profileUpdateFailed": "Profilin güncellenemedi. Lütfen tekrar dene."
+    },
+    "edit": {
+      "sectionTitle": "Hesap bilgileri",
+      "displayName": "Görünen ad",
+      "displayNamePlaceholder": "Adın",
+      "username": "Kullanıcı adı",
+      "usernamePlaceholder": "kullanici_adin",
+      "bio": "Biyografi",
+      "bioPlaceholder": "Keşif tarzını anlatan kısa bir satır",
+      "save": "Hesabı kaydet",
+      "saving": "Kaydediliyor…",
+      "saveFailed": "Profil kaydedilemedi."
+    },
+    "validation": {
+      "usernameRequired": "Kullanıcı adı gerekli.",
+      "usernameTooShort": "Kullanıcı adı en az 3 karakter olmalı.",
+      "usernameTooLong": "Kullanıcı adı en fazla 30 karakter olabilir.",
+      "usernameCharset": "Yalnızca küçük harf, rakam ve alt çizgi kullan.",
+      "displayNameRequired": "Görünen ad gerekli.",
+      "displayNameTooLong": "Görünen ad en fazla 60 karakter olabilir.",
+      "bioTooLong": "Biyografi en fazla 240 karakter olabilir."
+    },
+    "errors": {
+      "usernameTaken": "Bu kullanıcı adı zaten alınmış."
+    },
+    "report": {
+      "title": "Profili bildir",
+      "subtitle": "Bu profilde neyin yanlış olduğunu anlat.",
+      "subtitleNamed": "@{{username}} hakkında neyin yanlış olduğunu anlat.",
+      "detailsLabel": "Ayrıntılar (isteğe bağlı)",
+      "detailsPlaceholder": "İncelemeye yardımcı olacak bağlam ekle",
+      "submit": "Bildirimi gönder",
+      "reasons": {
+        "inappropriate_photo": "Uygunsuz profil fotoğrafı",
+        "inappropriate_username": "Uygunsuz kullanıcı adı",
+        "impersonation": "Kimliğe bürünme veya sahte hesap",
+        "spam": "Spam",
+        "harassment_or_hate": "Taciz veya nefret söylemi",
+        "other": "Diğer"
+      },
+      "errors": {
+        "generic": "Bildirim gönderilemedi. Lütfen tekrar dene.",
+        "not_authenticated": "Profil bildirmek için giriş yap.",
+        "self_report": "Kendi profilini bildiremezsin.",
+        "daily_limit": "Günde en fazla {{limit}} profil bildirimi gönderebilirsin.",
+        "not_configured": "Giriş şu anda kullanılamıyor.",
+        "rpc_error": "Bildirim gönderilemedi. Lütfen tekrar dene.",
+        "unknown": "Bildirim gönderilemedi. Lütfen tekrar dene."
+      }
+    },
+    "moderation": {
+      "suspended": {
+        "title": "Hesap askıya alındı",
+        "body": "Nice Place hesabın şu anda askıda ve topluluk özelliklerini kullanamaz.",
+        "reason": "Neden",
+        "duration": "Süre",
+        "until": "{{date}} tarihine kadar",
+        "indefinite": "Süresiz",
+        "help": "Bunun bir hata olduğunu düşünüyorsan support@niceplace.site ile iletişime geç.",
+        "signOut": "Çıkış yap"
+      },
+      "usernameReset": {
+        "title": "Yeni bir kullanıcı adı seç",
+        "body": "Önceki kullanıcı adın moderasyon tarafından sıfırlandı. Devam etmek için geçerli yeni bir kullanıcı adı seç.",
+        "save": "Kullanıcı adını kaydet",
+        "saveFailed": "Kullanıcı adı kaydedilemedi.",
+        "invalid": "3–30 karakter; yalnızca küçük harf, rakam veya alt çizgi kullan.",
+        "reserved": "Lütfen farklı bir kullanıcı adı seç."
+      }
+    }
+  },
+  "admin": {
+    "checkingAccess": "Yönetici erişimi kontrol ediliyor…",
+    "loadingQueue": "Yönetim kuyruğu yükleniyor…",
+    "working": "İşleniyor…",
+    "untitledPlace": "Adsız yer",
+    "uncategorized": "Kategorisiz",
+    "unknownUser": "bilinmiyor",
+    "emDash": "—",
+    "deleteUserPhrase": "DELETE USER",
+    "defaultModerationReason": "No additional reason provided",
+    "access": {
+      "signInTitle": "Giriş gerekli",
+      "signInBody": "Misafirler yönetim paneline erişemez. Yönetici hesabıyla giriş yap.",
+      "signInBodyShort": "Misafirler yönetim paneline erişemez.",
+      "deniedTitle": "Erişim reddedildi",
+      "deniedBody": "Bu panel yalnızca yöneticilere açıktır.",
+      "deniedShort": "Yalnızca yöneticiler."
+    },
+    "panel": {
+      "subtitle": "Herkese açık olmadan önce gönderimleri incele.",
+      "sendNotification": "Bildirim Gönder",
+      "sendNotificationSubtitle": "Duyuru veya etkinlik güncellemesi gönder",
+      "reportedProfiles": "Bildirilen Profiller",
+      "reportedProfilesSubtitle": "Topluluk bildirimlerini incele ve işlem yap",
+      "filterPending": "Bekleyen",
+      "filterRejected": "Reddedilen",
+      "tabPlaces": "Yerler",
+      "tabUpdates": "Güncellemeler",
+      "emptyPendingPlacesTitle": "Bekleyen yer yok",
+      "emptyPendingPlacesBody": "Yeni yer gönderimleri onay için burada görünür.",
+      "emptyRejectedPlacesTitle": "Reddedilen yer yok",
+      "emptyRejectedPlacesBody": "Reddedilen yerler buradan beklemeye geri alınabilir.",
+      "emptyPendingUpdatesTitle": "Bekleyen güncelleme yok",
+      "emptyPendingUpdatesBody": "Yer düzenleme istekleri inceleme için burada görünür.",
+      "emptyRejectedUpdatesTitle": "Reddedilen güncelleme yok",
+      "emptyRejectedUpdatesBody": "Reddedilen güncelleme istekleri buradan beklemeye geri alınabilir.",
+      "metaUpdate": "güncelleme",
+      "a11yReviewPlace": "{{title}} yerini incele",
+      "a11yReviewUpdate": "{{title}} için güncellemeyi incele"
+    },
+    "status": {
+      "pending": "Bekliyor",
+      "approved": "Onaylandı",
+      "rejected": "Reddedildi",
+      "deleted": "Kaldırıldı",
+      "open": "Açık",
+      "resolved_no_action": "Çözüldü · işlem yok",
+      "resolved_action_taken": "Çözüldü · işlem yapıldı",
+      "dismissed_abuse": "Kötüye kullanım olarak kapatıldı"
+    },
+    "fields": {
+      "description": "Açıklama",
+      "bestTime": "En iyi zaman",
+      "access": "Erişim",
+      "accessType": "Erişim türü",
+      "difficulty": "Zorluk",
+      "crowd": "Kalabalık",
+      "crowdLevel": "Kalabalık seviyesi",
+      "location": "Konum",
+      "mapPreview": "Harita önizlemesi",
+      "submitted": "Gönderildi",
+      "creatorId": "Oluşturan kimliği",
+      "safetyNote": "Güvenlik notu",
+      "title": "Başlık",
+      "latitude": "Enlem",
+      "longitude": "Boylam",
+      "coverPhotoUrl": "Kapak fotoğrafı URL’si",
+      "note": "Not",
+      "reason": "Neden",
+      "adminNoteOptional": "Yönetici notu (isteğe bağlı)"
+    },
+    "flags": {
+      "petFriendly": "Evcil hayvan dostu",
+      "childFriendly": "Çocuk dostu",
+      "carAccessible": "Arabayla erişilebilir",
+      "campAllowed": "Kamp yapılabilir",
+      "picnicSuitable": "Piknik uygun"
+    },
+    "placeDetail": {
+      "loading": "Yer yükleniyor…",
+      "notFoundTitle": "Yer bulunamadı",
+      "notFoundBody": "Bu gönderim yüklenemedi.",
+      "submittedPhotos": "Gönderilen fotoğraflar",
+      "cover": "Kapak",
+      "approve": "Yeri onayla",
+      "reject": "Yeri reddet",
+      "restore": "Beklemeye geri al",
+      "alreadyStatus": "Bu yer zaten {{status}}. Başka işlem gerekmiyor.",
+      "confirmApproveTitle": "Bu yer onaylansın mı?",
+      "confirmApproveBody": "Herkese açık haritada görünür. Veri silinmez.",
+      "confirmRejectTitle": "Bu yer reddedilsin mi?",
+      "confirmRejectBody": "Veritabanında reddedilmiş olarak kalır ve herkese açık görünmez.",
+      "confirmRestoreTitle": "Bu yer bekleyen incelemeye geri alınsın mı?",
+      "confirmRestoreBody": "İnceleme için bekleyen kuyruğa döner.",
+      "successTitle": "Tamam",
+      "successApprove": "Yer onaylandı ve haritada görünecek.",
+      "successReject": "Yer reddedildi. Herkese açık görünmeyecek.",
+      "successRestore": "Yer beklemeye alındı.",
+      "backToAdmin": "Yönetime dön",
+      "approveAction": "Onayla",
+      "rejectAction": "Reddet",
+      "restoreAction": "Geri al"
+    },
+    "updateDetail": {
+      "loading": "İstek yükleniyor…",
+      "loadFailedTitle": "İstek yüklenemedi",
+      "notFoundTitle": "İstek bulunamadı",
+      "notFoundBody": "Bu güncelleme isteği yüklenemedi.",
+      "categories": "Kategoriler",
+      "photos": "Fotoğraflar",
+      "fieldComparison": "Alan karşılaştırması",
+      "current": "Mevcut",
+      "requested": "İstenen",
+      "categoriesChanged": "Kategoriler değişti",
+      "photoSetChanged": "Fotoğraf seti değişti ({{from}} → {{to}})",
+      "notePlaceholder": "Onay veya red nedeni",
+      "approve": "Güncellemeyi onayla",
+      "reject": "Güncellemeyi reddet",
+      "restore": "Beklemeye geri al",
+      "alreadyStatus": "Bu istek zaten {{status}}.",
+      "confirmApproveTitle": "Bu güncelleme onaylansın mı?",
+      "confirmApproveBody": "İstenen alanlar canlı yere uygulanır. Hiçbir şey silinmez.",
+      "confirmRejectTitle": "Bu güncelleme reddedilsin mi?",
+      "confirmRejectBody": "Canlı yer değişmez. İstek reddedilmiş olarak işaretlenir.",
+      "confirmRestoreTitle": "Bu güncelleme bekleyen incelemeye geri alınsın mı?",
+      "confirmRestoreBody": "Güncellemeler bekleyen kuyruğuna döner.",
+      "successTitle": "İnceleme tamam",
+      "successApprove": "Güncelleme onaylandı.",
+      "successReject": "Güncelleme reddedildi.",
+      "successRestore": "Güncelleme beklemeye alındı.",
+      "approveAction": "Onayla",
+      "rejectAction": "Reddet",
+      "restoreAction": "Geri al"
+    },
+    "reports": {
+      "emptyTitle": "Açık profil bildirimi yok",
+      "emptyBody": "Çözülmemiş sorunları olan bildirilen profiller burada görünür.",
+      "counts": "{{open}} açık · {{total}} toplam",
+      "countsWithStrikes": "{{open}} açık · {{total}} toplam · {{strikes}} uyarı",
+      "noReasonSummary": "Açık neden özeti yok",
+      "lastReport": "Son bildirim {{date}}",
+      "suspended": "Askıda",
+      "suspendedUntil": "{{date}} tarihine kadar askıda",
+      "suspendedIndefinitely": "Süresiz askıda",
+      "strikes_one": "{{count}} uyarı",
+      "strikes_other": "{{count}} uyarı",
+      "strikes_few": "{{count}} uyarı",
+      "strikes_many": "{{count}} uyarı",
+      "reasonWithCount": "{{label}} ({{count}})",
+      "joined": "Katılım {{date}}",
+      "idLabel": "Kimlik: {{id}}",
+      "reporter": "Bildiren: {{id}}…",
+      "actions": "İşlemler",
+      "severe": "Ciddi durumlar",
+      "severeHint": "Kalıcı hesap silme. {{phrase}} yazman gerekir.",
+      "reportsSection": "Bildirimler",
+      "history": "Moderasyon geçmişi",
+      "noHistory": "Önceki işlem yok.",
+      "notFoundTitle": "Profil bulunamadı",
+      "notFoundBody": "Bu bildirim yüklenemedi.",
+      "markOk": "Sorun yok işaretle",
+      "removePhoto": "Fotoğrafı kaldır",
+      "resetUsername": "Kullanıcı adını sıfırla",
+      "suspend": "Askıya al",
+      "unsuspend": "Askıyı kaldır",
+      "dismissAbuse": "Kötüye kullanım olarak kapat",
+      "deleteAccount": "Hesabı sil",
+      "confirmModeration": "Moderasyonu onayla",
+      "confirmDeleteTitle": "Hesabı sil",
+      "typeDeletePhrase": "{{phrase}} yaz",
+      "duration24h": "24 saat",
+      "duration7d": "7 gün",
+      "duration30d": "30 gün",
+      "durationIndefinite": "Süresiz",
+      "deleteAlertTitle": "Bu hesap silinsin mi?",
+      "deleteAlertBody": "Bu işlem geri alınamaz.",
+      "toastReasonRequired": "Lütfen bir moderasyon nedeni gir.",
+      "toastActionFailed": "İşlem başarısız.",
+      "toastApplied": "Moderasyon işlemi uygulandı",
+      "toastTypePhrase": "Onaylamak için {{phrase}} yaz.",
+      "toastReasonRequiredShort": "Neden gerekli.",
+      "toastCannotDeleteSelf": "Kendi hesabını buradan silemezsin.",
+      "toastDeleteFailed": "Silme başarısız.",
+      "toastDeleted": "Hesap silindi"
+    },
+    "actionLabels": {
+      "mark_ok": "Sorun yok işaretlendi",
+      "remove_profile_photo": "Profil fotoğrafı kaldırıldı",
+      "reset_username": "Kullanıcı adı sıfırlandı",
+      "suspend_24h": "24 saat askıya alındı",
+      "suspend_7d": "7 gün askıya alındı",
+      "suspend_30d": "30 gün askıya alındı",
+      "suspend_indefinite": "Süresiz askıya alındı",
+      "unsuspend": "Askı kaldırıldı",
+      "delete_account": "Hesap silindi",
+      "dismiss_report_abuse": "Kötüye kullanım olarak kapatıldı"
+    },
+    "broadcast": {
+      "subtitleSystem": "Sistem duyurularına izin veren kullanıcılara iletilir.",
+      "subtitleEvent": "Etkinlik ve haberlere izin veren kullanıcılara iletilir.",
+      "kindSystem": "Sistem duyurusu",
+      "kindEvent": "Etkinlik ve haber",
+      "titleLabel": "Başlık",
+      "messageLabel": "Mesaj",
+      "preview": "Önizleme",
+      "previewTitlePlaceholder": "Duyuru başlığı",
+      "previewBodyPlaceholder": "Mesajın burada görünür.",
+      "reviewSend": "İncele ve gönder",
+      "confirmTitle": "Duyuru gönderilsin mi?",
+      "confirmBody": "İzin veren kullanıcılara hemen bildirim gider. Bu işlem geri alınamaz.",
+      "sendNow": "Şimdi gönder",
+      "sendFailed": "Duyuru gönderilemedi.",
+      "sentRecipients_one": "{{count}} alıcıya gönderildi.",
+      "sentRecipients_other": "{{count}} alıcıya gönderildi.",
+      "sentRecipients_few": "{{count}} alıcıya gönderildi.",
+      "sentRecipients_many": "{{count}} alıcıya gönderildi.",
+      "sentGeneric": "Duyuru gönderildi."
+    },
+    "errors": {
+      "actionFailed": "İşlem tamamlanamadı. Lütfen tekrar dene.",
+      "approvePlaceFailed": "Yer onaylanamadı. Lütfen tekrar dene.",
+      "rejectPlaceFailed": "Yer reddedilemedi. Lütfen tekrar dene.",
+      "approveUpdateFailed": "Güncelleme onaylanamadı. Lütfen tekrar dene.",
+      "rejectUpdateFailed": "Güncelleme reddedilemedi. Lütfen tekrar dene.",
+      "noAccess": "Yönetici erişimin yok.",
+      "placeNotFound": "Yer bulunamadı.",
+      "requestNotFound": "İstek bulunamadı.",
+      "removeNotEnabled": "Kaldırma işlemi sunucuda henüz etkin değil. Supabase’te scripts/2026_07_10_admin_soft_delete_place.sql çalıştır.",
+      "removeFailed": "Bu yer herkese açık görünümden kaldırılamadı. Lütfen tekrar dene.",
+      "notConfigured": "Supabase yapılandırılmamış.",
+      "loadPlacesFailed": "Yerler yüklenemedi.",
+      "loadUpdatesFailed": "Güncelleme istekleri yüklenemedi.",
+      "loadUpdateFailed": "Güncelleme isteği yüklenemedi.",
+      "loadPlaceFailed": "Yer yüklenemedi.",
+      "loadRejectedUpdatesFailed": "Reddedilen güncelleme istekleri yüklenemedi.",
+      "verifyFailed": "Yönetici erişimi doğrulanamadı.",
+      "verifyFailedRetry": "Yönetici erişimi doğrulanamadı. Bağlantını kontrol edip tekrar dene.",
+      "signInAsAdmin": "Devam etmek için yönetici olarak giriş yap.",
+      "actionFailedShort": "İşlem başarısız.",
+      "deleteAccountFailed": "Hesap silinemedi.",
+      "broadcastFailed": "Duyuru gönderilemedi."
+    }
+  },
+  "routes": {
+    "title": "Parkur keşfi",
+    "subtitle": "Topluluk tarafından paylaşılan açık hava rotaları.",
+    "emptyTitle": "Yayından sonra",
+    "emptyBody": "Topluluk rotaları ilk herkese açık yayından sonraya ertelendi.",
+    "note": "Rotalar lansman kapsamına dahil değil. Yer navigasyonu cihazının harita uygulamasını kullanır."
+  }
+}

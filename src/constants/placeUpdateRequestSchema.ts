@@ -26,6 +26,8 @@ export const PLACE_UPDATE_REQUEST_INSERT_FIELDS = [
   'is_picnic_suitable',
   'safety_note',
   'cover_photo_url',
+  'photo_urls',
+  'category_keys',
   'status',
 ] as const;
 
@@ -51,5 +53,7 @@ export interface PlaceUpdateRequestInsert {
   is_picnic_suitable: boolean;
   safety_note: string | null;
   cover_photo_url: string | null;
+  photo_urls?: string[] | null;
+  category_keys?: string[] | null;
   status: 'pending';
 }

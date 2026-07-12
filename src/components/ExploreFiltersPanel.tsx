@@ -2,25 +2,43 @@ import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import {
   ACCESS_TYPE_OPTIONS,
   BEST_TIME_OPTIONS,
   CROWD_LEVEL_OPTIONS,
   DIFFICULTY_OPTIONS,
+  getAccessTypeLabel,
+  getBestTimeLabel,
+  getCrowdLevelLabel,
+  getDifficultyLabel,
 } from '../constants';
 import { AppButton } from './AppButton';
 import { FilterChip } from './FilterChip';
 import { radius, spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
-import { ExploreFilters, EXPLORE_CATEGORY_OPTIONS } from '../utils/placeFilters';
+import {
+  getPlaceCategoryGroupLabel,
+  getPlaceCategoryLabel,
+  PLACE_CATEGORY_GROUPS,
+} from '../constants/placeCategories';
+import { ExploreFilters } from '../utils/placeFilters';
 
-const FILTER_FACILITY_TOGGLES: { key: keyof ExploreFilters; label: string }[] = [
-  { key: 'requirePetFriendly', label: 'Pet friendly' },
-  { key: 'requireChildFriendly', label: 'Child friendly' },
-  { key: 'requireCarAccessible', label: 'Car accessible' },
-  { key: 'requireCampAllowed', label: 'Camping allowed' },
-  { key: 'requirePicnicSuitable', label: 'Picnic suitable' },
+const FILTER_FACILITY_TOGGLES: {
+  key: keyof ExploreFilters;
+  labelKey:
+    | 'options.facilities.petFriendly'
+    | 'options.facilities.childFriendly'
+    | 'options.facilities.carAccessible'
+    | 'options.facilities.campAllowed'
+    | 'options.facilities.picnicSuitable';
+}[] = [
+  { key: 'requirePetFriendly', labelKey: 'options.facilities.petFriendly' },
+  { key: 'requireChildFriendly', labelKey: 'options.facilities.childFriendly' },
+  { key: 'requireCarAccessible', labelKey: 'options.facilities.carAccessible' },
+  { key: 'requireCampAllowed', labelKey: 'options.facilities.campAllowed' },
+  { key: 'requirePicnicSuitable', labelKey: 'options.facilities.picnicSuitable' },
 ];
 
 interface ExploreFiltersPanelProps {
@@ -42,6 +60,7 @@ export function ExploreFiltersPanel({
 }: ExploreFiltersPanelProps) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const toggleListValue = <T extends string>(key: keyof ExploreFilters, value: T) => {
     const current = draftFilters[key] as T[];
@@ -61,7 +80,7 @@ export function ExploreFiltersPanel({
         <Pressable
           style={[styles.backdrop, { backgroundColor: colors.scrim }]}
           onPress={onClose}
-          accessibilityLabel="Close filters"
+          accessibilityLabel={t('explore.filters.close')}
         />
         <View
           style={[
@@ -75,12 +94,12 @@ export function ExploreFiltersPanel({
         >
           <View style={[styles.handle, { backgroundColor: colors.borderSubtle }]} />
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.textPrimary }]}>Filters</Text>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>{t('explore.filters.title')}</Text>
             <Pressable
               onPress={onClose}
               hitSlop={10}
               accessibilityRole="button"
-              accessibilityLabel="Close"
+              accessibilityLabel={t('common.close')}
               style={styles.closeHit}
             >
               <Ionicons name="close" size={22} color={colors.textSecondary} />
@@ -92,25 +111,27 @@ export function ExploreFiltersPanel({
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            <FilterSection title="Category" titleColor={colors.textSecondary}>
-              <ChipGrid>
-                {EXPLORE_CATEGORY_OPTIONS.map((item) => (
-                  <FilterChip
-                    key={item.value}
-                    label={item.label}
-                    active={draftFilters.categories.includes(item.value)}
-                    onPress={() => toggleListValue('categories', item.value)}
-                  />
-                ))}
-              </ChipGrid>
-            </FilterSection>
+            {PLACE_CATEGORY_GROUPS.map((group) => (
+              <FilterSection key={group.id} title={getPlaceCategoryGroupLabel(group.id)} titleColor={colors.textSecondary}>
+                <ChipGrid>
+                  {group.categories.map((item) => (
+                    <FilterChip
+                      key={item.key}
+                      label={`${item.emoji} ${getPlaceCategoryLabel(item.key)}`}
+                      active={draftFilters.categories.includes(item.key)}
+                      onPress={() => toggleListValue('categories', item.key)}
+                    />
+                  ))}
+                </ChipGrid>
+              </FilterSection>
+            ))}
 
-            <FilterSection title="Best time" titleColor={colors.textSecondary}>
+            <FilterSection title={t('explore.filters.bestTime')} titleColor={colors.textSecondary}>
               <ChipGrid>
                 {BEST_TIME_OPTIONS.map((option) => (
                   <FilterChip
                     key={option}
-                    label={option}
+                    label={getBestTimeLabel(option)}
                     active={draftFilters.bestTimes.includes(option)}
                     onPress={() => toggleListValue('bestTimes', option)}
                   />
@@ -118,12 +139,12 @@ export function ExploreFiltersPanel({
               </ChipGrid>
             </FilterSection>
 
-            <FilterSection title="Access type" titleColor={colors.textSecondary}>
+            <FilterSection title={t('explore.filters.accessType')} titleColor={colors.textSecondary}>
               <ChipGrid>
                 {ACCESS_TYPE_OPTIONS.map((option) => (
                   <FilterChip
                     key={option.value}
-                    label={option.label}
+                    label={getAccessTypeLabel(option.value)}
                     active={draftFilters.accessTypes.includes(option.value)}
                     onPress={() => toggleListValue('accessTypes', option.value)}
                   />
@@ -131,12 +152,12 @@ export function ExploreFiltersPanel({
               </ChipGrid>
             </FilterSection>
 
-            <FilterSection title="Difficulty" titleColor={colors.textSecondary}>
+            <FilterSection title={t('explore.filters.difficulty')} titleColor={colors.textSecondary}>
               <ChipGrid>
                 {DIFFICULTY_OPTIONS.map((option) => (
                   <FilterChip
                     key={option.value}
-                    label={option.label}
+                    label={getDifficultyLabel(option.value)}
                     active={draftFilters.difficultyLevels.includes(option.value)}
                     onPress={() => toggleListValue('difficultyLevels', option.value)}
                   />
@@ -144,12 +165,12 @@ export function ExploreFiltersPanel({
               </ChipGrid>
             </FilterSection>
 
-            <FilterSection title="Crowd level" titleColor={colors.textSecondary}>
+            <FilterSection title={t('explore.filters.crowdLevel')} titleColor={colors.textSecondary}>
               <ChipGrid>
                 {CROWD_LEVEL_OPTIONS.map((option) => (
                   <FilterChip
                     key={option.value}
-                    label={option.label}
+                    label={getCrowdLevelLabel(option.value)}
                     active={draftFilters.crowdLevels.includes(option.value)}
                     onPress={() => toggleListValue('crowdLevels', option.value)}
                   />
@@ -157,12 +178,12 @@ export function ExploreFiltersPanel({
               </ChipGrid>
             </FilterSection>
 
-            <FilterSection title="Facilities" titleColor={colors.textSecondary}>
+            <FilterSection title={t('explore.filters.facilities')} titleColor={colors.textSecondary}>
               <ChipGrid>
                 {FILTER_FACILITY_TOGGLES.map((item) => (
                   <FilterChip
                     key={item.key}
-                    label={item.label}
+                    label={t(item.labelKey)}
                     active={Boolean(draftFilters[item.key])}
                     onPress={() => toggleFacility(item.key)}
                   />
@@ -172,10 +193,10 @@ export function ExploreFiltersPanel({
           </ScrollView>
 
           <View style={[styles.footer, { borderTopColor: colors.border }]}>
-            <AppButton title="Apply filters" onPress={onApply} />
+            <AppButton title={t('explore.filters.apply')} onPress={onApply} />
             <View style={styles.footerRow}>
-              <AppButton title="Clear filters" variant="secondary" onPress={onClear} fullWidth={false} />
-              <AppButton title="Close" variant="ghost" onPress={onClose} fullWidth={false} />
+              <AppButton title={t('explore.filters.clear')} variant="secondary" onPress={onClear} fullWidth={false} />
+              <AppButton title={t('common.close')} variant="ghost" onPress={onClose} fullWidth={false} />
             </View>
           </View>
         </View>

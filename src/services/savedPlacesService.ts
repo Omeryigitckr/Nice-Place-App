@@ -11,6 +11,7 @@ import { Place } from '../types/place';
 import { devLog, devWarn } from '../utils/devLog';
 import { isOfflineOrNetworkError } from '../utils/networkErrors';
 
+import { removePlaceFromAllCollections } from './collectionsService';
 import { enrichPlacesWithEngagement } from './placeEngagementService';
 import { mapDbRowsToPlaces, PLACE_SELECT } from './placesService';
 import { getSupabase } from './supabase';
@@ -160,14 +161,14 @@ export async function savePlace(
 ): Promise<SavedPlaceResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: 'auth.errors.configMissing' };
   }
 
   if (!profileId) {
     return {
       success: false,
       requiresAuth: true,
-      error: 'Sign in to save places.',
+      error: 'explore.auth.saveShort',
     };
   }
 
@@ -201,14 +202,14 @@ export async function unsavePlace(
 ): Promise<SavedPlaceResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: 'auth.errors.configMissing' };
   }
 
   if (!profileId) {
     return {
       success: false,
       requiresAuth: true,
-      error: 'Sign in to save places.',
+      error: 'explore.auth.saveShort',
     };
   }
 
@@ -227,6 +228,7 @@ export async function unsavePlace(
   }
 
   const saveCount = clampCount(currentCount - 1);
+  await removePlaceFromAllCollections(profileId, placeId);
   devLog('[Nice Place Saves] unsaved', placeId);
   return { success: true, saved: false, saveCount };
 }

@@ -16,6 +16,16 @@ interface ScreenContainerProps {
   reserveFloatingTabBar?: boolean;
   /** Soft keyboard inset handling for forms (avoids hard layout jumps). */
   keyboardAware?: boolean;
+  /**
+   * Extra space added on top of the safe-area top inset (or base top padding when
+   * safeTop is false). Prefer this over setting paddingTop in contentStyle.
+   */
+  topExtra?: number;
+  /**
+   * Extra space added on top of the computed bottom padding.
+   * Prefer this over setting paddingBottom in contentStyle when safe areas apply.
+   */
+  bottomExtra?: number;
   refreshControl?: ReactElement<RefreshControlProps>;
   style?: ViewStyle;
   contentStyle?: ViewStyle;
@@ -29,6 +39,8 @@ export function ScreenContainer({
   safeBottom = true,
   reserveFloatingTabBar = false,
   keyboardAware = false,
+  topExtra = 0,
+  bottomExtra = 0,
   refreshControl,
   style,
   contentStyle,
@@ -37,28 +49,28 @@ export function ScreenContainer({
   const tabBarInset = useFloatingTabBarInset();
   const colors = useThemeColors();
 
-  const bottomPadding = reserveFloatingTabBar
-    ? tabBarInset.contentPaddingBottom
-    : safeBottom
-      ? insets.bottom + spacing.sm
-      : spacing.md;
+  const topPadding = (safeTop ? insets.top + spacing.sm : spacing.md) + topExtra;
 
-  const containerStyle = [
+  const bottomPadding =
+    (reserveFloatingTabBar
+      ? tabBarInset.contentPaddingBottom
+      : safeBottom
+        ? insets.bottom + spacing.sm
+        : spacing.md) + bottomExtra;
+
+  // Safe-area padding is applied LAST so contentStyle cannot wipe notch / home-indicator insets.
+  const resolvedContentStyle = [
     styles.container,
     {
       backgroundColor: colors.background,
-      paddingTop: safeTop ? insets.top + spacing.sm : spacing.md,
-      paddingBottom: bottomPadding,
     },
     padded && styles.padded,
     style,
-  ];
-
-  // Apply tab-bar inset last so contentStyle cannot override paddingBottom.
-  const resolvedContentStyle = [
-    containerStyle,
     contentStyle,
-    reserveFloatingTabBar ? { paddingBottom: bottomPadding } : null,
+    {
+      paddingTop: topPadding,
+      paddingBottom: bottomPadding,
+    },
   ];
 
   if (scrollable) {

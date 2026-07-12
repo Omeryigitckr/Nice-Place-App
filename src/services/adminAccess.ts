@@ -101,7 +101,7 @@ export async function fetchCurrentUserAdminStatus(): Promise<AdminAccessStatus> 
 
   const supabase = getSupabase();
   if (!supabase) {
-    return { ...empty, error: 'Supabase is not configured.' };
+    return { ...empty, error: 'admin.errors.notConfigured' };
   }
 
   try {
@@ -195,7 +195,7 @@ export async function fetchCurrentUserAdminStatus(): Promise<AdminAccessStatus> 
       profileRow: row,
     };
   } catch {
-    return { ...empty, verified: false, error: 'Could not verify admin access.' };
+    return { ...empty, verified: false, error: 'admin.errors.verifyFailed' };
   }
 }
 
@@ -205,18 +205,18 @@ export async function assertAdminAccess(): Promise<
   const status = await fetchCurrentUserAdminStatus();
 
   if (!status.authUserId) {
-    return { ok: false, error: 'Sign in as an admin to continue.' };
+    return { ok: false, error: 'admin.errors.signInAsAdmin' };
   }
 
   if (!status.verified) {
     return {
       ok: false,
-      error: status.error ?? 'Could not verify admin access. Check your connection and try again.',
+      error: status.error ?? 'admin.errors.verifyFailedRetry',
     };
   }
 
   if (!status.isAdmin) {
-    return { ok: false, error: 'You do not have admin access.' };
+    return { ok: false, error: 'admin.errors.noAccess' };
   }
 
   return { ok: true, authUserId: status.authUserId };

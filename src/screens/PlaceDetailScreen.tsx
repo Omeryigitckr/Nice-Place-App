@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import {
   AppButton,
@@ -14,10 +15,9 @@ import { AuthRequiredModal } from '../components/AuthRequiredModal';
 import { FeedbackModal } from '../components/FeedbackModal';
 import {
   PlaceDescriptionBlock,
-  PlaceDetailHero,
+  PlaceDetailHeroCarousel,
   PlaceDetailStickyActions,
   PLACE_DETAIL_STICKY_ACTIONS_HEIGHT,
-  PlacePhotoGallery,
   PlacePhotoViewer,
   PlaceQuickInfoCard,
   PlaceSafetyBlock,
@@ -25,6 +25,15 @@ import {
   QuickInfoItem,
   SimilarPlaceHorizontalCard,
 } from '../components/placeDetail';
+import { PlaceCategoryChips, getPlacePrimaryCategoryLabel } from '../components/PlaceCategoryChips';
+import {
+  getAccessTypeLabel,
+  getBestTimeLabel,
+  getCrowdLevelLabel,
+  getDifficultyLabel,
+  getFacilityLabel,
+} from '../constants/addPlaceOptions';
+import { getPlaceCategoryLabel } from '../constants/placeCategories';
 import { readPlaceFromAnyCache, readPlacesListCache } from '../cache';
 import { MAP_ROUTES } from '../constants';
 import { showAppToast } from '../feedback';
@@ -35,14 +44,14 @@ import {
   useFloatingTabBarInset,
   useNetworkStatus,
   usePlaceLikes,
-  useSavedPlaces,
   useUserLocation,
 } from '../hooks';
+import { useSavePlaceWithCollections } from '../providers/SavePlaceWithCollectionsProvider';
 import { getApprovedPlaces, getPlaceDetail, softDeletePlace } from '../services';
 import { radius, spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { MapStackParamList } from '../types';
-import { CrowdLevel, Difficulty, Place } from '../types/place';
+import { Place } from '../types/place';
 import { PublicProfileSummary } from '../types/publicProfile';
 import {
   getSimilarPlaces,
@@ -54,50 +63,53 @@ import { navigateToAuth, requireAuth } from '../utils/authGuard';
 
 type Props = NativeStackScreenProps<MapStackParamList, typeof MAP_ROUTES.PLACE_DETAIL>;
 
-const ACCESS_LABELS: Record<Place['accessType'], string> = {
-  walking: 'Walking',
-  driving: 'Driving',
-  public_transport: 'Public transport',
-};
-
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  easy: 'Easy',
-  moderate: 'Moderate',
-  hard: 'Hard',
-};
-
-const CROWD_LABELS: Record<CrowdLevel, string> = {
-  quiet: 'Quiet',
-  moderate: 'Moderate',
-  busy: 'Busy',
-};
-
 function buildDisplayTags(place: Place): string[] {
   const tags = new Set<string>();
 
-  for (const tag of place.tags) {
-    const formatted = tag
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-    tags.add(formatted);
+  for (const key of place.categories) {
+    tags.add(getPlaceCategoryLabel(key));
   }
 
-  if (place.isPetFriendly) tags.add('Pet Friendly');
-  if (place.isChildFriendly) tags.add('Family Friendly');
-  if (place.isCampAllowed) tags.add('Camping');
-  if (place.isPicnicSuitable) tags.add('Picnic');
+  if (place.isPetFriendly) tags.add(getFacilityLabel('isPetFriendly'));
+  if (place.isChildFriendly) tags.add(getFacilityLabel('isChildFriendly'));
+  if (place.isCampAllowed) tags.add(getFacilityLabel('isCampAllowed'));
+  if (place.isPicnicSuitable) tags.add(getFacilityLabel('isPicnicSuitable'));
 
   return Array.from(tags);
 }
 
-function buildQuickInfoItems(place: Place): QuickInfoItem[] {
+function buildQuickInfoItems(
+  place: Place,
+  labels: {
+    distance: string;
+    bestTime: string;
+    difficulty: string;
+    access: string;
+    crowd: string;
+  },
+): QuickInfoItem[] {
   return [
-    { icon: 'navigate-outline', label: 'Distance', value: place.distance },
-    { icon: 'time-outline', label: 'Best Time', value: place.bestTime },
-    { icon: 'footsteps-outline', label: 'Difficulty', value: DIFFICULTY_LABELS[place.difficulty] },
-    { icon: 'car-outline', label: 'Access', value: ACCESS_LABELS[place.accessType] },
-    { icon: 'people-outline', label: 'Crowd', value: CROWD_LABELS[place.crowdLevel] },
+    { icon: 'navigate-outline', label: labels.distance, value: place.distance },
+    {
+      icon: 'time-outline',
+      label: labels.bestTime,
+      value: getBestTimeLabel(place.bestTime),
+    },
+    {
+      icon: 'footsteps-outline',
+      label: labels.difficulty,
+      value: getDifficultyLabel(place.difficultySlug || place.difficulty),
+    },
+    {
+      icon: 'car-outline',
+      label: labels.access,
+      value: getAccessTypeLabel(place.accessTypeSlug || place.accessType),
+    },
+    {
+      icon: 'people-outline',
+      label: labels.crowd,
+      value: getCrowdLevelLabel(place.crowdLevelSlug || place.crowdLevel),
+    },
   ];
 }
 
@@ -114,17 +126,14 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const { colors } = useTheme();
-  const { user } = useAuth();
+  const { t, i18n } = useTranslation();
+  const { user, profile } = useAuth();
   const { isAdmin } = useAdminAccess();
   const { settings } = useAppSettings();
+  const [createdBy, setCreatedBy] = useState<string | null>(null);
   const [adminDeleteVisible, setAdminDeleteVisible] = useState(false);
   const [adminDeleting, setAdminDeleting] = useState(false);
-  const {
-    isSaved,
-    getSaveCount,
-    isToggling: isSaveToggling,
-    toggleSave,
-  } = useSavedPlaces();
+  const { isSaved, isSaving, getSaveCount, pressSave } = useSavePlaceWithCollections();
   const {
     isLiked,
     getLikeCount,
@@ -133,15 +142,15 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
   } = usePlaceLikes();
   const { location } = useUserLocation();
   const [authPromptVisible, setAuthPromptVisible] = useState(false);
-  const [authPromptMessage, setAuthPromptMessage] = useState(
-    'Sign in to save places to your collection.',
+  const [authPromptMessage, setAuthPromptMessage] = useState(() =>
+    t('explore.auth.save'),
   );
   const saved = place ? isSaved(place.id) : false;
   const liked = place ? isLiked(place.id) : false;
   const likeCount = place ? getLikeCount(place.id, place.likeCount) : 0;
   const saveCount = place ? getSaveCount(place.id, place.saveCount) : 0;
   const likeDisabled = place ? isLikeToggling(place.id) : false;
-  const saveDisabled = place ? isSaveToggling(place.id) : false;
+  const saveDisabled = place ? isSaving(place.id) : false;
 
   useEffect(() => {
     let mounted = true;
@@ -164,6 +173,7 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
           hasCachedPlace = true;
           setPlace(cachedDetail.place);
           setCreator(cachedDetail.creator);
+          setCreatedBy(cachedDetail.createdBy);
           setLoading(false);
         }
         if (cachedList?.length) {
@@ -181,11 +191,13 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
         if (!hasCachedPlace) {
           setPlace(null);
           setCreator(null);
+          setCreatedBy(null);
           setNotFound(true);
         }
       } else {
         setPlace(placeDetail.place);
         setCreator(placeDetail.creator);
+        setCreatedBy(placeDetail.createdBy);
       }
 
       if (cachedList?.length) {
@@ -223,7 +235,7 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
 
   const displayPlace = useMemo(
     () => (place ? withPlaceDistance(place, location) : null),
-    [place, location, settings.distanceUnit],
+    [place, location, settings.distanceUnit, i18n.language],
   );
 
   const openSimilarPlace = useCallback(
@@ -235,15 +247,34 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
 
   const similarPlacesWithDistance = useMemo(
     () => withPlaceDistances(similarPlaces, location),
-    [similarPlaces, location, settings.distanceUnit],
+    [similarPlaces, location, settings.distanceUnit, i18n.language],
   );
 
-  const galleryImages = displayPlace ? [displayPlace.image] : [];
-  const displayTags = displayPlace ? buildDisplayTags(displayPlace) : [];
-  const quickInfoItems = displayPlace ? buildQuickInfoItems(displayPlace) : [];
+  const galleryImages = displayPlace
+    ? displayPlace.photos?.length
+      ? displayPlace.photos
+      : [displayPlace.image]
+    : [];
+  const displayTags = useMemo(
+    () => (displayPlace ? buildDisplayTags(displayPlace) : []),
+    [displayPlace, i18n.language],
+  );
+  const quickInfoItems = useMemo(
+    () =>
+      displayPlace
+        ? buildQuickInfoItems(displayPlace, {
+            distance: t('placeDetail.quickInfo.distance'),
+            bestTime: t('placeDetail.quickInfo.bestTime'),
+            difficulty: t('placeDetail.quickInfo.difficulty'),
+            access: t('placeDetail.quickInfo.access'),
+            crowd: t('placeDetail.quickInfo.crowd'),
+          })
+        : [],
+    [displayPlace, t, i18n.language],
+  );
 
   const stickyBottomPadding =
-    tabBarInset.totalSpace + PLACE_DETAIL_STICKY_ACTIONS_HEIGHT + spacing.sm;
+    tabBarInset.totalSpace + PLACE_DETAIL_STICKY_ACTIONS_HEIGHT + spacing.xxxl;
 
   const openViewer = (index: number) => {
     setViewerIndex(index);
@@ -257,7 +288,10 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
 
     try {
       await Share.share({
-        message: `Check out ${displayPlace.title} on Nice Place — ${displayPlace.category}.`,
+        message: t('placeDetail.share.message', {
+          title: displayPlace.title,
+          category: getPlacePrimaryCategoryLabel(displayPlace),
+        }),
       });
     } catch {
       // User dismissed share sheet.
@@ -275,28 +309,52 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
       displayPlace.title,
     );
     if (!opened) {
-      showAppToast('Could not open Maps. Check that a maps app is installed.', {
+      showAppToast(t('map.directions.failed'), {
         tone: 'error',
       });
     }
   };
+
+  const isOwner = useMemo(() => {
+    if (!profile) {
+      return false;
+    }
+    const ownerKeys = [profile.id, profile.auth_user_id, user?.id].filter(
+      (value): value is string => Boolean(value),
+    );
+    if (createdBy && ownerKeys.includes(createdBy)) {
+      return true;
+    }
+    if (creator?.id && ownerKeys.includes(creator.id)) {
+      return true;
+    }
+    return false;
+  }, [createdBy, creator?.id, profile, user?.id]);
+
+  const openEditPlace = useCallback(() => {
+    if (!displayPlace) {
+      return;
+    }
+    navigation.navigate(MAP_ROUTES.EDIT_PLACE, { placeId: displayPlace.id });
+  }, [displayPlace, navigation]);
 
   const handleSave = async () => {
     if (!displayPlace || saveDisabled) {
       return;
     }
 
-    if (!requireAuth(user, 'save_place')) {
-      setAuthPromptMessage('Sign in to save places to your collection.');
-      setAuthPromptVisible(true);
-      return;
-    }
+    const result = await pressSave(displayPlace.id, {
+      saveCount,
+      onSaveCountChange: (nextCount) => {
+        setPlace((prev) =>
+          prev ? { ...prev, saveCount: Math.max(0, nextCount) } : prev,
+        );
+      },
+    });
 
-    const result = await toggleSave(displayPlace.id, saveCount);
-    if (result.success && typeof result.saveCount === 'number') {
-      setPlace((prev) =>
-        prev ? { ...prev, saveCount: Math.max(0, result.saveCount ?? prev.saveCount) } : prev,
-      );
+    if (result.requiresAuth) {
+      setAuthPromptMessage(t('explore.auth.save'));
+      setAuthPromptVisible(true);
     }
   };
 
@@ -306,16 +364,20 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
     }
 
     if (!requireAuth(user, 'like_place')) {
-      setAuthPromptMessage('Sign in to like places.');
+      setAuthPromptMessage(t('explore.auth.like'));
       setAuthPromptVisible(true);
       return;
     }
 
-    const result = await toggleLike(displayPlace.id, likeCount);
-    if (result.success && typeof result.likeCount === 'number') {
-      setPlace((prev) =>
-        prev ? { ...prev, likeCount: Math.max(0, result.likeCount ?? prev.likeCount) } : prev,
-      );
+    try {
+      const result = await toggleLike(displayPlace.id, likeCount);
+      if (result.success && typeof result.likeCount === 'number') {
+        setPlace((prev) =>
+          prev ? { ...prev, likeCount: Math.max(0, result.likeCount ?? prev.likeCount) } : prev,
+        );
+      }
+    } catch {
+      // toggleLike already surfaces errors; keep UI stable
     }
   };
 
@@ -327,16 +389,16 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
     setAdminDeleting(true);
     const result = await softDeletePlace(displayPlace.id);
     setAdminDeleting(false);
-    setAdminDeleteVisible(false);
 
     if (!result.success) {
-      showAppToast(result.error ?? "Couldn't complete action. Please try again.", {
+      showAppToast(t('placeDetail.admin.toastError'), {
         tone: 'error',
       });
       return;
     }
 
-    showAppToast('Place removed from public view.', {
+    setAdminDeleteVisible(false);
+    showAppToast(t('placeDetail.admin.toastSuccess'), {
       tone: 'success',
       icon: 'checkmark-circle-outline',
     });
@@ -363,14 +425,12 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
           />
         </View>
         <Text style={[styles.notFoundTitle, { color: colors.textPrimary }]}>
-          {isOffline ? 'Unavailable offline' : 'Place not found'}
+          {isOffline ? t('placeDetail.offline.title') : t('placeDetail.notFound.title')}
         </Text>
         <Text style={[styles.notFoundText, { color: colors.textMuted }]}>
-          {isOffline
-            ? 'This place has not been cached yet. Connect to the internet and try again.'
-            : 'This place may have been removed or is not approved yet.'}
+          {isOffline ? t('placeDetail.offline.body') : t('placeDetail.notFound.body')}
         </Text>
-        <AppButton title="Go back" onPress={() => navigation.goBack()} fullWidth={false} />
+        <AppButton title={t('common.back')} onPress={() => navigation.goBack()} fullWidth={false} />
       </View>
     );
   }
@@ -383,8 +443,8 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
         contentContainerStyle={{ paddingBottom: stickyBottomPadding }}
       >
         <ProfileEntranceBlock index={0}>
-          <PlaceDetailHero
-            imageUri={displayPlace.image}
+          <PlaceDetailHeroCarousel
+            images={galleryImages}
             liked={liked}
             likeDisabled={likeDisabled}
             saved={saved}
@@ -398,27 +458,16 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
               void handleSave();
             }}
             onShare={handleShare}
-            onImagePress={() => openViewer(0)}
+            onImagePress={openViewer}
           />
         </ProfileEntranceBlock>
 
         <View style={styles.body}>
           <ProfileEntranceBlock index={1}>
-            <View style={styles.titleSection}>
+            {/* Identity: chips → title → distance → owner */}
+            <View style={styles.identitySection}>
               <View style={styles.titleRow}>
-                <View
-                  style={[
-                    styles.categoryBadge,
-                    {
-                      backgroundColor: colors.primaryLight,
-                      borderColor: colors.primaryBorder,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.categoryBadgeText, { color: colors.primary }]}>
-                    {displayPlace.category}
-                  </Text>
-                </View>
+                <PlaceCategoryChips place={displayPlace} maxVisible={4} />
                 <View
                   style={[
                     styles.verifiedBadge,
@@ -429,7 +478,7 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
                   ]}
                 >
                   <Ionicons name="checkmark-circle" size={13} color={colors.primary} />
-                  <Text style={[styles.verifiedText, { color: colors.primary }]}>Verified</Text>
+                  <Text style={[styles.verifiedText, { color: colors.primary }]}>{t('placeDetail.verified')}</Text>
                 </View>
               </View>
 
@@ -444,30 +493,52 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
                 </Text>
               </View>
 
-              <CreatorAttributionRow
-                variant="compact"
-                creator={creator}
-                onPress={
-                  creator
-                    ? () =>
-                        navigation.navigate(MAP_ROUTES.PUBLIC_PROFILE, {
-                          profileId: creator.id,
-                        })
-                    : undefined
-                }
-              />
+              <View style={styles.ownerRow}>
+                <CreatorAttributionRow
+                  variant="compact"
+                  creator={creator}
+                  onPress={
+                    creator
+                      ? () =>
+                          navigation.navigate(MAP_ROUTES.PUBLIC_PROFILE, {
+                            profileId: creator.id,
+                          })
+                      : undefined
+                  }
+                />
+              </View>
             </View>
 
-            <PlaceQuickInfoCard items={quickInfoItems} />
-            <PlaceDescriptionBlock description={displayPlace.description} />
+            {isOwner ? (
+              <View style={styles.editSection}>
+                <AppButton
+                  title={t('placeDetail.edit')}
+                  variant="secondary"
+                  size="sm"
+                  onPress={openEditPlace}
+                  fullWidth={false}
+                  style={styles.ownerEditButton}
+                />
+              </View>
+            ) : null}
+
+            <View style={isOwner ? styles.infoSectionAfterEdit : styles.infoSectionAfterOwner}>
+              <PlaceQuickInfoCard items={quickInfoItems} />
+            </View>
+
+            <View style={styles.aboutSection}>
+              <PlaceDescriptionBlock description={displayPlace.description} />
+            </View>
 
             {displayPlace.safetyNote ? (
-              <PlaceSafetyBlock safetyNote={displayPlace.safetyNote} />
+              <View style={styles.safetySection}>
+                <PlaceSafetyBlock safetyNote={displayPlace.safetyNote} />
+              </View>
             ) : null}
 
             {displayTags.length > 0 ? (
               <View style={styles.tagsSection}>
-                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Tags</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t('placeDetail.tags')}</Text>
                 <View style={styles.tags}>
                   {displayTags.map((tag) => (
                     <PlaceTagPill key={tag} label={tag} />
@@ -484,13 +555,13 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
                 ]}
               >
                 <Text style={[styles.adminActionsLabel, { color: colors.textMuted }]}>
-                  Admin actions
+                  {t('placeDetail.admin.section')}
                 </Text>
                 <Pressable
                   onPress={() => setAdminDeleteVisible(true)}
                   disabled={adminDeleting}
                   accessibilityRole="button"
-                  accessibilityLabel="Delete place from public view"
+                  accessibilityLabel={t('placeDetail.admin.removeA11y')}
                   style={[
                     styles.adminDeleteButton,
                     { borderColor: colors.error, backgroundColor: colors.card },
@@ -498,22 +569,18 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
                 >
                   <Ionicons name="trash-outline" size={16} color={colors.error} />
                   <Text style={[styles.adminDeleteText, { color: colors.error }]}>
-                    Remove from public view
+                    {t('placeDetail.admin.remove')}
                   </Text>
                 </Pressable>
               </View>
             ) : null}
           </ProfileEntranceBlock>
 
-          <ProfileEntranceBlock index={2}>
-            <PlacePhotoGallery images={galleryImages} onImagePress={openViewer} />
-          </ProfileEntranceBlock>
-
           {similarPlacesWithDistance.length > 0 ? (
             <ProfileEntranceBlock index={3}>
               <View style={styles.similarSection}>
                 <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-                  Nearby similar places
+                  {t('placeDetail.similar')}
                 </Text>
                 <ScrollView
                   horizontal
@@ -525,6 +592,10 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
                       key={item.id}
                       place={item}
                       onPressId={openSimilarPlace}
+                      onRequiresAuth={() => {
+                        setAuthPromptMessage(t('explore.auth.save'));
+                        setAuthPromptVisible(true);
+                      }}
                     />
                   ))}
                 </ScrollView>
@@ -571,13 +642,13 @@ export function PlaceDetailScreen({ route, navigation }: Props) {
         <FeedbackModal
           visible={adminDeleteVisible}
           variant="error"
-          title="Delete this place from public view?"
-          subtitle="It will be hidden from the map and public lists. This does not permanently erase the row."
-          primaryLabel={adminDeleting ? 'Working…' : 'Delete'}
+          title={t('placeDetail.admin.confirmTitle')}
+          subtitle={t('placeDetail.admin.confirmBody')}
+          primaryLabel={adminDeleting ? t('placeDetail.admin.removing') : t('common.remove')}
           onPrimary={() => {
             void handleAdminDelete();
           }}
-          secondaryLabel="Cancel"
+          secondaryLabel={t('common.cancel')}
           onSecondary={() => {
             if (!adminDeleting) {
               setAdminDeleteVisible(false);
@@ -593,32 +664,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  /**
+   * Place Details vertical rhythm — section containers own spacing.
+   * Tokens: md=12, lg=16, xl=20, xxl=24, xxxl=32
+   */
   body: {
     paddingHorizontal: spacing.lg,
+    /** Photo → chips */
     paddingTop: spacing.lg,
-    gap: spacing.lg,
   },
-  titleSection: {
-    gap: spacing.sm,
-    marginTop: -spacing.md,
-  },
+  identitySection: {},
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: spacing.sm,
-  },
-  categoryBadge: {
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: 4,
-    borderRadius: radius.full,
-    borderWidth: 1,
-  },
-  categoryBadgeText: {
-    ...typography.caption,
-    fontSize: 11,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   verifiedBadge: {
     flexDirection: 'row',
@@ -639,17 +699,48 @@ const styles = StyleSheet.create({
     fontSize: 30,
     lineHeight: 36,
     letterSpacing: -0.5,
+    /** Chips → title */
+    marginTop: spacing.md,
   },
   subtitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    /** Title → distance */
+    marginTop: spacing.lg,
   },
   distance: {
     ...typography.bodySmall,
   },
+  ownerRow: {
+    /** Distance → owner */
+    marginTop: spacing.xl,
+  },
+  editSection: {
+    /** Owner → edit and edit → info (equal) */
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  ownerEditButton: {
+    alignSelf: 'flex-start',
+  },
+  infoSectionAfterEdit: {},
+  infoSectionAfterOwner: {
+    /** Owner → info cards when no edit button */
+    marginTop: spacing.xxl,
+  },
+  aboutSection: {
+    /** Info cards → About this place */
+    marginTop: spacing.xxl,
+  },
+  safetySection: {
+    marginTop: spacing.xl,
+  },
   tagsSection: {
-    gap: spacing.sm,
+    /** Description → Tags */
+    marginTop: spacing.xxl,
+    /** Heading → tag chips */
+    gap: spacing.md,
   },
   sectionTitle: {
     ...typography.subtitle,
@@ -662,7 +753,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   adminActions: {
-    marginTop: spacing.sm,
+    marginTop: spacing.xl,
     padding: spacing.sm,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
@@ -689,7 +780,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   similarSection: {
-    gap: spacing.sm,
+    /** Tags → Nearby similar places */
+    marginTop: spacing.xxxl,
+    /** Heading → similar cards */
+    gap: spacing.md,
   },
   similarScroll: {
     gap: spacing.sm,
@@ -718,3 +812,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+

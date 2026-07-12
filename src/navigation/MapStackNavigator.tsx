@@ -1,7 +1,15 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { MAP_ROUTES } from '../constants';
-import { EditPlaceScreen, MapHomeScreen, PickLocationScreen, PlaceDetailScreen, PublicProfileScreen } from '../screens';
+import {
+  EditPlaceScreen,
+  MapHomeScreen,
+  NotificationsScreen,
+  PickLocationScreen,
+  PlaceDetailScreen,
+  PublicProfileScreen,
+} from '../screens';
 import { typography } from '../theme';
 import { useThemeColors } from '../theme/ThemeContext';
 import { MapStackParamList } from '../types';
@@ -10,6 +18,7 @@ const Stack = createNativeStackNavigator<MapStackParamList>();
 
 export function MapStackNavigator() {
   const colors = useThemeColors();
+  const { t } = useTranslation();
 
   return (
     <Stack.Navigator
@@ -44,11 +53,16 @@ export function MapStackNavigator() {
       <Stack.Screen
         name={MAP_ROUTES.EDIT_PLACE}
         component={EditPlaceScreen}
-        options={{ title: 'Edit Place' }}
+        options={{ title: t('navigation.editPlace') }}
       />
       <Stack.Screen
         name={MAP_ROUTES.PUBLIC_PROFILE}
         component={PublicProfileScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={MAP_ROUTES.NOTIFICATIONS}
+        component={NotificationsScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen

@@ -1,3 +1,5 @@
+import { i18n } from '../i18n/instance';
+
 const PLACEHOLDER_VALUES = new Set(['your_mapbox_token_here']);
 
 /** Default map center — Alanya, Antalya (lng, lat) */
@@ -18,7 +20,7 @@ export function getMapboxConfigError(): string | null {
     return null;
   }
 
-  return 'Mapbox token is missing. Add EXPO_PUBLIC_MAPBOX_TOKEN to your .env file.';
+  return i18n.t('map.configMissing');
 }
 
 export function computePlacesCenter(places: { latitude: number; longitude: number }[]): [number, number] {

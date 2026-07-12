@@ -3,14 +3,15 @@
  * Saved before opening the picker; restored on return (confirm or cancel).
  */
 
-import type { AddPlaceCategoryValue, BestTimeOption } from '../constants';
+import type { PlaceCategoryKey } from '../constants/placeCategories';
+import type { BestTimeOption } from '../constants';
 import type { DbAccessType, DbCrowdLevel, DbDifficultyLevel } from '../types/database';
 
 export type AddPlaceFormDraft = {
   /** True while map picker is open / until draft is restored. */
   awaitingPicker: boolean;
   title: string;
-  category: AddPlaceCategoryValue | null;
+  selectedCategories: PlaceCategoryKey[];
   description: string;
   latitude: number;
   longitude: number;
@@ -29,7 +30,8 @@ export type AddPlaceFormDraft = {
     isPicnicSuitable: boolean;
   };
   safetyNote: string;
-  selectedPhotoUri: string | null;
+  /** Local URIs selected before submit (supports map-picker draft restore). */
+  selectedPhotoUris: string[];
 };
 
 let draft: AddPlaceFormDraft | null = null;

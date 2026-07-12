@@ -1,3 +1,9 @@
+export const SAVED_ROUTES = {
+  SAVED_HOME: 'SavedHome',
+  ALL_SAVED_PLACES: 'AllSavedPlaces',
+  COLLECTION_DETAIL: 'CollectionDetail',
+} as const;
+
 export const TAB_ROUTES = {
   EXPLORE: 'Explore',
   SAVED: 'Saved',
@@ -10,6 +16,7 @@ export const ROOT_ROUTES = {
   ONBOARDING: 'Onboarding',
   AUTH: 'Auth',
   LOCATION_PERMISSION: 'LocationPermission',
+  NOTIFICATION_PERMISSION: 'NotificationPermission',
   MAIN: 'Main',
   PLACE_DETAIL: 'PlaceDetail',
   ADD_PLACE: 'AddPlace',
@@ -30,6 +37,7 @@ export const MAP_ROUTES = {
   EDIT_PLACE: 'EditPlace',
   PICK_LOCATION: 'PickLocation',
   PUBLIC_PROFILE: 'PublicProfile',
+  NOTIFICATIONS: 'Notifications',
 } as const;
 
 export const PROFILE_ROUTES = {
@@ -39,10 +47,14 @@ export const PROFILE_ROUTES = {
   CHANGE_PASSWORD: 'ChangePassword',
   CHANGE_EMAIL: 'ChangeEmail',
   SETTINGS_APPEARANCE: 'SettingsAppearance',
+  SETTINGS_LANGUAGE: 'SettingsLanguage',
   SETTINGS_NOTIFICATIONS: 'SettingsNotifications',
   SETTINGS_PRIVACY_LOCATION: 'SettingsPrivacyLocation',
   SETTINGS_ABOUT: 'SettingsAbout',
   ADMIN_PANEL: 'AdminPanel',
+  ADMIN_NOTIFICATION_BROADCAST: 'AdminNotificationBroadcast',
+  ADMIN_REPORTED_PROFILES: 'AdminReportedProfiles',
+  ADMIN_REPORTED_PROFILE_DETAIL: 'AdminReportedProfileDetail',
   ADMIN_PLACE_DETAIL: 'AdminPlaceDetail',
   ADMIN_UPDATE_REQUEST: 'AdminUpdateRequest',
 } as const;

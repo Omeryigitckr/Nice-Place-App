@@ -20,21 +20,21 @@ export interface DeleteAccountResult {
 export async function deleteUserAccount(input: DeleteAccountInput): Promise<DeleteAccountResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: 'auth.errors.configMissing' };
   }
 
   const oauthOnly = input.oauthOnly === true;
   const password = input.password ?? '';
 
   if (!oauthOnly && !password) {
-    return { success: false, error: 'Password is required.' };
+    return { success: false, error: 'settings.deleteAccount.errors.passwordRequired' };
   }
 
   const { data: sessionData } = await supabase.auth.getSession();
   const sessionUser = sessionData.session?.user;
 
   if (!sessionUser) {
-    return { success: false, error: 'Could not verify your session.' };
+    return { success: false, error: 'settings.deleteAccount.errors.sessionInvalid' };
   }
 
   const { data, error } = await supabase.functions.invoke('delete-account', {
@@ -47,18 +47,23 @@ export async function deleteUserAccount(input: DeleteAccountInput): Promise<Dele
     if (message.includes('function') || message.includes('404') || message.includes('not found')) {
       return {
         success: false,
-        error: 'Account deletion is not available yet. Contact support@niceplace.site.',
+        error: 'settings.deleteAccount.errors.unavailable',
       };
     }
-    return { success: false, error: 'Could not delete account. Please try again.' };
+    return { success: false, error: 'settings.deleteAccount.errors.failed' };
   }
 
   const payload = data as { success?: boolean; error?: string } | null;
 
   if (!payload?.success) {
+    // Prefer stable keys; map common backend English codes if present.
+    const backend = payload?.error?.toLowerCase() ?? '';
+    if (backend.includes('password') || backend.includes('credentials')) {
+      return { success: false, error: 'settings.deleteAccount.errors.passwordRequired' };
+    }
     return {
       success: false,
-      error: payload?.error ?? 'Could not delete account. Please try again.',
+      error: 'settings.deleteAccount.errors.failed',
     };
   }
 

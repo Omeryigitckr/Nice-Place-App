@@ -1,6 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   FlatList,
   ListRenderItem,
@@ -45,6 +46,7 @@ const keyExtractor = (item: Place) => item.id;
 const ItemSeparator = () => <View style={styles.separator} />;
 
 export function SavedPlacesScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const tabBarInset = useFloatingTabBarInset();
@@ -140,8 +142,8 @@ export function SavedPlacesScreen({ navigation }: Props) {
     setRefreshing(true);
     await loadSaved({ silent: true });
     setRefreshing(false);
-    showAppToast('Saved places updated', { tone: 'success', durationMs: 1400 });
-  }, [loadSaved]);
+    showAppToast(t('saved.all.toastRefreshed'), { tone: 'success', durationMs: 1400 });
+  }, [loadSaved, t]);
 
   const openOnMap = useCallback(
     (placeId: string) => {
@@ -167,16 +169,18 @@ export function SavedPlacesScreen({ navigation }: Props) {
       const place = savedPlacesRef.current.find((item) => item.id === placeId);
       const fallbackCount = place?.likeCount ?? 0;
 
-      void toggleLike(placeId, fallbackCount).then((result) => {
-        if (result.success && typeof result.likeCount === 'number') {
-          const nextCount = Math.max(0, result.likeCount);
-          setSavedPlaces((prev) =>
-            prev.map((item) =>
-              item.id === placeId ? { ...item, likeCount: nextCount } : item,
-            ),
-          );
-        }
-      });
+      void toggleLike(placeId, fallbackCount)
+        .then((result) => {
+          if (result.success && typeof result.likeCount === 'number') {
+            const nextCount = Math.max(0, result.likeCount);
+            setSavedPlaces((prev) =>
+              prev.map((item) =>
+                item.id === placeId ? { ...item, likeCount: nextCount } : item,
+              ),
+            );
+          }
+        })
+        .catch(() => undefined);
     },
     [isToggling, toggleLike, user],
   );
@@ -191,22 +195,22 @@ export function SavedPlacesScreen({ navigation }: Props) {
         likeDisabled={isToggling(item.id)}
         onLikeId={handleLikeId}
         onPressId={openOnMap}
-        actionLabel="View on map"
+        actionLabel={t('saved.viewOnMap')}
         onActionId={openOnMap}
       />
     ),
-    [getLikeCount, handleLikeId, isLiked, isToggling, openOnMap],
+    [getLikeCount, handleLikeId, isLiked, isToggling, openOnMap, t],
   );
 
   const listHeader = useMemo(
     () => (
       <SectionHeader
-        title="Your collection"
-        subtitle="Places you want to visit later, all in one list."
+        title={t('saved.list.title')}
+        subtitle={t('saved.list.subtitle')}
         count={user && !loading ? displayPlaces.length : undefined}
       />
     ),
-    [user, loading, displayPlaces.length],
+    [user, loading, displayPlaces.length, t],
   );
 
   const listEmpty = useMemo(() => {
@@ -217,11 +221,11 @@ export function SavedPlacesScreen({ navigation }: Props) {
       return (
         <EmptyState
           icon="person-outline"
-          title="Sign in to save places"
-          description="Create an account to bookmark places and find them here later."
+          title={t('saved.empty.guestTitle')}
+          description={t('saved.empty.guestBodyList')}
           action={
             <AppButton
-              title="Sign in"
+              title={t('common.signIn')}
               onPress={() => navigateToAuth(navigation)}
               fullWidth={false}
             />
@@ -232,15 +236,13 @@ export function SavedPlacesScreen({ navigation }: Props) {
     return (
       <EmptyState
         icon={isOffline ? 'cloud-offline-outline' : 'bookmark-outline'}
-        title={isOffline ? 'No cached saved places' : 'No saved places'}
+        title={isOffline ? t('saved.empty.noCachedTitle') : t('saved.empty.noSavedTitle')}
         description={
-          isOffline
-            ? 'Connect to the internet to load your saved places.'
-            : 'Save places from the map to find them here later.'
+          isOffline ? t('saved.empty.noCachedBody') : t('saved.empty.noSavedBody')
         }
       />
     );
-  }, [authLoading, ready, user, loading, isOffline, navigation]);
+  }, [authLoading, ready, user, loading, isOffline, navigation, t]);
 
   const refreshControl = useMemo(
     () =>
@@ -279,7 +281,7 @@ export function SavedPlacesScreen({ navigation }: Props) {
 
       <AuthRequiredModal
         visible={authPromptVisible}
-        message="Sign in to like places."
+        message={t('explore.auth.like')}
         onSignIn={() => {
           setAuthPromptVisible(false);
           navigateToAuth(navigation);

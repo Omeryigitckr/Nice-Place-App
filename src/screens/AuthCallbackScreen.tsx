@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { AppButton, AuthScreenLayout, AuthStaggerItem } from '../components';
 import { AUTH_ROUTES } from '../constants';
@@ -10,11 +11,13 @@ import { useTheme } from '../theme/ThemeContext';
 import { AuthStackParamList } from '../types';
 import { takeAuthCallbackUrl } from '../navigation/authCallbackBridge';
 import { routeAuthCallbackResult } from '../navigation/routeAuthCallbackResult';
+import { getLocalizedAuthError } from '../utils/authErrors';
 
 type Props = NativeStackScreenProps<AuthStackParamList, typeof AUTH_ROUTES.AUTH_CALLBACK>;
 
 export function AuthCallbackScreen({ navigation }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,7 +30,7 @@ export function AuthCallbackScreen({ navigation }: Props) {
 
       if (!url) {
         if (mounted) {
-          setError('This verification link is invalid or has expired.');
+          setError(getLocalizedAuthError('auth.errors.linkInvalid', 'auth.errors.verifyFailed'));
         }
         return;
       }
@@ -38,7 +41,7 @@ export function AuthCallbackScreen({ navigation }: Props) {
       }
 
       if (!result.success) {
-        setError(result.error ?? 'Could not verify this link. Please try again.');
+        setError(getLocalizedAuthError(result.error, 'auth.errors.verifyFailed'));
         return;
       }
 
@@ -64,7 +67,7 @@ export function AuthCallbackScreen({ navigation }: Props) {
           <>
             <AuthStaggerItem index={0}>
               <Text style={[styles.title, { color: colors.textPrimary }]}>
-                Link verification failed
+                {t('auth.callback.failedTitle')}
               </Text>
             </AuthStaggerItem>
             <AuthStaggerItem index={1}>
@@ -72,7 +75,7 @@ export function AuthCallbackScreen({ navigation }: Props) {
             </AuthStaggerItem>
             <AuthStaggerItem index={2}>
               <AppButton
-                title="Back to sign in"
+                title={t('auth.callback.backToSignIn')}
                 onPress={() => navigation.navigate(AUTH_ROUTES.LOGIN)}
               />
             </AuthStaggerItem>
@@ -80,7 +83,9 @@ export function AuthCallbackScreen({ navigation }: Props) {
         ) : (
           <>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.message, { color: colors.textSecondary }]}>Verifying link…</Text>
+            <Text style={[styles.message, { color: colors.textSecondary }]}>
+              {t('auth.callback.verifying')}
+            </Text>
           </>
         )}
       </View>

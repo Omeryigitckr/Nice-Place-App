@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import {
   AppButton,
@@ -15,15 +16,14 @@ import { requestPasswordReset } from '../services';
 import { spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { AuthStackParamList } from '../types';
+import { getLocalizedAuthError } from '../utils/authErrors';
 import { validateEmail } from '../utils/authValidation';
 
 type Props = NativeStackScreenProps<AuthStackParamList, typeof AUTH_ROUTES.FORGOT_PASSWORD>;
 
-const SUCCESS_MESSAGE =
-  'If an account exists for this email, a password reset link has been sent.';
-
 export function ForgotPasswordScreen({ navigation }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -44,31 +44,33 @@ export function ForgotPasswordScreen({ navigation }: Props) {
     setLoading(false);
 
     if (!result.success) {
-      setError(result.error ?? 'Could not send reset email. Please try again.');
+      setError(getLocalizedAuthError(result.error, 'auth.errors.resetEmailFailed'));
       return;
     }
 
-    setSuccess(SUCCESS_MESSAGE);
+    setSuccess(t('auth.forgotPassword.successMessage'));
   };
 
   return (
     <AuthScreenLayout>
       <AppCard elevated style={styles.card}>
         <AuthStaggerItem index={0}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Forgot password</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            {t('auth.forgotPassword.title')}
+          </Text>
         </AuthStaggerItem>
 
         <AuthStaggerItem index={1}>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Enter your email and we will send you a reset link.
+            {t('auth.forgotPassword.subtitle')}
           </Text>
         </AuthStaggerItem>
 
         <View style={styles.form}>
           <AuthStaggerItem index={2}>
             <AppTextInput
-              label="Email"
-              placeholder="you@email.com"
+              label={t('auth.forgotPassword.emailLabel')}
+              placeholder={t('auth.forgotPassword.emailPlaceholder')}
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
@@ -92,14 +94,16 @@ export function ForgotPasswordScreen({ navigation }: Props) {
         <View style={styles.actions}>
           <AuthStaggerItem index={5}>
             <AppButton
-              title={loading ? 'Sending…' : 'Send reset link'}
+              title={
+                loading ? t('auth.forgotPassword.submitting') : t('auth.forgotPassword.submit')
+              }
               onPress={handleSendResetLink}
               disabled={loading}
             />
           </AuthStaggerItem>
           <AuthStaggerItem index={6}>
             <AppButton
-              title="Back to sign in"
+              title={t('auth.forgotPassword.backToSignIn')}
               variant="ghost"
               onPress={() => navigation.navigate(AUTH_ROUTES.LOGIN)}
               disabled={loading}

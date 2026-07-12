@@ -20,6 +20,7 @@ interface DbPublicProfileRow {
 function mapPublicProfileRow(row: DbPublicProfileRow): PublicProfileSummary {
   return {
     id: row.id,
+    authUserId: row.auth_user_id,
     username: row.username,
     avatarUrl: row.avatar_url,
     bio: row.bio,
@@ -49,7 +50,7 @@ export async function updateProfile(
 ): Promise<UpdateProfileResult> {
   const supabase = getSupabase();
   if (!supabase || !profileId) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: 'auth.errors.configMissing' };
   }
 
   const { error } = await supabase
@@ -63,9 +64,10 @@ export async function updateProfile(
 
   if (error) {
     if (error.code === '23505') {
-      return { success: false, error: 'That username is already taken.' };
+      return { success: false, error: 'profile.errors.usernameTaken' };
     }
-    return { success: false, error: error.message };
+    devWarn('[Nice Place Profile] update failed:', error.message);
+    return { success: false, error: 'profile.edit.saveFailed' };
   }
 
   return { success: true };

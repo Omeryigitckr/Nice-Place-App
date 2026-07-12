@@ -7,13 +7,14 @@ import { DbProfile } from '../types/database';
 import { devWarn } from '../utils/devLog';
 
 import { AUTH_CALLBACK_REDIRECT } from '../constants/authRedirect';
+import { authErrorKey, resolveAuthErrorKey } from '../utils/authErrors';
 
 import { clearViewerProfileIdCache } from './placeEngagementService';
 import { getSupabase } from './supabase';
 
 /** Fields required by the app profile model — avoid select('*'). */
 const PROFILE_SELECT =
-  'id, auth_user_id, username, full_name, avatar_url, avatar_storage_path, bio, created_at, updated_at, trust_score, is_admin, is_banned, role';
+  'id, auth_user_id, username, full_name, avatar_url, avatar_storage_path, bio, created_at, updated_at, trust_score, is_admin, is_banned, role, is_suspended, suspended_until, suspension_reason, moderation_strikes, username_reset_required';
 
 export interface AuthResult {
   success: boolean;
@@ -38,12 +39,12 @@ export async function getCurrentSession(): Promise<Session | null> {
 export async function signInWithEmail(email: string, password: string): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured. Check your .env file.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: resolveAuthErrorKey(error, 'auth.errors.signInFailed') };
   }
 
   return { success: true };
@@ -52,7 +53,7 @@ export async function signInWithEmail(email: string, password: string): Promise<
 export async function requestPasswordReset(email: string): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured. Check your .env file.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
@@ -61,7 +62,7 @@ export async function requestPasswordReset(email: string): Promise<AuthResult> {
 
   if (error) {
     devWarn('[Nice Place Auth] password reset request failed:', error.message);
-    return { success: false, error: 'Could not send reset email. Please try again.' };
+    return { success: false, error: authErrorKey('auth.errors.resetEmailFailed') };
   }
 
   return { success: true };
@@ -70,7 +71,7 @@ export async function requestPasswordReset(email: string): Promise<AuthResult> {
 export async function requestEmailChange(newEmail: string): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured. Check your .env file.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   const { error } = await supabase.auth.updateUser(
@@ -80,7 +81,7 @@ export async function requestEmailChange(newEmail: string): Promise<AuthResult> 
 
   if (error) {
     devWarn('[Nice Place Auth] email change request failed:', error.message);
-    return { success: false, error: error.message || 'Could not send verification email.' };
+    return { success: false, error: resolveAuthErrorKey(error, 'auth.errors.emailChangeFailed') };
   }
 
   return { success: true };
@@ -89,12 +90,12 @@ export async function requestEmailChange(newEmail: string): Promise<AuthResult> 
 export async function updatePassword(newPassword: string): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured. Check your .env file.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: resolveAuthErrorKey(error, 'auth.errors.updatePasswordFailed') };
   }
 
   return { success: true };
@@ -107,7 +108,7 @@ export async function changePasswordWithReauth(
 ): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured. Check your .env file.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   const { error: authError } = await supabase.auth.signInWithPassword({
@@ -116,12 +117,12 @@ export async function changePasswordWithReauth(
   });
 
   if (authError) {
-    return { success: false, error: 'Current password is incorrect.' };
+    return { success: false, error: authErrorKey('auth.errors.currentPasswordIncorrect') };
   }
 
   const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
   if (updateError) {
-    return { success: false, error: updateError.message };
+    return { success: false, error: resolveAuthErrorKey(updateError, 'auth.errors.updatePasswordFailed') };
   }
 
   return { success: true };
@@ -134,7 +135,7 @@ export async function signUpWithEmail(
 ): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured. Check your .env file.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -149,7 +150,7 @@ export async function signUpWithEmail(
   });
 
   if (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: resolveAuthErrorKey(error, 'auth.errors.signUpFailed') };
   }
 
   if (data.user && fullName?.trim()) {
@@ -372,15 +373,20 @@ export async function resolveCurrentUserProfileId(): Promise<{
   }
 
   if (!authUserId) {
-    return { profileId: null, authUserId: null, error: 'Sign in to share a place.' };
+    return { profileId: null, authUserId: null, error: 'placeForm.errors.signInToShare' };
   }
 
+  // Prefer session from storage; an expired access token is refreshed by the client.
+  // Do not treat a missing/stale access_token snapshot as a forced logout.
   if (!sessionData.session?.access_token) {
-    return {
-      profileId: null,
-      authUserId,
-      error: 'Session expired. Sign in again.',
-    };
+    const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !refreshed.session?.access_token) {
+      return {
+        profileId: null,
+        authUserId,
+        error: 'auth.errors.sessionExpired',
+      };
+    }
   }
 
   const { profileId, error: lookupError } = await fetchProfileIdByAuthUserId(authUserId);
@@ -397,7 +403,7 @@ export async function resolveCurrentUserProfileId(): Promise<{
   return {
     profileId: null,
     authUserId,
-    error: lookupError ?? 'Could not load your profile. Try signing out and back in.',
+    error: lookupError ?? 'placeForm.errors.profileMissing',
   };
 }
 

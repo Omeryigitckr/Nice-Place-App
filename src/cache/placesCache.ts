@@ -1,8 +1,11 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { devWarn } from '../utils/devLog';
+
 import { OwnedPlace, Place } from '../types/place';
 import { PublicProfileSummary } from '../types/publicProfile';
 
 import { CACHE_KEYS, CACHE_TTL } from './cacheKeys';
-import { getCache, removeCacheAsync, setCacheAsync } from './cacheStorage';
+import { getCache, removeCacheAsync, setCache, setCacheAsync } from './cacheStorage';
 
 export interface CachedPlaceDetail {
   place: Place;
@@ -121,11 +124,60 @@ export async function removePlaceFromPublicCaches(placeId: string): Promise<void
     readMapPlacesCache({ allowExpired: true }),
   ]);
 
-  if (list?.length) {
-    writePlacesListCache(list.filter((place) => place.id !== placeId));
-  } else if (mapPlaces?.length) {
-    writeMapPlacesCache(mapPlaces.filter((place) => place.id !== placeId));
+  const source = list ?? mapPlaces;
+  if (source?.length) {
+    writePlacesListCache(source.filter((place) => place.id !== placeId));
   }
 
   removeCacheAsync(CACHE_KEYS.placeDetail(placeId));
+  await purgePlaceFromSavedListCaches(placeId);
+  await purgePlaceFromMyPlacesCaches(placeId);
+}
+
+async function purgePlaceFromSavedListCaches(placeId: string): Promise<void> {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const prefix = '@nice_place/cache/saved_places:';
+    const savedKeys = keys.filter((key) => key.startsWith(prefix));
+
+    await Promise.all(
+      savedKeys.map(async (key) => {
+        const places = await getCache<Place[]>(key, { allowExpired: true });
+        if (!places?.some((place) => place.id === placeId)) {
+          return;
+        }
+        await setCache(
+          key,
+          places.filter((place) => place.id !== placeId),
+          CACHE_TTL.savedPlacesMs,
+        );
+      }),
+    );
+  } catch (error: unknown) {
+    devWarn('[Nice Place Cache] saved places purge failed:', placeId, error);
+  }
+}
+
+async function purgePlaceFromMyPlacesCaches(placeId: string): Promise<void> {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const prefix = '@nice_place/cache/my_places:';
+    const myKeys = keys.filter((key) => key.startsWith(prefix));
+
+    await Promise.all(
+      myKeys.map(async (key) => {
+        const places = await getCache<OwnedPlace[]>(key, { allowExpired: true });
+        if (!places?.some((place) => place.id === placeId)) {
+          return;
+        }
+
+        const next = places.map((place) =>
+          place.id === placeId ? { ...place, status: 'deleted' as const } : place,
+        );
+        await setCache(key, next, CACHE_TTL.myPlacesMs);
+      }),
+    );
+  } catch (error: unknown) {
+    devWarn('[Nice Place Cache] my places purge failed:', placeId, error);
+  }
 }

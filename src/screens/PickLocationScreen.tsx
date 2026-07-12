@@ -4,6 +4,7 @@ import { ActivityIndicator, Animated, Easing, StyleSheet, Text, View } from 'rea
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { AppButton } from '../components';
 import { MAP_ROUTES } from '../constants';
@@ -24,6 +25,7 @@ export function PickLocationScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();
   const tabBarInset = useFloatingTabBarInset();
   const { colors, shadows } = useTheme();
+  const { t } = useTranslation();
   const initialLatitude = route.params.latitude;
   const initialLongitude = route.params.longitude;
   const cameraRef = useRef<ComponentRef<typeof Camera>>(null);
@@ -87,9 +89,9 @@ export function PickLocationScreen({ navigation, route }: Props) {
   if (mapboxError) {
     return (
       <View style={[styles.fallback, { backgroundColor: colors.background }]}>
-        <Text style={[styles.fallbackTitle, { color: colors.textPrimary }]}>Map unavailable</Text>
+        <Text style={[styles.fallbackTitle, { color: colors.textPrimary }]}>{t('map.unavailable')}</Text>
         <Text style={[styles.fallbackText, { color: colors.textSecondary }]}>{mapboxError}</Text>
-        <AppButton title="Go back" onPress={() => navigation.goBack()} fullWidth={false} />
+        <AppButton title={t('map.pickLocation.goBack')} onPress={() => navigation.goBack()} fullWidth={false} />
       </View>
     );
   }
@@ -135,7 +137,7 @@ export function PickLocationScreen({ navigation, route }: Props) {
             },
           ]}
         >
-          Move the map to position the pin
+          {t('map.pickLocation.instruction')}
         </Text>
       </View>
 
@@ -152,13 +154,13 @@ export function PickLocationScreen({ navigation, route }: Props) {
           },
         ]}
       >
-        <Text style={[styles.coordsLabel, { color: colors.textMuted }]}>Selected location</Text>
+        <Text style={[styles.coordsLabel, { color: colors.textMuted }]}>{t('map.pickLocation.selected')}</Text>
         <Text style={[styles.coordsValue, { color: colors.textPrimary }]}>
           {selectedLatitude.toFixed(5)}, {selectedLongitude.toFixed(5)}
         </Text>
         <View style={styles.actions}>
-          <AppButton title="Use this location" onPress={handleConfirm} />
-          <AppButton title="Cancel" variant="secondary" onPress={() => navigation.goBack()} />
+          <AppButton title={t('map.pickLocation.confirm')} onPress={handleConfirm} />
+          <AppButton title={t('common.cancel')} variant="secondary" onPress={() => navigation.goBack()} />
         </View>
       </Animated.View>
     </View>

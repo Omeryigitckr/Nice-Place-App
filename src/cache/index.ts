@@ -33,5 +33,26 @@ export {
   readLikedIdsCache,
   writeLikedIdsCache,
 } from './userCache';
+export {
+  readCollectionsListCache,
+  writeCollectionsListCache,
+  readCollectionPlacesCache,
+  writeCollectionPlacesCache,
+  readPlaceCollectionIdsCache,
+  writePlaceCollectionIdsCache,
+  invalidateCollectionsCache,
+  invalidateCollectionPlacesCache,
+  invalidatePlaceCollectionsCache,
+  purgePlaceFromCollectionCaches,
+} from './collectionsCache';
 export { clearUserPrivateCache } from './clearUserSession';
 export type { ClearUserSessionIds } from './clearUserSession';
+export {
+  readNotificationListCache,
+  writeNotificationListCache,
+  readUnreadCountCache,
+  writeUnreadCountCache,
+  readNotificationPreferencesCache,
+  writeNotificationPreferencesCache,
+  invalidateNotificationCaches,
+} from './notificationsCache';

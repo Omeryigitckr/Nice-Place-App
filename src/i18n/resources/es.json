@@ -1,0 +1,1456 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "back": "Atrás",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "done": "Listo",
+    "retry": "Intentar de nuevo",
+    "tryAgain": "Intentar de nuevo",
+    "error": "Algo salió mal",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Añadir",
+    "remove": "Quitar",
+    "refresh": "Actualizar",
+    "search": "Buscar",
+    "next": "Siguiente",
+    "skip": "Omitir",
+    "yes": "Sí",
+    "no": "No",
+    "ok": "OK",
+    "optional": "Opcional",
+    "required": "Obligatorio",
+    "seeAll": "Ver todo",
+    "learnMore": "Más información",
+    "notAvailable": "No disponible",
+    "noResults": "Sin resultados",
+    "signIn": "Iniciar sesión",
+    "openSettings": "Abrir ajustes",
+    "or": "o",
+    "connecting": "Conectando…",
+    "place_one": "lugar",
+    "place_other": "lugares",
+    "placesCount_one": "{{count}} lugar",
+    "placesCount_other": "{{count}} lugares",
+    "authRequired": {
+      "title": "Inicio de sesión requerido",
+      "message": "Inicia sesión para usar esta función. Puedes seguir explorando como invitado."
+    },
+    "place_few": "lugares",
+    "place_many": "lugares",
+    "placesCount_few": "{{count}} lugares",
+    "placesCount_many": "{{count}} lugares",
+    "pleaseWait": "Espera…",
+    "notNow": "Ahora no",
+    "create": "Crear",
+    "dismiss": "Cerrar"
+  },
+  "navigation": {
+    "explore": "Explorar",
+    "saved": "Guardados",
+    "addPlace": "Añadir lugar",
+    "profile": "Perfil",
+    "settings": "Ajustes",
+    "notifications": "Notificaciones",
+    "admin": "Admin",
+    "savedPlaces": "Lugares guardados",
+    "allSavedPlaces": "Todos los guardados",
+    "collection": "Colección",
+    "editPlace": "Editar lugar",
+    "account": "Cuenta",
+    "changePassword": "Cambiar contraseña",
+    "changeEmail": "Cambiar correo",
+    "appearance": "Apariencia",
+    "privacyLocation": "Privacidad y ubicación",
+    "about": "Acerca de",
+    "adminPanel": "Panel de admin",
+    "sendNotification": "Enviar notificación",
+    "reportedProfiles": "Perfiles reportados",
+    "reviewProfile": "Revisar perfil",
+    "reviewPlace": "Revisar lugar",
+    "reviewUpdate": "Revisar actualización",
+    "reports": "Reportes",
+    "language": "Idioma"
+  },
+  "settings": {
+    "sections": {
+      "account": "Cuenta",
+      "mapPreferences": "Preferencias del mapa",
+      "units": "Unidades",
+      "notifications": "Notificaciones",
+      "data": "Datos",
+      "support": "Soporte",
+      "accountActions": "Acciones de la cuenta",
+      "appearance": "Apariencia",
+      "location": "Ubicación",
+      "about": "Acerca de Nice Place"
+    },
+    "theme": {
+      "title": "Tema",
+      "system": "Sistema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "setTo": "Tema cambiado a {{label}}.",
+      "helper": "La preferencia se guarda en este dispositivo. La barra de estado se actualiza de inmediato; la UI clara completa aún es limitada.",
+      "groupLabel": "Apariencia"
+    },
+    "mapStyle": {
+      "title": "Estilo de mapa predeterminado",
+      "standard": "Estándar",
+      "satellite": "Satélite",
+      "outdoors": "Exterior",
+      "setTo": "Estilo de mapa cambiado a {{label}}."
+    },
+    "distanceUnit": {
+      "title": "Unidad de distancia",
+      "kilometers": "Kilómetros",
+      "miles": "Millas",
+      "setTo": "Unidad de distancia cambiada a {{label}}."
+    },
+    "account": {
+      "unlockHint": "Inicia sesión para desbloquear funciones de la cuenta",
+      "signedIn": "Sesión iniciada",
+      "changePassword": "Cambiar contraseña",
+      "changePasswordSubtitle": "Actualiza tu contraseña de acceso",
+      "changeEmail": "Cambiar correo",
+      "changeEmailSubtitle": "Actualiza el correo de tu cuenta"
+    },
+    "notifications": {
+      "prefsLink": "Preferencias de notificaciones",
+      "enabledDevice": "Activado · Dispositivo: {{status}}",
+      "offDevice": "Desactivado · Dispositivo: {{status}}",
+      "helper": "Elige qué actualizaciones puede enviar Nice Place como notificaciones push.",
+      "enable": "Activar notificaciones",
+      "statusEnabled": "Las notificaciones push están activadas en este dispositivo.",
+      "statusFinishing": "Permiso concedido — terminando la configuración…",
+      "statusBlocked": "El permiso está desactivado en los ajustes del dispositivo.",
+      "statusDenied": "El permiso está desactivado en este dispositivo.",
+      "statusDevice": "Permiso del dispositivo: {{status}}",
+      "blockedTitle": "Notificaciones desactivadas",
+      "blockedMessage": "Las notificaciones están desactivadas en los ajustes del dispositivo.",
+      "registerFailed": "No se pudo registrar para notificaciones push.",
+      "registerDeviceFailed": "No se pudo registrar este dispositivo para notificaciones push.",
+      "saveFailed": "No se pudo guardar la preferencia de notificaciones.",
+      "prefs": {
+        "placeApproved": "Lugar aprobado",
+        "placeRejected": "Lugar rechazado",
+        "placeUpdateApproved": "Actualización de lugar aprobada",
+        "placeUpdateRejected": "Actualización de lugar rechazada",
+        "placeLiked": "Alguien dio me gusta a mi lugar",
+        "systemAnnouncements": "Anuncios del sistema",
+        "eventsNews": "Eventos y noticias"
+      },
+      "saveTokenFailed": "No se pudo guardar el token push."
+    },
+    "data": {
+      "clearCache": "Borrar caché local",
+      "clearCacheSubtitle": "Elimina los IDs de lugares guardados en caché local",
+      "resetPrefs": "Restablecer preferencias de la app",
+      "resetPrefsSubtitle": "Restaura tema, mapa, unidades y opciones predeterminadas",
+      "clearConfirmTitle": "¿Borrar caché local?",
+      "clearConfirmBody": "Esto elimina los datos en caché de este dispositivo. Tu cuenta y los datos en la nube no cambian.",
+      "clearConfirmAction": "Borrar caché",
+      "resetConfirmTitle": "¿Restablecer preferencias?",
+      "resetConfirmBody": "Esto restaura el tema, estilo de mapa, unidades y opciones de notificación predeterminados.",
+      "resetConfirmAction": "Restablecer",
+      "working": "Trabajando…",
+      "cacheCleared": "Caché local borrada.",
+      "prefsReset": "Preferencias de la app restablecidas."
+    },
+    "support": {
+      "contact": "Contactar soporte",
+      "reportBug": "Informar de un error",
+      "privacyPolicy": "Política de privacidad",
+      "termsOfService": "Términos de servicio",
+      "aboutNicePlace": "Acerca de Nice Place",
+      "reportGuidelines": "Pautas de reporte",
+      "appVersion": "Versión de la app",
+      "mailSubjectSupport": "Soporte de Nice Place",
+      "mailSubjectBug": "Informe de error de Nice Place"
+    },
+    "session": {
+      "signOut": "Cerrar sesión",
+      "signingOut": "Cerrando sesión…",
+      "signedOut": "Sesión cerrada. Puedes seguir explorando como invitado.",
+      "signedOutLocal": "Sesión cerrada localmente. Puedes seguir explorando como invitado.",
+      "signOutFailed": "No se pudo cerrar la sesión."
+    },
+    "deleteAccount": {
+      "dangerTitle": "Zona de peligro",
+      "dangerBody": "Elimina permanentemente tu cuenta y anonimiza los datos del perfil. Esto no se puede deshacer.",
+      "delete": "Eliminar cuenta",
+      "deleteAction": "Eliminar mi cuenta",
+      "deleting": "Eliminando…",
+      "title": "Eliminar cuenta",
+      "instructionPassword": "Introduce tu contraseña dos veces y escribe {{phrase}} para confirmar.",
+      "instructionOAuth": "Escribe {{phrase}} para eliminar permanentemente tu cuenta.",
+      "confirmLabel": "Escribe {{phrase}}",
+      "confirmPassword": "Confirmar contraseña",
+      "passwordsDoNotMatch": "Las contraseñas no coinciden.",
+      "success": "Tu cuenta ha sido eliminada.",
+      "a11yDelete": "Eliminar cuenta",
+      "a11yDismiss": "Cerrar",
+      "errors": {
+        "passwordRequired": "La contraseña es obligatoria.",
+        "sessionInvalid": "No se pudo verificar tu sesión.",
+        "unavailable": "La eliminación de cuenta aún no está disponible. Contacta a support@niceplace.site.",
+        "failed": "No se pudo eliminar la cuenta. Inténtalo de nuevo."
+      }
+    },
+    "privacyLocation": {
+      "helper": "Nice Place usa tu ubicación para ordenar lugares cercanos, mostrar distancia y situar envíos en tu posición actual.",
+      "statusLabel": "Estado del permiso",
+      "request": "Solicitar permiso",
+      "openDeviceSettings": "Abrir ajustes del dispositivo",
+      "grantedToast": "Permiso de ubicación concedido.",
+      "deniedToast": "No se concedió el permiso de ubicación."
+    },
+    "permissionStatus": {
+      "granted": "Permitido",
+      "denied": "Denegado",
+      "blocked": "Bloqueado en ajustes del dispositivo",
+      "undetermined": "No solicitado",
+      "unavailable": "No disponible"
+    },
+    "language": {
+      "title": "Idioma",
+      "description": "Elige el idioma de Nice Place. Tu elección se guarda en este dispositivo.",
+      "current": "Idioma actual",
+      "select": "Seleccionar idioma",
+      "saveFailed": "No se pudo guardar el idioma. Inténtalo de nuevo."
+    },
+    "appPreferences": "Preferencias de la app",
+    "legal": {
+      "supportContact": "Para soporte, informes de errores, preguntas de privacidad o solicitudes de eliminación de cuenta, contacta a support@niceplace.site",
+      "about": {
+        "title": "Acerca de Nice Place",
+        "body": "Nice Place te ayuda a descubrir rincones tranquilos al aire libre, puntos de atardecer y lugares ocultos que merecen una visita.\n\nEsta beta se centra en el descubrimiento en el mapa, guardar lugares, compartir sitios y envíos de la comunidad revisados antes de aparecer en público."
+      },
+      "terms": {
+        "title": "Términos de servicio",
+        "body": "Al usar Nice Place aceptas compartir información precisa de lugares, respetar la propiedad privada y seguir las normas de acceso locales.\n\nLos envíos de la comunidad pueden revisarse antes de publicarse. Podemos actualizar estos términos a medida que evolucione la beta.\n\n{{supportContact}}"
+      },
+      "privacy": {
+        "title": "Política de privacidad",
+        "body": "Última actualización: julio de 2026\n\nNice Place es una app móvil que te ayuda a descubrir y compartir lugares al aire libre. Esta política explica qué datos recopilamos durante la beta y cómo los usamos.\n\nCuenta y autenticación\nCuando creas una cuenta, almacenamos tu correo y los datos de autenticación a través de Supabase Auth. También guardamos la información de perfil que elijas proporcionar, como tu nombre visible.\n\nLugares que envías\nCuando añades un lugar, guardamos la información que envías, incluido el nombre, descripción, categoría, coordenadas aproximadas y las fotos que subas.\n\nLugares guardados y con me gusta\nSi has iniciado sesión, guardamos los lugares que marcas y te gustan para sincronizarlos con tu cuenta.\n\nUbicación\nSi concedes permiso, usamos la ubicación del dispositivo para mostrar lugares cercanos y ordenar por distancia. No rastreamos tu ubicación en segundo plano.\n\nImágenes\nSi subes una foto de portada, esa imagen se almacena para mostrarla en la app.\n\nAlmacenamiento del dispositivo\nAlgunas preferencias, como el tema y búsquedas recientes, pueden guardarse localmente en tu dispositivo.\n\nCómo usamos tus datos\nUsamos estos datos para operar la app, mostrar lugares en el mapa, sincronizar guardados y me gusta, y revisar envíos de la comunidad.\n\nProveedor de servicios\nUsamos Supabase (supabase.com) para autenticación, base de datos y almacenamiento de imágenes. Supabase procesa datos en nuestro nombre.\n\nCompartir datos\nNo vendemos tus datos personales.\n\nEliminación de datos\nPuedes eliminar tu cuenta desde Ajustes. Esto elimina el acceso a la cuenta y anonimiza tu perfil.\n\n{{supportContact}}\n\nMenores\nNice Place no está dirigida a menores de 13 años.\n\nContacto\n{{supportEmail}}"
+      },
+      "guidelines": {
+        "title": "Pautas de reporte",
+        "body": "Reporta lugares inexactos, inseguros o inapropiados para que la comunidad sea de confianza.\n\nEl reporte dentro de la app llegará pronto. Por ahora, escribe a support@niceplace.site si un lugar debe revisarse o eliminarse."
+      }
+    }
+  },
+  "network": {
+    "offlineBanner": "Sin conexión — mostrando datos guardados",
+    "offline": "Sin conexión a internet. Comprueba tu conexión e inténtalo de nuevo.",
+    "connectionLost": "Conexión perdida",
+    "connectionRestored": "Conexión restablecida",
+    "checkConnection": "Comprueba tu conexión"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Inténtalo de nuevo.",
+    "unknown": "Algo salió mal",
+    "network": "Sin conexión a internet. Comprueba tu conexión e inténtalo de nuevo.",
+    "timeout": "La solicitud agotó el tiempo de espera. Inténtalo de nuevo.",
+    "unauthorized": "Inicia sesión para continuar.",
+    "forbidden": "No tienes permiso para hacer eso.",
+    "notFound": "No encontramos lo que buscas.",
+    "server": "Error del servidor. Inténtalo más tarde.",
+    "validation": "Revisa tus datos e inténtalo de nuevo.",
+    "sessionExpired": "Tu sesión expiró. Vuelve a iniciar sesión.",
+    "permissionDenied": "Permiso denegado"
+  },
+  "permissions": {
+    "requiredTitle": "Permiso requerido",
+    "blocked": {
+      "cancel": "Cancelar",
+      "openSettings": "Abrir ajustes"
+    },
+    "location": {
+      "title": "Activa la ubicación",
+      "description": "Nice Place usa tu ubicación para mostrar puntos ocultos cercanos, atardeceres y rutas a pie. Tu ubicación solo se usa para mejorar el descubrimiento.",
+      "featureNearby": "Encuentra lugares cerca de ti",
+      "featureDistance": "Ordena por distancia",
+      "featurePrivate": "Nunca se comparte públicamente",
+      "allow": "Permitir ubicación",
+      "notNow": "Ahora no"
+    },
+    "photos": {
+      "blockedTitle": "Fotos desactivadas",
+      "blockedMessage": "El acceso a la biblioteca de fotos está desactivado en los ajustes del dispositivo."
+    }
+  },
+  "auth": {
+    "social": {
+      "continueGoogle": "Continuar con Google",
+      "continueApple": "Continuar con Apple",
+      "connecting": "Conectando…"
+    },
+    "legal": {
+      "prefix": "Al continuar, aceptas nuestra",
+      "privacyPolicy": "Política de privacidad",
+      "suffix": "."
+    },
+    "login": {
+      "title": "Bienvenido de nuevo",
+      "subtitle": "Inicia sesión para guardar lugares y compartir descubrimientos.",
+      "emailLabel": "Correo",
+      "emailPlaceholder": "tu@email.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "submit": "Iniciar sesión",
+      "submitting": "Iniciando sesión…",
+      "createAccount": "Crear cuenta",
+      "continueAsGuest": "Continuar como invitado",
+      "emailPasswordRequired": "Introduce tu correo y contraseña."
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Empieza a descubrir lugares bonitos.",
+      "fullNameLabel": "Nombre completo",
+      "fullNamePlaceholder": "Tu nombre",
+      "emailLabel": "Correo",
+      "emailPlaceholder": "tu@email.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Registrarse",
+      "submitting": "Creando cuenta…",
+      "alreadyHaveAccount": "Ya tengo una cuenta",
+      "continueAsGuest": "Continuar como invitado"
+    },
+    "forgotPassword": {
+      "title": "Olvidé mi contraseña",
+      "subtitle": "Introduce tu correo y te enviaremos un enlace de restablecimiento.",
+      "emailLabel": "Correo",
+      "emailPlaceholder": "tu@email.com",
+      "submit": "Enviar enlace",
+      "submitting": "Enviando…",
+      "backToSignIn": "Volver a iniciar sesión",
+      "successMessage": "Si existe una cuenta con este correo, se ha enviado un enlace para restablecer la contraseña."
+    },
+    "resetPassword": {
+      "title": "Nueva contraseña",
+      "subtitle": "Elige una nueva contraseña para tu cuenta.",
+      "newPasswordLabel": "Nueva contraseña",
+      "confirmPasswordLabel": "Confirmar contraseña",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Actualizar contraseña",
+      "submitting": "Actualizando…",
+      "successMessage": "Contraseña actualizada correctamente."
+    },
+    "callback": {
+      "failedTitle": "No se pudo verificar el enlace",
+      "verifying": "Verificando enlace…",
+      "backToSignIn": "Volver a iniciar sesión",
+      "emailConfirmed": "Correo confirmado correctamente."
+    },
+    "emailChange": {
+      "title": "Cambiar correo",
+      "description": "Enviaremos un enlace de confirmación a tu nueva dirección.",
+      "currentEmailLabel": "Correo actual",
+      "newEmailLabel": "Nuevo correo",
+      "emailPlaceholder": "tu@email.com",
+      "submit": "Enviar correo de verificación",
+      "submitting": "Enviando…",
+      "successMessage": "Se ha enviado un correo de verificación a tu nueva dirección. Abre el enlace en este dispositivo para confirmar el cambio.",
+      "signInRequired": "Inicia sesión para cambiar tu correo.",
+      "differentEmailRequired": "Introduce una dirección de correo distinta."
+    },
+    "guest": {
+      "continue": "Continuar como invitado"
+    },
+    "brand": {
+      "tagline": "Descubre • Comparte • Recuerda"
+    },
+    "validation": {
+      "emailRequired": "Introduce tu correo.",
+      "emailInvalid": "Introduce una dirección de correo válida.",
+      "passwordRequired": "Introduce una contraseña.",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres.",
+      "passwordHint": "Usa al menos 8 caracteres con una mayúscula, una minúscula y un número.",
+      "passwordsDoNotMatch": "Las contraseñas no coinciden.",
+      "confirmPasswordRequired": "Confirma tu contraseña.",
+      "currentPasswordRequired": "Introduce tu contraseña actual.",
+      "passwordMustDiffer": "La nueva contraseña debe ser distinta de la actual."
+    },
+    "errors": {
+      "generic": "Algo salió mal. Inténtalo de nuevo.",
+      "signInFailed": "No se pudo iniciar sesión.",
+      "signUpFailed": "No se pudo crear la cuenta.",
+      "invalidCredentials": "Correo o contraseña incorrectos.",
+      "emailAlreadyRegistered": "Este correo ya está registrado.",
+      "emailNotConfirmed": "Confirma tu correo antes de iniciar sesión.",
+      "weakPassword": "Elige una contraseña más segura.",
+      "invalidEmail": "Introduce una dirección de correo válida.",
+      "rateLimited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+      "sessionExpired": "Tu sesión expiró. Vuelve a iniciar sesión.",
+      "network": "Sin conexión a internet. Comprueba tu conexión e inténtalo de nuevo.",
+      "configMissing": "Supabase no está configurado. Revisa tu archivo .env.",
+      "resetEmailFailed": "No se pudo enviar el correo de restablecimiento. Inténtalo de nuevo.",
+      "updatePasswordFailed": "No se pudo actualizar la contraseña. Inténtalo de nuevo.",
+      "currentPasswordIncorrect": "La contraseña actual es incorrecta.",
+      "emailChangeFailed": "No se pudo enviar el correo de verificación. Inténtalo de nuevo.",
+      "linkExpired": "Este enlace ha caducado. Solicita uno nuevo.",
+      "linkInvalid": "Este enlace no es válido. Inténtalo de nuevo.",
+      "linkDenied": "Este enlace fue denegado o ya se usó.",
+      "linkMissingData": "Este enlace no es válido o le faltan datos de verificación.",
+      "verifyFailed": "No se pudo verificar este enlace. Inténtalo de nuevo.",
+      "notAuthCallback": "No es un enlace de autenticación.",
+      "oauthFailed": "No se pudo completar el inicio de sesión.",
+      "oauthCancelled": "Inicio de sesión cancelado.",
+      "googleStartFailed": "No se pudo iniciar el acceso con Google.",
+      "googleCancelled": "Acceso con Google cancelado.",
+      "googleFailed": "Falló el acceso con Google.",
+      "appleOnlyIos": "El acceso con Apple solo está disponible en iOS.",
+      "appleUnavailable": "El acceso con Apple no está disponible en este dispositivo.",
+      "appleNoToken": "Apple no devolvió un token.",
+      "appleFailed": "Falló el acceso con Apple.",
+      "appleCancelled": "Acceso con Apple cancelado.",
+      "signInIncomplete": "No se pudo completar el inicio de sesión."
+    },
+    "a11y": {
+      "showPassword": "Mostrar contraseña",
+      "hidePassword": "Ocultar contraseña"
+    },
+    "changePassword": {
+      "title": "Cambiar contraseña",
+      "description": "Vuelve a introducir tu contraseña actual y elige una nueva.",
+      "currentPasswordLabel": "Contraseña actual",
+      "newPasswordLabel": "Nueva contraseña",
+      "confirmPasswordLabel": "Confirmar nueva contraseña",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Actualizar contraseña",
+      "submitting": "Actualizando…",
+      "successMessage": "Contraseña actualizada correctamente.",
+      "signInRequired": "Inicia sesión para cambiar tu contraseña."
+    }
+  },
+  "explore": {
+    "searchPlaceholder": "Buscar lugares, rutas, vistas…",
+    "clearSearch": "Borrar búsqueda",
+    "filterPlaces": "Filtrar lugares",
+    "filters": {
+      "title": "Filtros",
+      "close": "Cerrar filtros",
+      "bestTime": "Mejor momento",
+      "accessType": "Tipo de acceso",
+      "difficulty": "Dificultad",
+      "crowdLevel": "Afluencia",
+      "facilities": "Instalaciones",
+      "apply": "Aplicar filtros",
+      "clear": "Borrar filtros"
+    },
+    "quickFilters": {
+      "nearby": "Cerca",
+      "hiddenGems": "Joyas ocultas",
+      "sunset": "Atardecer",
+      "camping": "Camping"
+    },
+    "search": {
+      "recent": "Recientes",
+      "noResults": "No se encontraron lugares",
+      "noResultsHint": "Prueba otro nombre o categoría, o borra los filtros.",
+      "a11ySearchRecent": "Buscar {{query}}",
+      "a11yRemoveRecent": "Eliminar {{query}}"
+    },
+    "empty": {
+      "noPlaces": "Aún no hay lugares. Sé el primero en compartir uno.",
+      "noFilterMatches": "Ningún lugar coincide con estos filtros.",
+      "offline": "No hay lugares sin conexión. Conéctate para cargar el mapa."
+    },
+    "load": {
+      "cached": "Mostrando lugares en caché. Conéctate para actualizar.",
+      "failed": "No se pudieron cargar los lugares. Revisa tu conexión e inténtalo de nuevo.",
+      "refreshFailed": "No se pudo actualizar. Se muestran los últimos datos cargados.",
+      "supabaseFailed": "No se pudieron cargar los lugares ahora."
+    },
+    "auth": {
+      "save": "Inicia sesión para guardar lugares en tu colección.",
+      "like": "Inicia sesión para dar me gusta a lugares.",
+      "saveShort": "Inicia sesión para guardar lugares."
+    },
+    "preview": {
+      "verified": "Verificado",
+      "discoveredBy": "Descubierto por @{{username}}",
+      "navigate": "Navegar",
+      "details": "Detalles",
+      "a11yClose": "Cerrar vista previa",
+      "a11yLike": "Me gusta el lugar",
+      "a11yUnlike": "Quitar me gusta",
+      "a11yNavigate": "Navegar al lugar",
+      "a11yDetails": "Ver detalles",
+      "a11yDismiss": "Cerrar vista previa"
+    },
+    "a11y": {
+      "like": "Me gusta el lugar",
+      "unlike": "Quitar me gusta",
+      "dismissKeyboard": "Ocultar teclado"
+    }
+  },
+  "place": {
+    "save": "Guardar",
+    "saved": "Guardado",
+    "saveA11y": "Guardar lugar",
+    "unsaveA11y": "Quitar de guardados",
+    "status": {
+      "pending": "Pendiente de revisión",
+      "approved": "Aprobado",
+      "rejected": "Rechazado",
+      "hidden": "Oculto",
+      "deleted": "Eliminado"
+    },
+    "categories": {
+      "selected": "Seleccionadas ({{count}}/{{max}})",
+      "selectRange": "Selecciona {{min}}–{{max}} categorías",
+      "removeA11y": "Quitar {{label}}",
+      "maxReached": "Máximo {{max}} categorías. Quita una para añadir otra."
+    },
+    "toasts": {
+      "saved": "Lugar guardado",
+      "removed": "Eliminado de guardados"
+    },
+    "a11yLike": "Me gusta el lugar",
+    "a11yUnlike": "Quitar me gusta",
+    "errors": {
+      "signInToLike": "Inicia sesión para dar me gusta a lugares."
+    }
+  },
+  "saved": {
+    "allSavedPlaces": "Todos los guardados",
+    "allSavedPlacesA11y": "Todos los guardados, {{count}} lugares",
+    "home": {
+      "title": "Lugares guardados",
+      "subtitle": "Tus favoritos y listas personalizadas en un solo lugar.",
+      "yourCollections": "Tus colecciones",
+      "createAction": "+ Crear",
+      "toastRefreshed": "Guardados actualizados"
+    },
+    "all": {
+      "title": "Todos los lugares guardados",
+      "subtitle": "Todos los lugares que has marcado.",
+      "toastRefreshed": "Lugares guardados actualizados"
+    },
+    "empty": {
+      "noSavedTitle": "Aún no hay lugares guardados",
+      "noSavedBody": "Guarda lugares desde el mapa para encontrarlos aquí después.",
+      "noCachedTitle": "No hay lugares guardados en caché",
+      "noCachedBody": "Conéctate a internet para cargar tus lugares guardados.",
+      "guestTitle": "Inicia sesión para guardar lugares",
+      "guestBodyHome": "Crea una cuenta para marcar lugares y organizarlos en colecciones.",
+      "guestBodyList": "Crea una cuenta para marcar lugares y encontrarlos aquí después."
+    },
+    "auth": {
+      "manage": "Inicia sesión para gestionar tus lugares guardados."
+    },
+    "viewOnMap": "Ver en el mapa",
+    "unsave": "Quitar de guardados",
+    "list": {
+      "title": "Tu colección",
+      "subtitle": "Lugares que quieres visitar más tarde, en una sola lista."
+    }
+  },
+  "categories": {
+    "groups": {
+      "nature": "Naturaleza",
+      "scenic": "Paisajes",
+      "adventure": "Aventura",
+      "discovery": "Descubrimiento",
+      "seasonal": "Estacional / Especial"
+    },
+    "waterfall": "Cascada",
+    "lake": "Lago",
+    "river": "Río",
+    "forest": "Bosque",
+    "mountain": "Montaña",
+    "canyon": "Cañón",
+    "cave": "Cueva",
+    "beach": "Playa",
+    "viewpoint": "Mirador",
+    "sunset_spot": "Atardecer",
+    "sunrise_spot": "Amanecer",
+    "panorama": "Panorama",
+    "photography_spot": "Punto fotográfico",
+    "camping": "Camping",
+    "hiking": "Senderismo",
+    "picnic": "Picnic",
+    "off_road": "Todo terreno",
+    "hidden_gem": "Joyita escondida",
+    "historical_site": "Sitio histórico",
+    "ancient_ruins": "Ruinas antiguas",
+    "landmark": "Monumento",
+    "bridge": "Puente",
+    "snow_area": "Zona nevada",
+    "flower_field": "Campo de flores",
+    "natural_wonder": "Maravilla natural",
+    "fallback": "Descubrimiento"
+  },
+  "options": {
+    "bestTime": {
+      "Anytime": "En cualquier momento",
+      "Morning": "Mañana",
+      "Afternoon": "Tarde",
+      "Sunset": "Atardecer",
+      "Night": "Noche"
+    },
+    "access": {
+      "walking": "A pie",
+      "car": "En coche",
+      "bicycle": "En bicicleta",
+      "unknown": "Desconocido",
+      "public_transport": "Transporte público",
+      "mixed": "Mixto"
+    },
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Media",
+      "hard": "Difícil",
+      "unknown": "Desconocido",
+      "moderate": "Moderada"
+    },
+    "crowd": {
+      "quiet": "Tranquilo",
+      "normal": "Normal",
+      "crowded": "Ajetreado",
+      "unknown": "Desconocido"
+    },
+    "facilities": {
+      "petFriendly": "Admite mascotas",
+      "childFriendly": "Ideal para niños",
+      "carAccessible": "Acceso en coche",
+      "campAllowed": "Se permite acampar",
+      "picnicSuitable": "Ideal para picnic"
+    }
+  },
+  "onboarding": {
+    "actions": {
+      "skip": "Omitir",
+      "next": "Siguiente",
+      "continue": "Continuar",
+      "getStarted": "Empezar"
+    },
+    "slides": {
+      "welcome": {
+        "headline": "Descubre lugares ocultos",
+        "subtitle": "Encuentra sitios bonitos compartidos por personas a tu alrededor."
+      },
+      "explore": {
+        "headline": "Explora lugares increíbles",
+        "subtitle": "Busca cerca, explora categorías y descubre sitios únicos de la comunidad."
+      },
+      "details": {
+        "headline": "Todo lo que necesitas",
+        "subtitle": "Fotos, distancia, mejor momento, dificultad e indicaciones en un solo lugar."
+      },
+      "saveShare": {
+        "headline": "Guarda y comparte",
+        "subtitle": "Crea tus colecciones y ayuda a otros a descubrir nuevos lugares."
+      },
+      "ready": {
+        "headline": "¿Listo para explorar?",
+        "subtitle": "Únete a la comunidad y empieza a descubrir lugares increíbles hoy."
+      }
+    },
+    "ready": {
+      "featureDiscover": "Descubre lugares ocultos",
+      "featureSave": "Guarda tus sitios favoritos",
+      "featureShare": "Comparte lugares con otros"
+    }
+  },
+  "map": {
+    "unavailable": "Mapa no disponible",
+    "loading": "Cargando lugares…",
+    "configMissing": "Falta el token de Mapbox. Añade EXPO_PUBLIC_MAPBOX_TOKEN a tu archivo .env.",
+    "location": {
+      "enableForSort": "Activa la ubicación para ordenar por distancia.",
+      "permissionDenied": "Permiso de ubicación denegado. Actívalo en ajustes para ver lugares cercanos.",
+      "unavailable": "No se pudo obtener tu ubicación ahora.",
+      "blockedTitle": "Ubicación desactivada",
+      "blockedMessage": "El acceso a la ubicación está desactivado en los ajustes del dispositivo."
+    },
+    "directions": {
+      "failed": "No se pudo abrir Mapas. Comprueba que haya una app de mapas instalada."
+    },
+    "a11y": {
+      "myLocation": "Mostrar mi ubicación"
+    },
+    "pickLocation": {
+      "instruction": "Mueve el mapa para colocar el pin",
+      "selected": "Ubicación seleccionada",
+      "confirm": "Usar esta ubicación",
+      "goBack": "Volver"
+    }
+  },
+  "units": {
+    "m": "{{value}} m",
+    "km": "{{value}} km",
+    "ft": "{{value}} ft",
+    "mi": "{{value}} mi",
+    "distanceUnavailable": "Distancia no disponible"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todo como leído",
+    "subtitleUnread_one": "{{count}} sin leer",
+    "subtitleUnread_other": "{{count}} sin leer",
+    "subtitleCaughtUp": "Estás al día",
+    "a11y": "Notificaciones",
+    "a11yUnread_one": "Notificaciones, {{count}} sin leer",
+    "a11yUnread_other": "Notificaciones, {{count}} sin leer",
+    "a11yBack": "Volver",
+    "a11yOpen": "Abrir notificación",
+    "a11yUnreadItem": "Notificación no leída",
+    "a11yReadItem": "Notificación leída",
+    "empty": {
+      "title": "Aún no tienes notificaciones",
+      "description": "Aquí aparecerán actualizaciones sobre tus lugares, me gusta y anuncios."
+    },
+    "errors": {
+      "notSignedIn": "Inicia sesión para gestionar las notificaciones.",
+      "markReadFailed": "No se pudo marcar como leída.",
+      "markAllFailed": "No se pudo marcar todo como leído."
+    },
+    "time": {
+      "justNow": "Ahora mismo",
+      "minutesAgo_one": "Hace {{count}} minuto",
+      "minutesAgo_other": "Hace {{count}} minutos",
+      "hoursAgo_one": "Hace {{count}} hora",
+      "hoursAgo_other": "Hace {{count}} horas",
+      "daysAgo_one": "Hace {{count}} día",
+      "daysAgo_other": "Hace {{count}} días",
+      "yesterday": "Ayer",
+      "minutesAgo_few": "Hace {{count}} minutos",
+      "minutesAgo_many": "Hace {{count}} minutos",
+      "hoursAgo_few": "Hace {{count}} horas",
+      "hoursAgo_many": "Hace {{count}} horas",
+      "daysAgo_few": "Hace {{count}} días",
+      "daysAgo_many": "Hace {{count}} días"
+    },
+    "fallbacks": {
+      "yourPlace": "tu lugar",
+      "someone": "Alguien"
+    },
+    "types": {
+      "placeApproved": {
+        "title": "Lugar aprobado",
+        "body": "Tu lugar \"{{place}}\" ha sido aprobado.",
+        "bodyGeneric": "Tu lugar ha sido aprobado."
+      },
+      "placeRejected": {
+        "title": "Lugar no aprobado",
+        "body": "Tu lugar \"{{place}}\" no fue aprobado.",
+        "bodyGeneric": "Tu lugar no fue aprobado."
+      },
+      "placeUpdateApproved": {
+        "title": "Actualización aprobada",
+        "body": "Tu actualización de \"{{place}}\" fue aprobada.",
+        "bodyGeneric": "Tu actualización de lugar fue aprobada."
+      },
+      "placeUpdateRejected": {
+        "title": "Actualización no aprobada",
+        "body": "Tu actualización de \"{{place}}\" no fue aprobada.",
+        "bodyGeneric": "Tu actualización de lugar no fue aprobada."
+      },
+      "placeLiked": {
+        "title": "Nuevo me gusta",
+        "body": "{{actor}} dio me gusta a tu lugar \"{{place}}\".",
+        "bodyGeneric": "Alguien dio me gusta a tu lugar."
+      },
+      "system": {
+        "title": "Anuncio",
+        "body": "Tienes un nuevo anuncio de Nice Place."
+      },
+      "event": {
+        "title": "Evento",
+        "body": "Mira qué está pasando en Nice Place."
+      },
+      "profilePhotoRemoved": {
+        "title": "Foto de perfil eliminada",
+        "body": "Tu foto de perfil se eliminó porque infringía las normas de la comunidad."
+      },
+      "profileUsernameReset": {
+        "title": "Nombre de usuario restablecido",
+        "body": "Tu nombre de usuario se restableció. Elige uno nuevo."
+      },
+      "profileSuspended": {
+        "title": "Cuenta suspendida",
+        "body": "Tu cuenta ha sido suspendida.",
+        "bodyIndefinite": "Tu cuenta ha sido suspendida de forma indefinida.",
+        "body24h": "Tu cuenta ha sido suspendida durante 24 horas.",
+        "body7d": "Tu cuenta ha sido suspendida durante 7 días.",
+        "body30d": "Tu cuenta ha sido suspendida durante 30 días."
+      },
+      "profileUnsuspended": {
+        "title": "Suspensión retirada",
+        "body": "Se ha retirado la suspensión de tu cuenta."
+      },
+      "fallback": {
+        "title": "Notificación",
+        "body": "Tienes una nueva notificación."
+      }
+    },
+    "subtitleUnread_few": "{{count}} sin leer",
+    "subtitleUnread_many": "{{count}} sin leer",
+    "a11yUnread_few": "Notificaciones, {{count}} sin leer",
+    "a11yUnread_many": "Notificaciones, {{count}} sin leer"
+  },
+  "placeDetail": {
+    "about": "Acerca de este lugar",
+    "safetyTips": "Consejos de seguridad",
+    "tags": "Etiquetas",
+    "similar": "Lugares similares cercanos",
+    "edit": "Editar lugar",
+    "verified": "Verificado",
+    "gallery": "Galería",
+    "readMore": "Leer más",
+    "showLess": "Mostrar menos",
+    "discoveredBy": "Descubierto por",
+    "discoveredByNamed": "Descubierto por {{name}}",
+    "communityFallback": "Comunidad Nice Place",
+    "userFallback": "Usuario de Nice Place",
+    "share": {
+      "message": "Mira {{title}} en Nice Place — {{category}}.",
+      "a11y": "Compartir lugar"
+    },
+    "quickInfo": {
+      "distance": "Distancia",
+      "bestTime": "Mejor momento",
+      "difficulty": "Dificultad",
+      "access": "Acceso",
+      "crowd": "Afluencia"
+    },
+    "sticky": {
+      "navigate": "Navegar",
+      "likeA11y": "Me gusta, {{count}} me gusta",
+      "unlikeA11y": "Quitar me gusta, {{count}} me gusta"
+    },
+    "notFound": {
+      "title": "Lugar no encontrado",
+      "body": "Es posible que este lugar se haya eliminado o aún no esté aprobado."
+    },
+    "offline": {
+      "title": "No disponible sin conexión",
+      "body": "Este lugar aún no está en caché. Conéctate a internet e inténtalo de nuevo."
+    },
+    "admin": {
+      "section": "Acciones de administrador",
+      "remove": "Quitar de la vista pública",
+      "removeA11y": "Eliminar lugar de la vista pública",
+      "confirmTitle": "¿Quitar este lugar de la vista pública?",
+      "confirmBody": "Se ocultará del mapa, de las listas guardadas y de los perfiles públicos. El registro y las fotos se conservan.",
+      "removing": "Eliminando…",
+      "toastSuccess": "Lugar eliminado de la vista pública.",
+      "toastError": "No se pudo eliminar el lugar de la vista pública."
+    },
+    "photos": {
+      "viewPhoto": "Ver foto {{index}}",
+      "closeViewer": "Cerrar visor de fotos",
+      "imageNumber": "Foto {{current}} de {{total}}"
+    },
+    "a11y": {
+      "viewProfile": "Ver perfil de {{name}}"
+    }
+  },
+  "placeForm": {
+    "sections": {
+      "basicInfo": "Información básica",
+      "location": "Ubicación",
+      "visitDetails": "Detalles de la visita",
+      "facilities": "Servicios",
+      "safety": "Seguridad",
+      "photos": "Fotos"
+    },
+    "fields": {
+      "placeName": "Nombre del lugar *",
+      "placeNamePlaceholder": "p. ej. Acantilado al atardecer",
+      "categories": "Categorías *",
+      "description": "Descripción",
+      "descriptionPlaceholder": "¿Por qué merece la pena visitar este lugar?",
+      "bestTime": "Mejor momento para visitar",
+      "accessType": "Tipo de acceso",
+      "difficulty": "Dificultad",
+      "crowdLevel": "Nivel de afluencia",
+      "safetyNote": "Nota de seguridad (opcional)",
+      "safetyNotePlaceholder": "¿Riesgos, avisos de acceso o cosas a tener en cuenta?"
+    },
+    "location": {
+      "waiting": "Esperando ubicación…",
+      "loading": "Cargando ubicación…",
+      "usingGps": "Usando tu ubicación actual",
+      "usingDefault": "Usando el área predeterminada del mapa — toca Definir en el mapa para ajustar",
+      "adjusted": "Ubicación ajustada en el mapa",
+      "current": "Ubicación actual del lugar",
+      "setOnMap": "Definir en el mapa",
+      "adjustOnMap": "Ajustar en el mapa"
+    },
+    "photos": {
+      "cover": "Portada",
+      "setCover": "Usar como portada",
+      "setCoverA11y": "Establecer como foto de portada",
+      "removeA11y": "Eliminar foto",
+      "addRequired": "Añadir fotos (1–3 obligatorias)",
+      "addOptional": "Añadir fotos (hasta 3)",
+      "addMore": "Añadir foto ({{count}}/{{max}})",
+      "firstIsCover": "La primera foto será la portada",
+      "selectedHint": "{{count}}/{{max}} seleccionadas · reordena tocando Usar como portada",
+      "changePhoto": "Cambiar foto"
+    },
+    "validation": {
+      "nameRequired": "El nombre del lugar es obligatorio.",
+      "categoriesMin": "Selecciona al menos {{count}} categoría.",
+      "categoriesMin_one": "Selecciona al menos {{count}} categoría.",
+      "categoriesMin_other": "Selecciona al menos {{count}} categorías.",
+      "categoriesMax": "Puedes seleccionar hasta {{count}} categorías.",
+      "locationRequired": "La ubicación es obligatoria. Defínela en el mapa o activa el permiso de ubicación.",
+      "photosMin": "Añade al menos {{count}} foto.",
+      "photosMin_one": "Añade al menos {{count}} foto.",
+      "photosMin_other": "Añade al menos {{count}} fotos.",
+      "photosMax": "Puedes añadir hasta {{count}} fotos.",
+      "photosKeepMin": "Conserva al menos {{count}} foto.",
+      "photosKeepMin_one": "Conserva al menos {{count}} foto.",
+      "photosKeepMin_other": "Conserva al menos {{count}} fotos.",
+      "categoriesMin_few": "Selecciona al menos {{count}} categorías.",
+      "categoriesMin_many": "Selecciona al menos {{count}} categorías.",
+      "photosMin_few": "Añade al menos {{count}} fotos.",
+      "photosMin_many": "Añade al menos {{count}} fotos.",
+      "photosKeepMin_few": "Conserva al menos {{count}} fotos.",
+      "photosKeepMin_many": "Conserva al menos {{count}} fotos.",
+      "photosRange": "Selecciona entre {{min}} y {{max}} fotos.",
+      "categoriesRange": "Selecciona entre {{min}} y {{max}} categorías.",
+      "categoriesSetRange": "El conjunto de categorías debe tener entre {{min}} y {{max}} elementos.",
+      "photosSetRange": "El conjunto de fotos debe tener entre {{min}} y {{max}} imágenes."
+    },
+    "errors": {
+      "submitFailed": "No se pudo enviar el lugar.",
+      "updateFailed": "No se pudo enviar la actualización para revisión.",
+      "photoUploadFailed": "Error al subir la foto.",
+      "photoUploadUnknown": "Error de subida desconocido",
+      "noChanges": "No hay cambios que enviar.",
+      "profileMissing": "Tu cuenta está conectada, pero no se pudo cargar el perfil. Cierra sesión e inicia de nuevo.",
+      "signInToShare": "Inicia sesión para compartir un lugar.",
+      "signInToEdit": "Inicia sesión para editar un lugar.",
+      "pendingCannotEdit": "Este lugar sigue en revisión y aún no se puede actualizar.",
+      "cannotEdit": "Este lugar no se puede editar.",
+      "notFound": "Lugar no encontrado o no tienes permiso para editarlo.",
+      "resubmitLimit": "Solo puedes volver a enviar el mismo lugar rechazado 2 veces.",
+      "resubmitUnavailable": "El reenvío aún no está disponible. Inténtalo más tarde.",
+      "resubmitFailed": "No se pudo volver a enviar este lugar. Inténtalo de nuevo.",
+      "updatePermission": "No se pudo enviar la actualización. Puede que no tengas permiso para editar este lugar.",
+      "updateSchema": "El esquema de actualización no está actualizado. Inténtalo más tarde.",
+      "photoSyncFailed": "No se pudieron actualizar las fotos del lugar. Inténtalo de nuevo.",
+      "categorySyncFailed": "No se pudieron actualizar las categorías del lugar. Inténtalo de nuevo.",
+      "submitProfileIssue": "No se pudo enviar el lugar. Es posible que tu perfil no esté bien configurado: cierra sesión e inicia de nuevo.",
+      "categoriesRequired": "Selecciona al menos una categoría.",
+      "photoMissingData": "Faltan datos necesarios para subir fotos.",
+      "photoUrlUnresolved": "No se pudo resolver la URL de la imagen subida.",
+      "profileLookupMismatch": "La búsqueda de perfil devolvió un id incorrecto. Cierra sesión y vuelve a entrar.",
+      "photoReadFailed": "No se pudo leer la imagen seleccionada."
+    }
+  },
+  "addPlace": {
+    "title": "Compartir un lugar",
+    "subtitle": "Ayuda a otros a descubrir un rincón oculto que merece la pena visitar.",
+    "submit": "Enviar lugar",
+    "submitting": "Enviando…",
+    "success": "Tu lugar se guardó y aparecerá en el mapa tras la revisión.",
+    "successPhotoPartial": "Lugar enviado, pero falló la subida de fotos.",
+    "authMessage": "Inicia sesión para compartir un nuevo lugar con la comunidad."
+  },
+  "editPlace": {
+    "title": "Editar lugar",
+    "titleResubmit": "Volver a enviar el lugar",
+    "subtitle": "Actualiza los detalles de un lugar que compartiste.",
+    "subtitleResubmit": "Actualiza los detalles y envía este lugar de nuevo a revisión.",
+    "save": "Guardar cambios",
+    "resubmit": "Volver a enviar a revisión",
+    "saving": "Guardando…",
+    "loading": "Cargando lugar…",
+    "blockedTitle": "No se puede actualizar este lugar",
+    "successTitle": "Solicitud de actualización enviada",
+    "successTitleResubmit": "Reenviado",
+    "successBody": "Tus cambios se enviaron a revisión.",
+    "successBodyResubmit": "Tu lugar se envió de nuevo a revisión.",
+    "photoErrorTitle": "Error al subir la foto",
+    "photoErrorBody": "Inténtalo de nuevo antes de enviar la actualización.",
+    "authMessage": "Inicia sesión para editar los lugares que has compartido."
+  },
+  "collections": {
+    "fallbackTitle": "Colección",
+    "defaultSubtitle": "Lugares que agrupaste.",
+    "empty": {
+      "noCollectionsTitle": "Aún no hay colecciones",
+      "noCollectionsBody": "Crea una lista para agrupar lugares guardados por viaje, tema o plan.",
+      "createCta": "Crear colección",
+      "noPlacesTitle": "Aún no hay lugares",
+      "noPlacesBody": "Añade lugares guardados a esta colección desde el detalle o tu lista de guardados."
+    },
+    "form": {
+      "nameLabel": "Nombre *",
+      "namePlaceholder": "p. ej. Viaje a Antalya",
+      "collectionNameLabel": "Nombre de la colección *",
+      "collectionNamePlaceholder": "p. ej. Plan de fin de semana",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Nota opcional"
+    },
+    "actions": {
+      "add": "Añadir a la colección",
+      "manage": "Colecciones",
+      "createNew": "Crear nueva colección",
+      "remove": "Quitar",
+      "removeA11y": "Quitar de la colección"
+    },
+    "modal": {
+      "titleSaved": "Guardado",
+      "titleManage": "Gestionar colecciones",
+      "subtitlePostSave": "¿Añadir este lugar a una colección?",
+      "subtitleManage": "Añade o quita este lugar de tus listas.",
+      "emptyPostSave": "Aún no hay colecciones. Crea una o toca Ahora no.",
+      "emptyManage": "Aún no hay colecciones. Crea una para organizar este lugar.",
+      "notNow": "Ahora no",
+      "loadError": "No se pudieron cargar las colecciones."
+    },
+    "alerts": {
+      "removeTitle": "¿Quitar de la colección?",
+      "removeBody": "El lugar permanece en tu lista de guardados.",
+      "deleteTitle": "¿Eliminar colección?",
+      "deleteBody": "Los lugares seguirán guardados. Solo se eliminará esta colección y su agrupación."
+    },
+    "toasts": {
+      "created": "Colección creada",
+      "updated": "Colección actualizada",
+      "deleted": "Colección eliminada",
+      "removedPlace": "Quitado de la colección",
+      "createFailed": "No se pudo crear la colección.",
+      "updateFailed": "No se pudo actualizar la colección.",
+      "deleteFailed": "No se pudo eliminar la colección.",
+      "removeFailed": "No se pudo quitar el lugar."
+    },
+    "errors": {
+      "nameRequired": "El nombre de la colección es obligatorio.",
+      "nameTooLong": "El nombre debe tener {{max}} caracteres o menos.",
+      "descriptionTooLong": "La descripción debe tener {{max}} caracteres o menos.",
+      "duplicateName": "Ya tienes una colección con este nombre.",
+      "noChanges": "No hay cambios que guardar.",
+      "notFound": "Colección no encontrada.",
+      "signInCreate": "Inicia sesión para crear colecciones.",
+      "signInUpdate": "Inicia sesión para actualizar colecciones.",
+      "signInDelete": "Inicia sesión para eliminar colecciones.",
+      "signInManage": "Inicia sesión para gestionar colecciones."
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "publicTitle": "Explorador",
+    "guestName": "Explorador invitado",
+    "explorerFallback": "Explorador",
+    "guestBio": "Inicia sesión para guardar lugares, compartir hallazgos y crear tu perfil de explorador.",
+    "defaultBio": "Buscando lugares tranquilos y vistas al atardecer.",
+    "pendingNote": "Los lugares pendientes solo son visibles para ti hasta que se aprueben.",
+    "checkingAdmin": "Comprobando acceso de administrador…",
+    "actions": {
+      "editProfile": "Editar perfil",
+      "adminPanel": "Panel de administración",
+      "exploreMap": "Explorar mapa",
+      "sharePlace": "Compartir un lugar"
+    },
+    "a11y": {
+      "openSettings": "Abrir ajustes",
+      "changePhoto": "Cambiar foto de perfil",
+      "report": "Reportar perfil",
+      "profilePhoto": "Foto de perfil",
+      "defaultAvatar": "Avatar de perfil predeterminado"
+    },
+    "stats": {
+      "shared": "Compartidos",
+      "saved": "Guardados",
+      "likes": "Me gusta"
+    },
+    "tabs": {
+      "shared": "Compartidos",
+      "saved": "Guardados"
+    },
+    "filters": {
+      "approved": "Aprobados",
+      "pending": "Pendientes",
+      "rejected": "Rechazados"
+    },
+    "toasts": {
+      "refreshed": "Perfil actualizado",
+      "updated": "Perfil actualizado.",
+      "photoUpdated": "Foto de perfil actualizada.",
+      "photoRemoved": "Foto de perfil eliminada.",
+      "noPhotoToRemove": "No hay foto de perfil para eliminar.",
+      "usernameUpdated": "Nombre de usuario actualizado",
+      "reportSubmitted": "Reporte enviado. Gracias."
+    },
+    "empty": {
+      "sharedOfflineTitle": "No hay lugares compartidos en caché",
+      "sharedOfflineBody": "Conéctate a internet para cargar tus lugares compartidos.",
+      "noApprovedTitle": "No hay lugares aprobados",
+      "noApprovedBody": "Comparte un rincón tranquilo o una puesta de sol con la comunidad.",
+      "noPendingTitle": "No hay lugares pendientes",
+      "noPendingBody": "Los lugares en revisión aparecerán aquí.",
+      "noRejectedTitle": "No hay lugares rechazados",
+      "noRejectedBody": "Las publicaciones rechazadas aparecerán aquí.",
+      "savedExploreBody": "Guarda lugares desde Explorar para crear tu colección."
+    },
+    "public": {
+      "notFoundTitle": "Perfil no encontrado",
+      "notFoundBody": "No se pudo cargar este perfil de explorador.",
+      "sectionTitle": "Lugares aprobados",
+      "sectionHint": "Aquí solo se muestran descubrimientos aprobados públicamente.",
+      "emptyTitle": "Aún no hay publicaciones",
+      "emptyBody": "Este explorador aún no ha compartido lugares aprobados."
+    },
+    "auth": {
+      "edit": "Inicia sesión para editar tu perfil.",
+      "report": "Inicia sesión para reportar este perfil.",
+      "addPhoto": "Inicia sesión para añadir una foto de perfil.",
+      "editDetails": "Inicia sesión para editar tu nombre, usuario y biografía.",
+      "changePhoto": "Debes iniciar sesión para cambiar tu foto de perfil.",
+      "removePhoto": "Debes iniciar sesión para eliminar tu foto de perfil."
+    },
+    "photo": {
+      "sectionTitle": "Foto de perfil",
+      "tapHint": "Toca tu foto para elegir un nuevo avatar.",
+      "remove": "Eliminar foto de perfil",
+      "removing": "Eliminando…",
+      "removeTitle": "¿Eliminar foto de perfil?",
+      "removeMessage": "Tu foto se eliminará de tu cuenta. Puedes subir una nueva en cualquier momento.",
+      "uploadFailedTitle": "Error al subir la foto",
+      "permissionRequired": "Se necesita permiso de la biblioteca de fotos para cambiar tu avatar.",
+      "uploadFailed": "No se pudo subir el avatar.",
+      "updateFailed": "No se pudo actualizar la foto de perfil.",
+      "removeFailed": "No se pudo eliminar la foto de perfil.",
+      "readFailed": "No se pudo leer la imagen seleccionada.",
+      "missingData": "Faltan datos necesarios para subir el avatar.",
+      "urlUnresolved": "No se pudo resolver la URL del avatar subido.",
+      "saveFailed": "No se pudo guardar el avatar en tu perfil. Inténtalo de nuevo.",
+      "profileUpdateFailed": "No se pudo actualizar tu perfil. Inténtalo de nuevo."
+    },
+    "edit": {
+      "sectionTitle": "Datos de la cuenta",
+      "displayName": "Nombre visible",
+      "displayNamePlaceholder": "Tu nombre",
+      "username": "Nombre de usuario",
+      "usernamePlaceholder": "tu_usuario",
+      "bio": "Biografía",
+      "bioPlaceholder": "Una línea breve sobre tu estilo de exploración",
+      "save": "Guardar cuenta",
+      "saving": "Guardando…",
+      "saveFailed": "No se pudo guardar el perfil."
+    },
+    "validation": {
+      "usernameRequired": "El nombre de usuario es obligatorio.",
+      "usernameTooShort": "El nombre de usuario debe tener al menos 3 caracteres.",
+      "usernameTooLong": "El nombre de usuario debe tener 30 caracteres o menos.",
+      "usernameCharset": "Usa solo letras minúsculas, números y guiones bajos.",
+      "displayNameRequired": "El nombre visible es obligatorio.",
+      "displayNameTooLong": "El nombre visible debe tener 60 caracteres o menos.",
+      "bioTooLong": "La biografía debe tener 240 caracteres o menos."
+    },
+    "errors": {
+      "usernameTaken": "Ese nombre de usuario ya está en uso."
+    },
+    "report": {
+      "title": "Reportar perfil",
+      "subtitle": "Cuéntanos qué hay de malo en este perfil.",
+      "subtitleNamed": "Cuéntanos qué hay de malo en @{{username}}.",
+      "detailsLabel": "Detalles (opcional)",
+      "detailsPlaceholder": "Añade contexto que ayude a la revisión",
+      "submit": "Enviar reporte",
+      "reasons": {
+        "inappropriate_photo": "Foto de perfil inapropiada",
+        "inappropriate_username": "Nombre de usuario inapropiado",
+        "impersonation": "Suplantación o cuenta falsa",
+        "spam": "Spam",
+        "harassment_or_hate": "Acoso o discurso de odio",
+        "other": "Otro"
+      },
+      "errors": {
+        "generic": "No se pudo enviar el reporte. Inténtalo de nuevo.",
+        "not_authenticated": "Inicia sesión para reportar un perfil.",
+        "self_report": "No puedes reportar tu propio perfil.",
+        "daily_limit": "Puedes enviar hasta {{limit}} reportes de perfil al día.",
+        "not_configured": "El inicio de sesión no está disponible ahora.",
+        "rpc_error": "No se pudo enviar el reporte. Inténtalo de nuevo.",
+        "unknown": "No se pudo enviar el reporte. Inténtalo de nuevo."
+      }
+    },
+    "moderation": {
+      "suspended": {
+        "title": "Cuenta suspendida",
+        "body": "Tu cuenta de Nice Place está suspendida y no puede usar funciones de la comunidad.",
+        "reason": "Motivo",
+        "duration": "Duración",
+        "until": "Hasta {{date}}",
+        "indefinite": "Indefinida",
+        "help": "Si crees que es un error, contacta a support@niceplace.site.",
+        "signOut": "Cerrar sesión"
+      },
+      "usernameReset": {
+        "title": "Elige un nuevo nombre de usuario",
+        "body": "Tu nombre de usuario anterior fue restablecido por moderación. Elige uno válido para continuar.",
+        "save": "Guardar nombre de usuario",
+        "saveFailed": "No se pudo guardar el nombre de usuario.",
+        "invalid": "Usa 3–30 letras minúsculas, números o guiones bajos.",
+        "reserved": "Elige un nombre de usuario diferente."
+      }
+    }
+  },
+  "admin": {
+    "checkingAccess": "Comprobando acceso de administrador…",
+    "loadingQueue": "Cargando cola de administración…",
+    "working": "Procesando…",
+    "untitledPlace": "Lugar sin título",
+    "uncategorized": "Sin categoría",
+    "unknownUser": "desconocido",
+    "emDash": "—",
+    "deleteUserPhrase": "DELETE USER",
+    "defaultModerationReason": "No additional reason provided",
+    "access": {
+      "signInTitle": "Inicio de sesión obligatorio",
+      "signInBody": "Los invitados no pueden acceder al panel de administración. Inicia sesión con una cuenta de administrador.",
+      "signInBodyShort": "Los invitados no pueden acceder al panel de administración.",
+      "deniedTitle": "Acceso denegado",
+      "deniedBody": "Este panel solo está disponible para administradores.",
+      "deniedShort": "Solo administradores."
+    },
+    "panel": {
+      "subtitle": "Revisa las propuestas antes de que sean públicas.",
+      "sendNotification": "Enviar notificación",
+      "sendNotificationSubtitle": "Envía anuncios o actualizaciones de eventos",
+      "reportedProfiles": "Perfiles reportados",
+      "reportedProfilesSubtitle": "Revisa reportes de la comunidad y actúa",
+      "filterPending": "Pendientes",
+      "filterRejected": "Rechazados",
+      "tabPlaces": "Lugares",
+      "tabUpdates": "Actualizaciones",
+      "emptyPendingPlacesTitle": "No hay lugares pendientes",
+      "emptyPendingPlacesBody": "Las nuevas propuestas de lugares aparecerán aquí para aprobación.",
+      "emptyRejectedPlacesTitle": "No hay lugares rechazados",
+      "emptyRejectedPlacesBody": "Los lugares rechazados se pueden devolver a pendientes desde aquí.",
+      "emptyPendingUpdatesTitle": "No hay actualizaciones pendientes",
+      "emptyPendingUpdatesBody": "Las solicitudes de edición aparecerán aquí para revisión.",
+      "emptyRejectedUpdatesTitle": "No hay actualizaciones rechazadas",
+      "emptyRejectedUpdatesBody": "Las actualizaciones rechazadas se pueden devolver a pendientes desde aquí.",
+      "metaUpdate": "actualización",
+      "a11yReviewPlace": "Revisar lugar {{title}}",
+      "a11yReviewUpdate": "Revisar actualización de {{title}}"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "approved": "Aprobado",
+      "rejected": "Rechazado",
+      "deleted": "Eliminado",
+      "open": "Abierto",
+      "resolved_no_action": "Resuelto · sin acción",
+      "resolved_action_taken": "Resuelto · con acción",
+      "dismissed_abuse": "Descartado por abuso"
+    },
+    "fields": {
+      "description": "Descripción",
+      "bestTime": "Mejor momento",
+      "access": "Acceso",
+      "accessType": "Tipo de acceso",
+      "difficulty": "Dificultad",
+      "crowd": "Afluencia",
+      "crowdLevel": "Nivel de afluencia",
+      "location": "Ubicación",
+      "mapPreview": "Vista previa del mapa",
+      "submitted": "Enviado",
+      "creatorId": "ID del creador",
+      "safetyNote": "Nota de seguridad",
+      "title": "Título",
+      "latitude": "Latitud",
+      "longitude": "Longitud",
+      "coverPhotoUrl": "URL de la foto de portada",
+      "note": "Nota",
+      "reason": "Motivo",
+      "adminNoteOptional": "Nota de administrador (opcional)"
+    },
+    "flags": {
+      "petFriendly": "Admite mascotas",
+      "childFriendly": "Apto para niños",
+      "carAccessible": "Acceso en coche",
+      "campAllowed": "Se permite acampar",
+      "picnicSuitable": "Apto para picnic"
+    },
+    "placeDetail": {
+      "loading": "Cargando lugar…",
+      "notFoundTitle": "Lugar no encontrado",
+      "notFoundBody": "No se pudo cargar esta propuesta.",
+      "submittedPhotos": "Fotos enviadas",
+      "cover": "Portada",
+      "approve": "Aprobar lugar",
+      "reject": "Rechazar lugar",
+      "restore": "Devolver a pendientes",
+      "alreadyStatus": "Este lugar ya está {{status}}. No hace falta ninguna acción.",
+      "confirmApproveTitle": "¿Aprobar este lugar?",
+      "confirmApproveBody": "Será visible en el mapa público. No se elimina ningún dato.",
+      "confirmRejectTitle": "¿Rechazar este lugar?",
+      "confirmRejectBody": "Permanecerá en la base de datos como rechazado y no será público.",
+      "confirmRestoreTitle": "¿Devolver este lugar a revisión pendiente?",
+      "confirmRestoreBody": "Volverá a la cola de pendientes para revisión.",
+      "successTitle": "Listo",
+      "successApprove": "Lugar aprobado; aparecerá en el mapa.",
+      "successReject": "Lugar rechazado. No será público.",
+      "successRestore": "Lugar devuelto a pendientes.",
+      "backToAdmin": "Volver al panel",
+      "approveAction": "Aprobar",
+      "rejectAction": "Rechazar",
+      "restoreAction": "Restaurar"
+    },
+    "updateDetail": {
+      "loading": "Cargando solicitud…",
+      "loadFailedTitle": "No se pudo cargar la solicitud",
+      "notFoundTitle": "Solicitud no encontrada",
+      "notFoundBody": "No se pudo cargar esta solicitud de actualización.",
+      "categories": "Categorías",
+      "photos": "Fotos",
+      "fieldComparison": "Comparación de campos",
+      "current": "Actual",
+      "requested": "Solicitado",
+      "categoriesChanged": "Categorías cambiadas",
+      "photoSetChanged": "Conjunto de fotos cambiado ({{from}} → {{to}})",
+      "notePlaceholder": "Motivo de aprobación o rechazo",
+      "approve": "Aprobar actualización",
+      "reject": "Rechazar actualización",
+      "restore": "Devolver a pendientes",
+      "alreadyStatus": "Esta solicitud ya está {{status}}.",
+      "confirmApproveTitle": "¿Aprobar esta actualización?",
+      "confirmApproveBody": "Los campos solicitados se aplicarán al lugar en vivo. No se elimina nada.",
+      "confirmRejectTitle": "¿Rechazar esta actualización?",
+      "confirmRejectBody": "El lugar en vivo no cambia. La solicitud se marcará como rechazada.",
+      "confirmRestoreTitle": "¿Devolver esta actualización a revisión pendiente?",
+      "confirmRestoreBody": "Volverá a la cola de actualizaciones pendientes.",
+      "successTitle": "Revisión completa",
+      "successApprove": "Actualización aprobada.",
+      "successReject": "Actualización rechazada.",
+      "successRestore": "Actualización devuelta a pendientes.",
+      "approveAction": "Aprobar",
+      "rejectAction": "Rechazar",
+      "restoreAction": "Restaurar"
+    },
+    "reports": {
+      "emptyTitle": "No hay reportes de perfiles abiertos",
+      "emptyBody": "Aquí aparecerán los perfiles reportados con problemas sin resolver.",
+      "counts": "{{open}} abiertos · {{total}} en total",
+      "countsWithStrikes": "{{open}} abiertos · {{total}} en total · {{strikes}} avisos",
+      "noReasonSummary": "Sin resumen de motivos abiertos",
+      "lastReport": "Último reporte {{date}}",
+      "suspended": "Suspendido",
+      "suspendedUntil": "Suspendido hasta {{date}}",
+      "suspendedIndefinitely": "Suspendido indefinidamente",
+      "strikes_one": "{{count}} aviso",
+      "strikes_other": "{{count}} avisos",
+      "strikes_few": "{{count}} avisos",
+      "strikes_many": "{{count}} avisos",
+      "reasonWithCount": "{{label}} ({{count}})",
+      "joined": "Se unió el {{date}}",
+      "idLabel": "ID: {{id}}",
+      "reporter": "Reportado por: {{id}}…",
+      "actions": "Acciones",
+      "severe": "Casos graves",
+      "severeHint": "Eliminación permanente de la cuenta. Debes escribir {{phrase}}.",
+      "reportsSection": "Reportes",
+      "history": "Historial de moderación",
+      "noHistory": "No hay acciones anteriores.",
+      "notFoundTitle": "Perfil no encontrado",
+      "notFoundBody": "No se pudo cargar este reporte.",
+      "markOk": "Marcar como correcto",
+      "removePhoto": "Quitar foto",
+      "resetUsername": "Restablecer nombre de usuario",
+      "suspend": "Suspender",
+      "unsuspend": "Quitar suspensión",
+      "dismissAbuse": "Descartar por abuso",
+      "deleteAccount": "Eliminar cuenta",
+      "confirmModeration": "Confirmar moderación",
+      "confirmDeleteTitle": "Eliminar cuenta",
+      "typeDeletePhrase": "Escribe {{phrase}}",
+      "duration24h": "24 horas",
+      "duration7d": "7 días",
+      "duration30d": "30 días",
+      "durationIndefinite": "Indefinidamente",
+      "deleteAlertTitle": "¿Eliminar esta cuenta?",
+      "deleteAlertBody": "Esto no se puede deshacer.",
+      "toastReasonRequired": "Introduce un motivo de moderación.",
+      "toastActionFailed": "La acción falló.",
+      "toastApplied": "Acción de moderación aplicada",
+      "toastTypePhrase": "Escribe {{phrase}} para confirmar.",
+      "toastReasonRequiredShort": "Se requiere un motivo.",
+      "toastCannotDeleteSelf": "No puedes eliminar tu propia cuenta aquí.",
+      "toastDeleteFailed": "Error al eliminar.",
+      "toastDeleted": "Cuenta eliminada"
+    },
+    "actionLabels": {
+      "mark_ok": "Marcado como correcto",
+      "remove_profile_photo": "Foto de perfil eliminada",
+      "reset_username": "Nombre de usuario restablecido",
+      "suspend_24h": "Suspendido 24 horas",
+      "suspend_7d": "Suspendido 7 días",
+      "suspend_30d": "Suspendido 30 días",
+      "suspend_indefinite": "Suspendido indefinidamente",
+      "unsuspend": "Suspensión retirada",
+      "delete_account": "Cuenta eliminada",
+      "dismiss_report_abuse": "Descartado por abuso"
+    },
+    "broadcast": {
+      "subtitleSystem": "Se entrega a usuarios que aceptaron anuncios del sistema.",
+      "subtitleEvent": "Se entrega a usuarios que aceptaron eventos y noticias.",
+      "kindSystem": "Anuncio del sistema",
+      "kindEvent": "Eventos y noticias",
+      "titleLabel": "Título",
+      "messageLabel": "Mensaje",
+      "preview": "Vista previa",
+      "previewTitlePlaceholder": "Título del anuncio",
+      "previewBodyPlaceholder": "Tu mensaje aparecerá aquí.",
+      "reviewSend": "Revisar y enviar",
+      "confirmTitle": "¿Enviar anuncio?",
+      "confirmBody": "Se notificará de inmediato a los usuarios que lo aceptaron. No se puede deshacer.",
+      "sendNow": "Enviar ahora",
+      "sendFailed": "No se pudo enviar el anuncio.",
+      "sentRecipients_one": "Enviado a {{count}} destinatario.",
+      "sentRecipients_other": "Enviado a {{count}} destinatarios.",
+      "sentRecipients_few": "Enviado a {{count}} destinatarios.",
+      "sentRecipients_many": "Enviado a {{count}} destinatarios.",
+      "sentGeneric": "Anuncio enviado."
+    },
+    "errors": {
+      "actionFailed": "No se pudo completar la acción. Inténtalo de nuevo.",
+      "approvePlaceFailed": "No se pudo aprobar el lugar. Inténtalo de nuevo.",
+      "rejectPlaceFailed": "No se pudo rechazar el lugar. Inténtalo de nuevo.",
+      "approveUpdateFailed": "No se pudo aprobar la actualización. Inténtalo de nuevo.",
+      "rejectUpdateFailed": "No se pudo rechazar la actualización. Inténtalo de nuevo.",
+      "noAccess": "No tienes acceso de administrador.",
+      "placeNotFound": "Lugar no encontrado.",
+      "requestNotFound": "Solicitud no encontrada.",
+      "removeNotEnabled": "La eliminación aún no está habilitada en el servidor. Ejecuta scripts/2026_07_10_admin_soft_delete_place.sql en Supabase.",
+      "removeFailed": "No se pudo quitar este lugar de la vista pública. Inténtalo de nuevo.",
+      "notConfigured": "Supabase no está configurado.",
+      "loadPlacesFailed": "No se pudieron cargar los lugares.",
+      "loadUpdatesFailed": "No se pudieron cargar las solicitudes de actualización.",
+      "loadUpdateFailed": "No se pudo cargar la solicitud de actualización.",
+      "loadPlaceFailed": "No se pudo cargar el lugar.",
+      "loadRejectedUpdatesFailed": "No se pudieron cargar las actualizaciones rechazadas.",
+      "verifyFailed": "No se pudo verificar el acceso de administrador.",
+      "verifyFailedRetry": "No se pudo verificar el acceso de administrador. Comprueba la conexión e inténtalo de nuevo.",
+      "signInAsAdmin": "Inicia sesión como administrador para continuar.",
+      "actionFailedShort": "La acción falló.",
+      "deleteAccountFailed": "No se pudo eliminar la cuenta.",
+      "broadcastFailed": "No se pudo enviar el anuncio."
+    }
+  },
+  "routes": {
+    "title": "Descubrimiento de rutas",
+    "subtitle": "Rutas al aire libre compartidas por la comunidad.",
+    "emptyTitle": "Después del lanzamiento",
+    "emptyBody": "Las rutas de la comunidad se posponen hasta después de la primera versión pública.",
+    "note": "Las rutas no forman parte del alcance del lanzamiento. La navegación a lugares usa la app de mapas del dispositivo."
+  }
+}

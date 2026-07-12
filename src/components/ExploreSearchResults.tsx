@@ -10,8 +10,9 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
-import { duration, radius, spacing, typography } from '../theme';
+import { duration, radius, spacing, touchTarget, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { Place } from '../types/place';
 
@@ -33,6 +34,8 @@ interface ExploreSearchResultsProps {
   onSelectPlace: (placeId: string) => void;
   onSelectRecent: (query: string) => void;
   onRemoveRecent: (query: string) => void;
+  onRequiresAuth?: () => void;
+  onSaveCountChange?: (placeId: string, saveCount: number) => void;
 }
 
 export function ExploreSearchResults({
@@ -45,9 +48,12 @@ export function ExploreSearchResults({
   onSelectPlace,
   onSelectRecent,
   onRemoveRecent,
+  onRequiresAuth,
+  onSaveCountChange,
 }: ExploreSearchResultsProps) {
   const listMaxHeight = Math.max(120, maxPanelHeight - spacing.lg);
   const { colors, shadows } = useTheme();
+  const { t } = useTranslation();
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(8)).current;
   const trimmed = query.trim();
@@ -115,12 +121,14 @@ export function ExploreSearchResults({
     >
       {showRecent ? (
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Recent</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>{t('explore.search.recent')}</Text>
           {recentSearches.map((item, index) => (
             <RecentSearchRow
               key={item}
               index={index}
               label={item}
+              searchA11y={t('explore.search.a11ySearchRecent', { query: item })}
+              removeA11y={t('explore.search.a11yRemoveRecent', { query: item })}
               onPress={() => onSelectRecent(item)}
               onRemove={() => onRemoveRecent(item)}
             />
@@ -137,9 +145,9 @@ export function ExploreSearchResults({
       {showResults && !loading && visibleResults.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="search-outline" size={22} color={colors.textMuted} />
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No places found</Text>
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>{t('explore.search.noResults')}</Text>
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Try another name, category, or clear filters.
+            {t('explore.search.noResultsHint')}
           </Text>
         </View>
       ) : null}
@@ -149,6 +157,8 @@ export function ExploreSearchResults({
           results={visibleResults}
           listMaxHeight={listMaxHeight}
           onSelectPlace={onSelectPlace}
+          onRequiresAuth={onRequiresAuth}
+          onSaveCountChange={onSaveCountChange}
         />
       ) : null}
     </Animated.View>
@@ -159,18 +169,35 @@ function SearchResultsList({
   results,
   listMaxHeight,
   onSelectPlace,
+  onRequiresAuth,
+  onSaveCountChange,
 }: {
   results: Place[];
   listMaxHeight: number;
   onSelectPlace: (placeId: string) => void;
+  onRequiresAuth?: () => void;
+  onSaveCountChange?: (placeId: string, saveCount: number) => void;
 }) {
   const renderItem: ListRenderItem<Place> = useCallback(
     ({ item, index }) => (
       <ProfileGridItem index={index}>
-        <PlaceListCard place={item} compact onPressId={onSelectPlace} />
+        <PlaceListCard
+          place={item}
+          compact
+          showSaveAction
+          onPressId={onSelectPlace}
+          onRequiresAuth={onRequiresAuth}
+          onSaveCountChange={
+            onSaveCountChange
+              ? (saveCount) => {
+                  onSaveCountChange(item.id, saveCount);
+                }
+              : undefined
+          }
+        />
       </ProfileGridItem>
     ),
-    [onSelectPlace],
+    [onRequiresAuth, onSaveCountChange, onSelectPlace],
   );
 
   return (
@@ -194,11 +221,15 @@ function SearchResultsList({
 function RecentSearchRow({
   label,
   index,
+  searchA11y,
+  removeA11y,
   onPress,
   onRemove,
 }: {
   label: string;
   index: number;
+  searchA11y: string;
+  removeA11y: string;
   onPress: () => void;
   onRemove: () => void;
 }) {
@@ -250,7 +281,7 @@ function RecentSearchRow({
         onPress={onPress}
         style={styles.recentRow}
         accessibilityRole="button"
-        accessibilityLabel={`Search ${label}`}
+        accessibilityLabel={searchA11y}
       >
         <Ionicons name="time-outline" size={16} color={colors.textMuted} />
         <Text style={[styles.recentLabel, { color: colors.textPrimary }]} numberOfLines={1}>
@@ -258,9 +289,9 @@ function RecentSearchRow({
         </Text>
         <Pressable
           onPress={handleRemove}
-          hitSlop={8}
+          hitSlop={touchTarget.hitSlop}
           accessibilityRole="button"
-          accessibilityLabel={`Remove ${label}`}
+          accessibilityLabel={removeA11y}
         >
           <Ionicons name="close" size={16} color={colors.textMuted} />
         </Pressable>

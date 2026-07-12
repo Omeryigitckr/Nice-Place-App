@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -15,11 +16,12 @@ interface AuthSocialButtonsProps {
 
 export function AuthOrDivider() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.dividerRow}>
       <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-      <Text style={[styles.dividerLabel, { color: colors.textMuted }]}>or</Text>
+      <Text style={[styles.dividerLabel, { color: colors.textMuted }]}>{t('common.or')}</Text>
       <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
     </View>
   );
@@ -32,6 +34,7 @@ export function AuthSocialButtons({
   loadingProvider = null,
 }: AuthSocialButtonsProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [appleAvailable, setAppleAvailable] = useState(Platform.OS === 'ios');
 
   useEffect(() => {
@@ -59,7 +62,7 @@ export function AuthSocialButtons({
     <View style={styles.stack}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Continue with Google"
+        accessibilityLabel={t('auth.social.continueGoogle')}
         disabled={isDisabled}
         onPress={onGooglePress}
         style={({ pressed }) => [
@@ -77,14 +80,14 @@ export function AuthSocialButtons({
           <Ionicons name="logo-google" size={20} color={colors.textPrimary} />
         )}
         <Text style={[styles.buttonLabel, { color: colors.textPrimary }]}>
-          {googleLoading ? 'Connecting…' : 'Continue with Google'}
+          {googleLoading ? t('auth.social.connecting') : t('auth.social.continueGoogle')}
         </Text>
       </Pressable>
 
       {appleAvailable ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Continue with Apple"
+          accessibilityLabel={t('auth.social.continueApple')}
           disabled={isDisabled}
           onPress={onApplePress}
           style={({ pressed }) => [
@@ -102,7 +105,7 @@ export function AuthSocialButtons({
             <Ionicons name="logo-apple" size={22} color={colors.textPrimary} />
           )}
           <Text style={[styles.buttonLabel, { color: colors.textPrimary }]}>
-            {appleLoading ? 'Connecting…' : 'Continue with Apple'}
+            {appleLoading ? t('auth.social.connecting') : t('auth.social.continueApple')}
           </Text>
         </Pressable>
       ) : null}

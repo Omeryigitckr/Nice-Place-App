@@ -1,4 +1,5 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { brand } from '../theme/brand';
 import { radius, spacing, typography } from '../theme';
@@ -28,6 +29,7 @@ interface AuthBrandHeaderProps {
  */
 export function AuthBrandHeader({ variant = 'icon' }: AuthBrandHeaderProps) {
   const { colors, colorScheme } = useTheme();
+  const { t } = useTranslation();
 
   if (variant === 'horizontal') {
     const logoSource = colorScheme === 'light' ? LOGO_LIGHT : LOGO_DARK;
@@ -41,7 +43,7 @@ export function AuthBrandHeader({ variant = 'icon' }: AuthBrandHeaderProps) {
           accessibilityIgnoresInvertColors
           accessibilityLabel={brand.name}
         />
-        <Text style={[styles.tagline, { color: colors.textMuted }]}>{brand.authTagline}</Text>
+        <Text style={[styles.tagline, { color: colors.textMuted }]}>{t('auth.brand.tagline')}</Text>
       </View>
     );
   }
@@ -67,7 +69,7 @@ export function AuthBrandHeader({ variant = 'icon' }: AuthBrandHeaderProps) {
       </View>
 
       <Text style={[styles.brandName, { color: colors.textPrimary }]}>{brand.name}</Text>
-      <Text style={[styles.tagline, { color: colors.textMuted }]}>{brand.authTagline}</Text>
+      <Text style={[styles.tagline, { color: colors.textMuted }]}>{t('auth.brand.tagline')}</Text>
     </View>
   );
 }

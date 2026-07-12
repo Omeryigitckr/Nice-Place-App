@@ -2,6 +2,7 @@ import { CommonActions, NavigationProp, ParamListBase } from '@react-navigation/
 
 import { AUTH_ROUTES, ROOT_ROUTES, TAB_ROUTES, PROFILE_ROUTES } from '../constants';
 import { showAppToast } from '../feedback';
+import { i18n } from '../i18n/instance';
 import { AuthCallbackResult } from '../services/authCallbackService';
 
 import { navigationRef } from './navigationRef';
@@ -32,7 +33,7 @@ export function routeAuthCallbackResult(
   }
 
   if (result.flow === 'email_change') {
-    showAppToast('Email confirmed successfully.');
+    showAppToast(i18n.t('auth.callback.emailConfirmed'));
     nav.dispatch(
       CommonActions.reset({
         index: 0,

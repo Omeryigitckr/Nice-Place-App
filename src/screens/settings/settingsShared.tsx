@@ -10,73 +10,16 @@ import {
   View,
 } from 'react-native';
 
-import { LegalInfoContent } from '../../components/LegalInfoModal';
 import { ProfileEntranceBlock } from '../../components/ProfileEntranceBlock';
 import { radius, spacing, typography } from '../../theme';
 import { motion, motionEasing } from '../../theme/motion';
 import { useThemeColors } from '../../theme/ThemeContext';
 import appConfig from '../../../app.json';
+import { SUPPORT_EMAIL as SETTINGS_SUPPORT_EMAIL } from '../../utils/settingsMessages';
 
 export const APP_VERSION = appConfig.expo.version;
 
-export const SUPPORT_EMAIL = 'support@niceplace.site';
-
-export const SUPPORT_CONTACT_LINE =
-  'For support, bug reports, privacy questions, or account deletion requests, contact support@niceplace.site';
-
-export const LEGAL_CONTENT: Record<string, LegalInfoContent> = {
-  about: {
-    title: 'About Nice Place',
-    body:
-      'Nice Place helps you discover quiet outdoor spots, sunset points, and hidden places worth visiting.\n\n' +
-      'This beta focuses on map-based discovery, saving places, sharing spots, and community submissions reviewed before they appear publicly.',
-  },
-  terms: {
-    title: 'Terms of Service',
-    body:
-      'By using Nice Place you agree to share accurate place information, respect private property, and follow local access rules.\n\n' +
-      'Community submissions may be reviewed before publication. We may update these terms as the beta evolves.\n\n' +
-      SUPPORT_CONTACT_LINE,
-  },
-  privacy: {
-    title: 'Privacy Policy',
-    body:
-      'Last updated: July 2026\n\n' +
-      'Nice Place is a mobile app that helps you discover and share outdoor places. This policy explains what data we collect during the beta and how we use it.\n\n' +
-      'Account and authentication\n' +
-      'When you create an account, we store your email address and authentication details through Supabase Auth. We also store profile information you choose to provide, such as your display name.\n\n' +
-      'Places you submit\n' +
-      'When you add a place, we store the information you submit, including place name, description, category, approximate location coordinates, and any photos you upload.\n\n' +
-      'Saved and liked places\n' +
-      'When you are signed in, we store places you save and places you like so they sync with your account.\n\n' +
-      'Location\n' +
-      'If you grant permission, we use your device location to show nearby places on the map and sort results by distance. We do not track your location in the background.\n\n' +
-      'Images\n' +
-      'If you upload a cover photo for a place, that image is stored so it can be shown in the app.\n\n' +
-      'Device storage\n' +
-      'Some preferences, such as theme settings and recent searches, may be stored locally on your device.\n\n' +
-      'How we use your data\n' +
-      'We use this data to operate the app, display places on the map, sync your saved and liked places, and review community submissions.\n\n' +
-      'Service provider\n' +
-      'We use Supabase (supabase.com) for authentication, database storage, and file storage for uploaded images. Supabase processes data on our behalf.\n\n' +
-      'Data sharing\n' +
-      'We do not sell your personal data.\n\n' +
-      'Data deletion\n' +
-      'You can delete your account from Settings. This removes your account access and anonymizes your profile data.\n\n' +
-      SUPPORT_CONTACT_LINE +
-      '\n\n' +
-      'Children\n' +
-      'Nice Place is not directed at children under 13.\n\n' +
-      'Contact\n' +
-      SUPPORT_EMAIL,
-  },
-  guidelines: {
-    title: 'Report Guidelines',
-    body:
-      'Report inaccurate, unsafe, or inappropriate places so the community stays trustworthy.\n\n' +
-      'In-app reporting is coming soon. For now, email support@niceplace.site if a place should be reviewed or removed.',
-  },
-};
+export const SUPPORT_EMAIL = SETTINGS_SUPPORT_EMAIL;
 
 export function SettingsSection({
   title,
@@ -117,10 +60,12 @@ export function SettingsLinkRow({
   label,
   onPress,
   subtitle,
+  icon,
 }: {
   label: string;
   onPress: () => void;
   subtitle?: string;
+  icon?: keyof typeof Ionicons.glyphMap;
 }) {
   const colors = useThemeColors();
   const scale = useRef(new Animated.Value(1)).current;
@@ -143,6 +88,9 @@ export function SettingsLinkRow({
         onPressOut={() => animatePress(1)}
         accessibilityRole="button"
       >
+        {icon ? (
+          <Ionicons name={icon} size={20} color={colors.textSecondary} style={styles.linkIcon} />
+        ) : null}
         <View style={styles.linkTextWrap}>
           <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>{label}</Text>
           {subtitle ? (
@@ -331,6 +279,9 @@ export const settingsStyles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.xs,
     gap: spacing.sm,
+  },
+  linkIcon: {
+    marginRight: 2,
   },
   linkTextWrap: {
     flex: 1,

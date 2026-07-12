@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 
 import { AUTH_CALLBACK_REDIRECT } from '../constants/authRedirect';
+import { authErrorKey, resolveAuthErrorKey } from '../utils/authErrors';
 import { devWarn } from '../utils/devLog';
 
 import { processAuthCallbackUrl } from './authCallbackService';
@@ -24,13 +25,13 @@ function randomNonce(length = 32): string {
 async function finalizeSocialSignIn(): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   const { data: sessionData } = await supabase.auth.getSession();
   const user = sessionData.session?.user;
   if (!user) {
-    return { success: false, error: 'Could not complete sign-in.' };
+    return { success: false, error: authErrorKey('auth.errors.signInIncomplete') };
   }
 
   await getOrCreateProfileForUser(user);
@@ -52,7 +53,7 @@ export async function isAppleSignInAvailable(): Promise<boolean> {
 export async function signInWithGoogle(): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured. Check your .env file.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -65,21 +66,21 @@ export async function signInWithGoogle(): Promise<AuthResult> {
 
   if (error || !data?.url) {
     devWarn('[Nice Place Auth] Google OAuth start failed:', error?.message);
-    return { success: false, error: error?.message ?? 'Could not start Google sign-in.' };
+    return { success: false, error: resolveAuthErrorKey(error, 'auth.errors.googleStartFailed') };
   }
 
   const browserResult = await WebBrowser.openAuthSessionAsync(data.url, AUTH_CALLBACK_REDIRECT);
 
   if (browserResult.type !== 'success' || !browserResult.url) {
     if (browserResult.type === 'cancel' || browserResult.type === 'dismiss') {
-      return { success: false, error: 'Google sign-in was cancelled.' };
+      return { success: false, error: authErrorKey('auth.errors.googleCancelled') };
     }
-    return { success: false, error: 'Google sign-in failed.' };
+    return { success: false, error: authErrorKey('auth.errors.googleFailed') };
   }
 
   const callback = await processAuthCallbackUrl(browserResult.url);
   if (!callback.success) {
-    return { success: false, error: callback.error ?? 'Google sign-in failed.' };
+    return { success: false, error: callback.error ?? authErrorKey('auth.errors.googleFailed') };
   }
 
   return finalizeSocialSignIn();
@@ -87,17 +88,17 @@ export async function signInWithGoogle(): Promise<AuthResult> {
 
 export async function signInWithApple(): Promise<AuthResult> {
   if (Platform.OS !== 'ios') {
-    return { success: false, error: 'Apple sign-in is only available on iOS.' };
+    return { success: false, error: authErrorKey('auth.errors.appleOnlyIos') };
   }
 
   const available = await isAppleSignInAvailable();
   if (!available) {
-    return { success: false, error: 'Apple sign-in is not available on this device.' };
+    return { success: false, error: authErrorKey('auth.errors.appleUnavailable') };
   }
 
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured. Check your .env file.' };
+    return { success: false, error: authErrorKey('auth.errors.configMissing') };
   }
 
   const rawNonce = randomNonce();
@@ -116,7 +117,7 @@ export async function signInWithApple(): Promise<AuthResult> {
     });
 
     if (!credential.identityToken) {
-      return { success: false, error: 'Apple sign-in did not return a token.' };
+      return { success: false, error: authErrorKey('auth.errors.appleNoToken') };
     }
 
     const { data, error } = await supabase.auth.signInWithIdToken({
@@ -127,7 +128,7 @@ export async function signInWithApple(): Promise<AuthResult> {
 
     if (error) {
       devWarn('[Nice Place Auth] Apple sign-in failed:', error.message);
-      return { success: false, error: error.message };
+      return { success: false, error: resolveAuthErrorKey(error, 'auth.errors.appleFailed') };
     }
 
     if (credential.fullName) {
@@ -143,7 +144,7 @@ export async function signInWithApple(): Promise<AuthResult> {
 
     const user = data.user ?? (await supabase.auth.getSession()).data.session?.user;
     if (!user) {
-      return { success: false, error: 'Could not complete Apple sign-in.' };
+      return { success: false, error: authErrorKey('auth.errors.appleFailed') };
     }
 
     await getOrCreateProfileForUser(user);
@@ -155,10 +156,10 @@ export async function signInWithApple(): Promise<AuthResult> {
         : '';
 
     if (code === 'ERR_REQUEST_CANCELED') {
-      return { success: false, error: 'Apple sign-in was cancelled.' };
+      return { success: false, error: authErrorKey('auth.errors.appleCancelled') };
     }
 
     devWarn('[Nice Place Auth] Apple sign-in error:', code || 'unknown');
-    return { success: false, error: 'Apple sign-in failed.' };
+    return { success: false, error: authErrorKey('auth.errors.appleFailed') };
   }
 }

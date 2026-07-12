@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text } from 'react-native';
 
-import { LEGAL_CONTENT } from '../screens/settings/settingsShared';
 import { typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
+import { getLegalContent } from '../utils/settingsMessages';
 
 import { LegalInfoModal } from './LegalInfoModal';
 
@@ -12,25 +13,26 @@ import { LegalInfoModal } from './LegalInfoModal';
  */
 export function AuthLegalFooter() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [privacyVisible, setPrivacyVisible] = useState(false);
 
   return (
     <>
       <Text style={[styles.text, { color: colors.textMuted }]}>
-        By continuing, you agree to our{' '}
+        {t('auth.legal.prefix')}{' '}
         <Text
           style={[styles.link, { color: colors.primary }]}
           onPress={() => setPrivacyVisible(true)}
           accessibilityRole="link"
         >
-          Privacy Policy
+          {t('auth.legal.privacyPolicy')}
         </Text>
-        .
+        {t('auth.legal.suffix')}
       </Text>
 
       <LegalInfoModal
         visible={privacyVisible}
-        content={LEGAL_CONTENT.privacy}
+        content={privacyVisible ? getLegalContent('privacy') : null}
         onClose={() => setPrivacyVisible(false)}
       />
     </>

@@ -1,6 +1,6 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
 
-import { AUTH_ROUTES, MAP_ROUTES, PROFILE_ROUTES, ROOT_ROUTES, TAB_ROUTES } from '../constants';
+import { AUTH_ROUTES, MAP_ROUTES, PROFILE_ROUTES, ROOT_ROUTES, SAVED_ROUTES, TAB_ROUTES } from '../constants';
 
 export type AuthStackParamList = {
   [AUTH_ROUTES.LOGIN]: undefined;
@@ -37,6 +37,7 @@ export type MapStackParamList = {
     /** profiles.id (preferred) or username */
     profileId: string;
   };
+  [MAP_ROUTES.NOTIFICATIONS]: undefined;
 };
 
 export type AddPlaceStackParamList = {
@@ -51,17 +52,27 @@ export type ProfileStackParamList = {
   [PROFILE_ROUTES.CHANGE_PASSWORD]: undefined;
   [PROFILE_ROUTES.CHANGE_EMAIL]: undefined;
   [PROFILE_ROUTES.SETTINGS_APPEARANCE]: undefined;
+  [PROFILE_ROUTES.SETTINGS_LANGUAGE]: undefined;
   [PROFILE_ROUTES.SETTINGS_NOTIFICATIONS]: undefined;
   [PROFILE_ROUTES.SETTINGS_PRIVACY_LOCATION]: undefined;
   [PROFILE_ROUTES.SETTINGS_ABOUT]: undefined;
   [PROFILE_ROUTES.ADMIN_PANEL]: undefined;
+  [PROFILE_ROUTES.ADMIN_NOTIFICATION_BROADCAST]: undefined;
+  [PROFILE_ROUTES.ADMIN_REPORTED_PROFILES]: undefined;
+  [PROFILE_ROUTES.ADMIN_REPORTED_PROFILE_DETAIL]: { reportedUserId: string };
   [PROFILE_ROUTES.ADMIN_PLACE_DETAIL]: { placeId: string };
   [PROFILE_ROUTES.ADMIN_UPDATE_REQUEST]: { requestId: string };
 };
 
+export type SavedStackParamList = {
+  [SAVED_ROUTES.SAVED_HOME]: undefined;
+  [SAVED_ROUTES.ALL_SAVED_PLACES]: undefined;
+  [SAVED_ROUTES.COLLECTION_DETAIL]: { collectionId: string };
+};
+
 export type MainTabParamList = {
   [TAB_ROUTES.EXPLORE]: NavigatorScreenParams<MapStackParamList> | undefined;
-  [TAB_ROUTES.SAVED]: undefined;
+  [TAB_ROUTES.SAVED]: NavigatorScreenParams<SavedStackParamList> | undefined;
   [TAB_ROUTES.ADD_PLACE]: NavigatorScreenParams<AddPlaceStackParamList> | undefined;
   [TAB_ROUTES.PROFILE]: NavigatorScreenParams<ProfileStackParamList> | undefined;
 };
@@ -71,6 +82,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.ONBOARDING]: undefined;
   [ROOT_ROUTES.AUTH]: undefined;
   [ROOT_ROUTES.LOCATION_PERMISSION]: undefined;
+  [ROOT_ROUTES.NOTIFICATION_PERMISSION]: undefined;
   [ROOT_ROUTES.MAIN]: undefined;
   [ROOT_ROUTES.PLACE_DETAIL]: { placeId: string };
   [ROOT_ROUTES.ADD_PLACE]: undefined;

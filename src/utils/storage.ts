@@ -22,6 +22,41 @@ export const ONBOARDING_STORAGE_KEYS = {
   legacyInstallMarker: ONBOARDING_INSTALL_MARKER_KEY,
 } as const;
 
+/** Tracks whether the one-time native permission sequence has run after onboarding. */
+export const INITIAL_PERMISSIONS_SEQUENCE_KEY = 'niceplace:permissions:initial_sequence:v1';
+
+/** @deprecated Replaced by INITIAL_PERMISSIONS_SEQUENCE_KEY */
+export const NOTIFICATION_PERMISSION_PROMPTED_KEY =
+  'niceplace:notifications:permission_prompted:v1';
+
+export async function hasInitialPermissionSequenceRun(): Promise<boolean> {
+  try {
+    const value = await AsyncStorage.getItem(INITIAL_PERMISSIONS_SEQUENCE_KEY);
+    if (value === '1') {
+      return true;
+    }
+
+    const legacy = await AsyncStorage.getItem(NOTIFICATION_PERMISSION_PROMPTED_KEY);
+    return legacy === '1';
+  } catch {
+    return false;
+  }
+}
+
+export async function setInitialPermissionSequenceRun(): Promise<void> {
+  await AsyncStorage.setItem(INITIAL_PERMISSIONS_SEQUENCE_KEY, '1');
+}
+
+/** @deprecated Use hasInitialPermissionSequenceRun */
+export async function hasNotificationPermissionBeenPrompted(): Promise<boolean> {
+  return hasInitialPermissionSequenceRun();
+}
+
+/** @deprecated Use setInitialPermissionSequenceRun */
+export async function setNotificationPermissionPrompted(): Promise<void> {
+  await setInitialPermissionSequenceRun();
+}
+
 function parseSavedPlaceIds(raw: string | null): string[] {
   if (!raw) {
     return [];

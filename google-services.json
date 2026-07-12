@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "467873610350",
+    "project_id": "nice-place-9e669",
+    "storage_bucket": "nice-place-9e669.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:467873610350:android:8f3af4738f84209aacc47f",
+        "android_client_info": {
+          "package_name": "com.omeryigitckr.niceplace"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDx-cF2E5hgoXFkYO5X5x0nVCJfvC1_X-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { duration, radius, spacing, typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
@@ -32,6 +33,7 @@ export function PlaceDetailStickyActions({
   onSave,
 }: PlaceDetailStickyActionsProps) {
   const { colors, shadows } = useTheme();
+  const { t } = useTranslation();
   const entranceY = useRef(new Animated.Value(16)).current;
   const entranceOpacity = useRef(new Animated.Value(0)).current;
 
@@ -71,7 +73,8 @@ export function PlaceDetailStickyActions({
       <View style={styles.bar}>
         <ActionButton
           icon="navigate"
-          label="Navigate"
+          label={t('placeDetail.sticky.navigate')}
+          accessibilityLabel={t('explore.preview.a11yNavigate')}
           onPress={onNavigate}
           variant="primary"
           colors={colors}
@@ -79,6 +82,11 @@ export function PlaceDetailStickyActions({
         <ActionButton
           icon={liked ? 'heart' : 'heart-outline'}
           label={`${Math.max(0, likeCount)}`}
+          accessibilityLabel={
+            liked
+              ? t('placeDetail.sticky.unlikeA11y', { count: Math.max(0, likeCount) })
+              : t('placeDetail.sticky.likeA11y', { count: Math.max(0, likeCount) })
+          }
           onPress={onLike}
           variant="secondary"
           active={liked}
@@ -89,7 +97,8 @@ export function PlaceDetailStickyActions({
         />
         <ActionButton
           icon={saved ? 'bookmark' : 'bookmark-outline'}
-          label={saved ? 'Saved' : 'Save'}
+          label={saved ? t('place.saved') : t('place.save')}
+          accessibilityLabel={saved ? t('place.unsaveA11y') : t('place.saveA11y')}
           onPress={onSave}
           variant="secondary"
           active={saved}
@@ -105,6 +114,7 @@ export function PlaceDetailStickyActions({
 function ActionButton({
   icon,
   label,
+  accessibilityLabel,
   onPress,
   variant,
   active = false,
@@ -115,6 +125,7 @@ function ActionButton({
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
+  accessibilityLabel?: string;
   onPress: () => void;
   variant: 'primary' | 'secondary';
   active?: boolean;
@@ -190,7 +201,7 @@ function ActionButton({
         }}
         onPressOut={() => animatePress(1)}
         accessibilityRole="button"
-        accessibilityLabel={label}
+        accessibilityLabel={accessibilityLabel ?? label}
         style={[
           styles.button,
           isPrimary

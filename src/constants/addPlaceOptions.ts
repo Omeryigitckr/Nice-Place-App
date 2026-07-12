@@ -1,24 +1,11 @@
+import { i18n } from '../i18n/instance';
 import { DbAccessType, DbCrowdLevel, DbDifficultyLevel } from '../types/database';
 
-export const ADD_PLACE_CATEGORIES = [
-  { value: 'viewpoint', label: 'Viewpoint' },
-  { value: 'waterfall', label: 'Waterfall' },
-  { value: 'beach', label: 'Beach' },
-  { value: 'forest', label: 'Forest' },
-  { value: 'trail', label: 'Trail' },
-  { value: 'camping', label: 'Camping' },
-  { value: 'picnic', label: 'Picnic Area' },
-  { value: 'historical', label: 'Historical Place' },
-  { value: 'sunset', label: 'Sunset Spot' },
-  { value: 'hidden_gem', label: 'Hidden Gem' },
-  { value: 'other', label: 'Other' },
-] as const;
-
-export type AddPlaceCategoryValue = (typeof ADD_PLACE_CATEGORIES)[number]['value'];
-
-export const ADD_PLACE_CATEGORY_VALUES: AddPlaceCategoryValue[] = ADD_PLACE_CATEGORIES.map(
-  (item) => item.value,
-);
+export {
+  ADD_PLACE_CATEGORIES,
+  ADD_PLACE_CATEGORY_VALUES,
+  type AddPlaceCategoryValue,
+} from './placeCategories';
 
 export const BEST_TIME_OPTIONS = [
   'Anytime',
@@ -60,3 +47,71 @@ export const FACILITY_TOGGLES = [
 ] as const;
 
 export type FacilityToggleKey = (typeof FACILITY_TOGGLES)[number]['key'];
+
+const BEST_TIME_KEYS = {
+  Anytime: 'options.bestTime.Anytime',
+  Morning: 'options.bestTime.Morning',
+  Afternoon: 'options.bestTime.Afternoon',
+  Sunset: 'options.bestTime.Sunset',
+  Night: 'options.bestTime.Night',
+} as const;
+
+const ACCESS_KEYS = {
+  walking: 'options.access.walking',
+  car: 'options.access.car',
+  bicycle: 'options.access.bicycle',
+  public_transport: 'options.access.public_transport',
+  mixed: 'options.access.mixed',
+  unknown: 'options.access.unknown',
+} as const;
+
+const DIFFICULTY_KEYS = {
+  easy: 'options.difficulty.easy',
+  medium: 'options.difficulty.medium',
+  moderate: 'options.difficulty.moderate',
+  hard: 'options.difficulty.hard',
+  unknown: 'options.difficulty.unknown',
+} as const;
+
+const CROWD_KEYS = {
+  quiet: 'options.crowd.quiet',
+  normal: 'options.crowd.normal',
+  crowded: 'options.crowd.crowded',
+  unknown: 'options.crowd.unknown',
+} as const;
+
+const FACILITY_KEYS: Record<FacilityToggleKey, 'options.facilities.petFriendly' | 'options.facilities.childFriendly' | 'options.facilities.carAccessible' | 'options.facilities.campAllowed' | 'options.facilities.picnicSuitable'> = {
+  isPetFriendly: 'options.facilities.petFriendly',
+  isChildFriendly: 'options.facilities.childFriendly',
+  isCarAccessible: 'options.facilities.carAccessible',
+  isCampAllowed: 'options.facilities.campAllowed',
+  isPicnicSuitable: 'options.facilities.picnicSuitable',
+};
+
+export function getBestTimeLabel(value: string): string {
+  const key = BEST_TIME_KEYS[value as BestTimeOption];
+  return key ? i18n.t(key) : value;
+}
+
+export function getAccessTypeLabel(value: DbAccessType | string): string {
+  const normalized = value === 'driving' ? 'car' : value;
+  const key = ACCESS_KEYS[normalized as keyof typeof ACCESS_KEYS];
+  return i18n.t(key ?? ACCESS_KEYS.unknown);
+}
+
+export function getDifficultyLabel(value: DbDifficultyLevel | string): string {
+  const normalized = value === 'moderate' ? 'moderate' : value;
+  const key = DIFFICULTY_KEYS[normalized as keyof typeof DIFFICULTY_KEYS];
+  return i18n.t(key ?? DIFFICULTY_KEYS.unknown);
+}
+
+export function getCrowdLevelLabel(value: DbCrowdLevel | string): string {
+  const normalized =
+    value === 'moderate' ? 'normal' : value === 'busy' ? 'crowded' : value;
+  const key = CROWD_KEYS[normalized as keyof typeof CROWD_KEYS];
+  return i18n.t(key ?? CROWD_KEYS.unknown);
+}
+
+export function getFacilityLabel(key: FacilityToggleKey): string {
+  return i18n.t(FACILITY_KEYS[key]);
+}

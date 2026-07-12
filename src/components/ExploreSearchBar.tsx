@@ -9,8 +9,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
-import { mapMotion, radius, spacing, typography } from '../theme';
+import { mapMotion, radius, spacing, touchTarget, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 
 interface ExploreSearchBarProps {
@@ -33,6 +34,7 @@ export function ExploreSearchBar({
   onSubmit,
 }: ExploreSearchBarProps) {
   const { colors, shadows } = useTheme();
+  const { t } = useTranslation();
   const hasFilters = activeFilterCount > 0;
   const [focused, setFocused] = useState(false);
   const focusProgress = useRef(new Animated.Value(0)).current;
@@ -87,7 +89,7 @@ export function ExploreSearchBar({
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        placeholder="Search places, trails, views…"
+        placeholder={t('explore.searchPlaceholder')}
         placeholderTextColor={colors.textMuted}
         style={[styles.input, { color: colors.textPrimary }]}
         returnKeyType="search"
@@ -105,9 +107,9 @@ export function ExploreSearchBar({
       <Animated.View style={{ opacity: clearOpacity }}>
         <Pressable
           onPress={() => onChangeText('')}
-          hitSlop={8}
+          hitSlop={touchTarget.hitSlop}
           accessibilityRole="button"
-          accessibilityLabel="Clear search"
+          accessibilityLabel={t('explore.clearSearch')}
           style={styles.clearButton}
           disabled={value.length === 0}
         >
@@ -139,7 +141,7 @@ export function ExploreSearchBar({
             hasFilters && { backgroundColor: colors.chipActiveBackground },
           ]}
           accessibilityRole="button"
-          accessibilityLabel="Filter places"
+          accessibilityLabel={t('explore.filterPlaces')}
         >
           <Ionicons
             name="options-outline"

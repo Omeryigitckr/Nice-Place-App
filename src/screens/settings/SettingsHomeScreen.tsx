@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -23,14 +24,17 @@ import {
 } from '../../components';
 import { FeedbackModal } from '../../components/FeedbackModal';
 import { PROFILE_ROUTES } from '../../constants';
-import { useAppSettings, useAuth } from '../../hooks';
-import { resetPlaceLikesMemory } from '../../hooks/usePlaceLikes';
-import { resetSavedPlacesMemory } from '../../hooks/useSavedPlaces';
+import { useAppSettings, useAuth, useAppPermissions } from '../../hooks';
+import { useNotifications } from '../../hooks/useNotifications';
+import { resetNotificationsMemory } from '../../hooks/useNotifications';
+import {
+  getLanguageMeta,
+  useAppLanguage,
+} from '../../i18n';
 import { resetToMain } from '../../navigation/navigationHelpers';
 import { deleteUserAccount, signOut } from '../../services';
-import {
-  notificationStatusLabel,
-} from '../../services/notificationSettingsService';
+import { resetPlaceLikesMemory } from '../../hooks/usePlaceLikes';
+import { resetSavedPlacesMemory } from '../../hooks/useSavedPlaces';
 import {
   DistanceUnit,
   MapStylePreference,
@@ -41,58 +45,67 @@ import { motion, motionEasing } from '../../theme/motion';
 import { useThemeColors } from '../../theme/ThemeContext';
 import { ProfileStackParamList } from '../../types';
 import { navigateToAuth } from '../../utils/authGuard';
+import {
+  DELETE_ACCOUNT_CONFIRM_PHRASE,
+  getLegalContent,
+  getPermissionStatusLabel,
+  localizeSettingsMessage,
+  type LegalContentId,
+} from '../../utils/settingsMessages';
 import { userHasEmailPassword } from '../../utils/userAccount';
 import {
   APP_VERSION,
-  LEGAL_CONTENT,
-  PreferenceToggle,
   SettingsLinkRow,
   SettingsSection,
   SettingsSegmentedControl,
   SUPPORT_EMAIL,
   settingsStyles,
 } from './settingsShared';
-import { LegalInfoContent } from '../../components/LegalInfoModal';
 
 
 type Props = NativeStackScreenProps<ProfileStackParamList, typeof PROFILE_ROUTES.SETTINGS>;
 
-const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
+const THEME_OPTIONS: {
+  value: ThemeMode;
+  labelKey: 'settings.theme.system' | 'settings.theme.light' | 'settings.theme.dark';
+}[] = [
+  { value: 'system', labelKey: 'settings.theme.system' },
+  { value: 'light', labelKey: 'settings.theme.light' },
+  { value: 'dark', labelKey: 'settings.theme.dark' },
 ];
 
-const MAP_STYLE_OPTIONS: { value: MapStylePreference; label: string }[] = [
-  { value: 'standard', label: 'Standard' },
-  { value: 'satellite', label: 'Satellite' },
-  { value: 'outdoors', label: 'Outdoors' },
+const MAP_STYLE_OPTIONS: {
+  value: MapStylePreference;
+  labelKey: 'settings.mapStyle.standard' | 'settings.mapStyle.satellite' | 'settings.mapStyle.outdoors';
+}[] = [
+  { value: 'standard', labelKey: 'settings.mapStyle.standard' },
+  { value: 'satellite', labelKey: 'settings.mapStyle.satellite' },
+  { value: 'outdoors', labelKey: 'settings.mapStyle.outdoors' },
 ];
 
-const UNIT_OPTIONS: { value: DistanceUnit; label: string }[] = [
-  { value: 'km', label: 'Kilometers' },
-  { value: 'mi', label: 'Miles' },
+const UNIT_OPTIONS: {
+  value: DistanceUnit;
+  labelKey: 'settings.distanceUnit.kilometers' | 'settings.distanceUnit.miles';
+}[] = [
+  { value: 'km', labelKey: 'settings.distanceUnit.kilometers' },
+  { value: 'mi', labelKey: 'settings.distanceUnit.miles' },
 ];
-
-const DELETE_CONFIRM_TEXT = 'DELETE MY ACCOUNT';
 
 type ConfirmAction = 'clear_cache' | 'reset_preferences' | null;
 
 export function SettingsHomeScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
+  const { t } = useTranslation();
+  const { language } = useAppLanguage();
+  const languageMeta = getLanguageMeta(language);
   const { user, profile, loading: authLoading, refresh } = useAuth();
-  const {
-    settings,
-    loading: settingsLoading,
-    updateSettings,
-    resetSettings,
-    clearCache,
-  } = useAppSettings();
-
+  const { settings, updateSettings, resetSettings, clearCache } = useAppSettings();
+  const { preferences } = useNotifications(profile?.id);
+  const { notification } = useAppPermissions();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [legalContent, setLegalContent] = useState<LegalInfoContent | null>(null);
+  const [legalContentId, setLegalContentId] = useState<LegalContentId | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const [acting, setActing] = useState(false);
 
@@ -110,14 +123,14 @@ export function SettingsHomeScreen({ navigation }: Props) {
     profile?.full_name?.trim() ||
     profile?.username?.trim() ||
     user?.email?.split('@')[0] ||
-    'Explorer';
+    t('profile.explorerFallback');
 
   const showToast = (message: string) => setToastMessage(message);
 
   const requiresPasswordForDeletion = user ? userHasEmailPassword(user) : false;
 
   const canDelete = useMemo(() => {
-    const confirmationMatches = deleteConfirmText === DELETE_CONFIRM_TEXT;
+    const confirmationMatches = deleteConfirmText === DELETE_ACCOUNT_CONFIRM_PHRASE;
     if (!requiresPasswordForDeletion) {
       return confirmationMatches;
     }
@@ -134,6 +147,19 @@ export function SettingsHomeScreen({ navigation }: Props) {
     deletePasswordConfirm,
     requiresPasswordForDeletion,
   ]);
+
+  const themeSegmentOptions = useMemo(
+    () => THEME_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) })),
+    [t],
+  );
+  const mapStyleSegmentOptions = useMemo(
+    () => MAP_STYLE_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) })),
+    [t],
+  );
+  const unitSegmentOptions = useMemo(
+    () => UNIT_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) })),
+    [t],
+  );
 
   useEffect(() => {
     themeFade.setValue(0.88);
@@ -169,20 +195,24 @@ export function SettingsHomeScreen({ navigation }: Props) {
       // Always drop in-memory private state, even if remote signOut had issues.
       resetPlaceLikesMemory();
       resetSavedPlacesMemory();
+      resetNotificationsMemory();
       await refresh();
 
       if (!result.success) {
-        showToast(result.error ?? 'Logout failed.');
+        showToast(
+          localizeSettingsMessage(result.error) ?? t('settings.session.signOutFailed'),
+        );
         return;
       }
 
-      showToast('Signed out. You can keep browsing as a guest.');
+      showToast(t('settings.session.signedOut'));
       resetToMain(navigation);
     } catch {
       resetPlaceLikesMemory();
       resetSavedPlacesMemory();
+      resetNotificationsMemory();
       await refresh();
-      showToast('Signed out locally. You can keep browsing as a guest.');
+      showToast(t('settings.session.signedOutLocal'));
       resetToMain(navigation);
     } finally {
       setLoggingOut(false);
@@ -198,13 +228,13 @@ export function SettingsHomeScreen({ navigation }: Props) {
     try {
       if (confirmAction === 'clear_cache') {
         await clearCache();
-        showToast('Local cache cleared.');
+        showToast(t('settings.data.cacheCleared'));
       } else {
         await resetSettings();
-        showToast('App preferences reset.');
+        showToast(t('settings.data.prefsReset'));
       }
     } catch {
-      showToast('Something went wrong. Please try again.');
+      showToast(t('errors.generic'));
     } finally {
       setActing(false);
       setConfirmAction(null);
@@ -236,7 +266,9 @@ export function SettingsHomeScreen({ navigation }: Props) {
     setDeleting(false);
 
     if (!result.success) {
-      setDeleteError(result.error ?? 'Could not delete account.');
+      setDeleteError(
+        localizeSettingsMessage(result.error) ?? t('settings.deleteAccount.errors.failed'),
+      );
       return;
     }
 
@@ -245,7 +277,7 @@ export function SettingsHomeScreen({ navigation }: Props) {
     resetSavedPlacesMemory();
     await refresh();
     resetToMain(navigation);
-    showToast('Your account has been deleted.');
+    showToast(t('settings.deleteAccount.success'));
   };
 
   const openMail = (subject: string) => {
@@ -263,14 +295,14 @@ export function SettingsHomeScreen({ navigation }: Props) {
       ) : null}
 
       <Animated.View style={{ opacity: themeFade, gap: spacing.lg }}>
-      <SettingsSection title="Account" entranceIndex={0}>
+      <SettingsSection title={t('settings.sections.account')} entranceIndex={0}>
         {isGuest ? (
           <View style={styles.accountGuest}>
             <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
-              Sign in to unlock account features
+              {t('settings.account.unlockHint')}
             </Text>
             <AppButton
-              title="Sign in"
+              title={t('common.signIn')}
               onPress={() => navigateToAuth(navigation)}
               fullWidth={false}
             />
@@ -297,143 +329,166 @@ export function SettingsHomeScreen({ navigation }: Props) {
                 <View style={styles.accountText}>
                   <Text style={[styles.accountName, { color: colors.textPrimary }]}>{displayName}</Text>
                   <Text style={[styles.accountEmail, { color: colors.textSecondary }]}>
-                    {user?.email ?? 'Signed in'}
+                    {user?.email ?? t('settings.account.signedIn')}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
               </Pressable>
             </Animated.View>
             <SettingsLinkRow
-              label="Change password"
-              subtitle="Update your sign-in password"
+              label={t('settings.account.changePassword')}
+              subtitle={t('settings.account.changePasswordSubtitle')}
               onPress={() => navigation.navigate(PROFILE_ROUTES.CHANGE_PASSWORD)}
             />
             <SettingsLinkRow
-              label="Change email"
-              subtitle="Update your account email"
+              label={t('settings.account.changeEmail')}
+              subtitle={t('settings.account.changeEmailSubtitle')}
               onPress={() => navigation.navigate(PROFILE_ROUTES.CHANGE_EMAIL)}
             />
           </View>
         )}
       </SettingsSection>
 
-      <SettingsSection title="App preferences" entranceIndex={1}>
-        <Text style={[settingsStyles.groupLabel, { color: colors.textPrimary }]}>Theme</Text>
+      <SettingsSection title={t('settings.appPreferences')} entranceIndex={1}>
+        <Text style={[settingsStyles.groupLabel, { color: colors.textPrimary }]}>
+          {t('settings.theme.title')}
+        </Text>
         <SettingsSegmentedControl
-          options={THEME_OPTIONS}
+          options={themeSegmentOptions}
           value={settings.themeMode}
           onChange={(value) =>
             void updateSettings((current) => ({ ...current, themeMode: value })).then(() => {
-              const label = THEME_OPTIONS.find((option) => option.value === value)?.label ?? value;
-              showToast(`Theme set to ${label}.`);
+              const labelKey =
+                THEME_OPTIONS.find((option) => option.value === value)?.labelKey;
+              showToast(
+                t('settings.theme.setTo', {
+                  label: labelKey ? t(labelKey) : value,
+                }),
+              );
             })
           }
         />
+        <SettingsLinkRow
+          icon="globe-outline"
+          label={t('settings.language.title')}
+          subtitle={languageMeta.nativeName}
+          onPress={() => navigation.navigate(PROFILE_ROUTES.SETTINGS_LANGUAGE)}
+        />
       </SettingsSection>
 
-      <SettingsSection title="Map preferences" entranceIndex={2}>
+      <SettingsSection title={t('settings.sections.mapPreferences')} entranceIndex={2}>
         <Text style={[settingsStyles.groupLabel, { color: colors.textPrimary }]}>
-          Default map style
+          {t('settings.mapStyle.title')}
         </Text>
         <SettingsSegmentedControl
-          options={MAP_STYLE_OPTIONS}
+          options={mapStyleSegmentOptions}
           value={settings.mapStyle}
           onChange={(value) =>
             void updateSettings((current) => ({ ...current, mapStyle: value })).then(() => {
-              const label =
-                MAP_STYLE_OPTIONS.find((option) => option.value === value)?.label ?? value;
-              showToast(`Map style set to ${label}.`);
+              const labelKey =
+                MAP_STYLE_OPTIONS.find((option) => option.value === value)?.labelKey;
+              showToast(
+                t('settings.mapStyle.setTo', {
+                  label: labelKey ? t(labelKey) : value,
+                }),
+              );
             })
           }
         />
       </SettingsSection>
 
-      <SettingsSection title="Units" entranceIndex={3}>
-        <Text style={[settingsStyles.groupLabel, { color: colors.textPrimary }]}>Distance unit</Text>
+      <SettingsSection title={t('settings.sections.units')} entranceIndex={3}>
+        <Text style={[settingsStyles.groupLabel, { color: colors.textPrimary }]}>
+          {t('settings.distanceUnit.title')}
+        </Text>
         <SettingsSegmentedControl
-          options={UNIT_OPTIONS}
+          options={unitSegmentOptions}
           value={settings.distanceUnit}
           onChange={(value) =>
             void updateSettings((current) => ({
               ...current,
               distanceUnit: value,
             })).then(() => {
-              const label = UNIT_OPTIONS.find((option) => option.value === value)?.label ?? value;
-              showToast(`Distance unit set to ${label}.`);
+              const labelKey =
+                UNIT_OPTIONS.find((option) => option.value === value)?.labelKey;
+              showToast(
+                t('settings.distanceUnit.setTo', {
+                  label: labelKey ? t(labelKey) : value,
+                }),
+              );
             })
           }
         />
       </SettingsSection>
 
-      <SettingsSection title="Notifications" entranceIndex={4}>
-        <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
-          Push notifications are coming soon in a future beta update.
-        </Text>
-        <Text style={[settingsStyles.statusLabel, { color: colors.textSecondary }]}>
-          Status: {notificationStatusLabel('disabled')}
-        </Text>
-        <PreferenceToggle
-          label="Update request status notifications"
-          value={false}
-          disabled
-          onValueChange={() => undefined}
-        />
-        <PreferenceToggle
-          label="New nearby places notifications"
-          value={false}
-          disabled
-          onValueChange={() => undefined}
-        />
-        <PreferenceToggle
-          label="Saved place reminders"
-          value={false}
-          disabled
-          onValueChange={() => undefined}
+      <SettingsSection title={t('settings.sections.notifications')} entranceIndex={4}>
+        <SettingsLinkRow
+          label={t('settings.notifications.prefsLink')}
+          subtitle={
+            preferences.pushEnabled && notification.state === 'granted'
+              ? t('settings.notifications.enabledDevice', {
+                  status: getPermissionStatusLabel(notification.state),
+                })
+              : t('settings.notifications.offDevice', {
+                  status: getPermissionStatusLabel(notification.state),
+                })
+          }
+          onPress={() => navigation.navigate(PROFILE_ROUTES.SETTINGS_NOTIFICATIONS)}
         />
       </SettingsSection>
 
-      <SettingsSection title="Data" entranceIndex={5}>
+      <SettingsSection title={t('settings.sections.data')} entranceIndex={5}>
         <SettingsLinkRow
-          label="Clear local cache"
-          subtitle="Removes locally cached saved-place ids"
+          label={t('settings.data.clearCache')}
+          subtitle={t('settings.data.clearCacheSubtitle')}
           onPress={() => setConfirmAction('clear_cache')}
         />
         <SettingsLinkRow
-          label="Reset app preferences"
-          subtitle="Restore default theme, map, units, and toggles"
+          label={t('settings.data.resetPrefs')}
+          subtitle={t('settings.data.resetPrefsSubtitle')}
           onPress={() => setConfirmAction('reset_preferences')}
         />
       </SettingsSection>
 
-      <SettingsSection title="Support" entranceIndex={6}>
-        <SettingsLinkRow label="Contact support" onPress={() => openMail('Nice Place support')} />
-        <SettingsLinkRow label="Report a bug" onPress={() => openMail('Nice Place bug report')} />
+      <SettingsSection title={t('settings.sections.support')} entranceIndex={6}>
         <SettingsLinkRow
-          label="Privacy Policy"
-          onPress={() => setLegalContent(LEGAL_CONTENT.privacy)}
+          label={t('settings.support.contact')}
+          onPress={() => openMail(t('settings.support.mailSubjectSupport'))}
         />
         <SettingsLinkRow
-          label="Terms of Service"
-          onPress={() => setLegalContent(LEGAL_CONTENT.terms)}
+          label={t('settings.support.reportBug')}
+          onPress={() => openMail(t('settings.support.mailSubjectBug'))}
         />
         <SettingsLinkRow
-          label="About Nice Place"
-          onPress={() => setLegalContent(LEGAL_CONTENT.about)}
+          label={t('settings.support.privacyPolicy')}
+          onPress={() => setLegalContentId('privacy')}
+        />
+        <SettingsLinkRow
+          label={t('settings.support.termsOfService')}
+          onPress={() => setLegalContentId('terms')}
+        />
+        <SettingsLinkRow
+          label={t('settings.support.aboutNicePlace')}
+          onPress={() => setLegalContentId('about')}
         />
         <Text style={[settingsStyles.versionLabel, { color: colors.textSecondary }]}>
-          App version
+          {t('settings.support.appVersion')}
         </Text>
         <Text style={[settingsStyles.versionValue, { color: colors.textPrimary }]}>
           {APP_VERSION}
         </Text>
       </SettingsSection>
 
-      <SettingsSection title="Account actions" entranceIndex={7}>
+      <SettingsSection title={t('settings.sections.accountActions')} entranceIndex={7}>
         {isGuest ? (
-          <AppButton title="Sign in" onPress={() => navigateToAuth(navigation)} />
+          <AppButton title={t('common.signIn')} onPress={() => navigateToAuth(navigation)} />
         ) : (
           <AppButton
-            title={loggingOut || authLoading ? 'Signing out…' : 'Log out'}
+            title={
+              loggingOut || authLoading
+                ? t('settings.session.signingOut')
+                : t('settings.session.signOut')
+            }
             variant="secondary"
             onPress={handleLogout}
             disabled={loggingOut || authLoading}
@@ -444,7 +499,9 @@ export function SettingsHomeScreen({ navigation }: Props) {
       {!isGuest ? (
         <ProfileEntranceBlock index={8}>
         <View style={styles.dangerZone}>
-          <Text style={[styles.dangerTitle, { color: colors.error }]}>Danger Zone</Text>
+          <Text style={[styles.dangerTitle, { color: colors.error }]}>
+            {t('settings.deleteAccount.dangerTitle')}
+          </Text>
           <View
             style={[
               styles.dangerCard,
@@ -455,16 +512,18 @@ export function SettingsHomeScreen({ navigation }: Props) {
             ]}
           >
             <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
-              Permanently delete your account and anonymize profile data. This cannot be undone.
+              {t('settings.deleteAccount.dangerBody')}
             </Text>
             <Pressable
               onPress={openDeleteModal}
               style={[styles.deleteButton, { backgroundColor: colors.error }]}
               accessibilityRole="button"
-              accessibilityLabel="Delete account"
+              accessibilityLabel={t('settings.deleteAccount.a11yDelete')}
             >
               <Ionicons name="trash-outline" size={18} color={colors.white} />
-              <Text style={[styles.deleteButtonLabel, { color: colors.white }]}>Delete Account</Text>
+              <Text style={[styles.deleteButtonLabel, { color: colors.white }]}>
+                {t('settings.deleteAccount.delete')}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -473,27 +532,37 @@ export function SettingsHomeScreen({ navigation }: Props) {
       </Animated.View>
 
       <LegalInfoModal
-        visible={legalContent != null}
-        content={legalContent}
-        onClose={() => setLegalContent(null)}
+        visible={legalContentId != null}
+        content={legalContentId ? getLegalContent(legalContentId) : null}
+        onClose={() => setLegalContentId(null)}
       />
 
       <FeedbackModal
         visible={confirmAction != null}
         variant="error"
-        title={confirmAction === 'clear_cache' ? 'Clear local cache?' : 'Reset preferences?'}
+        title={
+          confirmAction === 'clear_cache'
+            ? t('settings.data.clearConfirmTitle')
+            : t('settings.data.resetConfirmTitle')
+        }
         subtitle={
           confirmAction === 'clear_cache'
-            ? 'This removes locally cached data on this device. Your account and cloud data stay intact.'
-            : 'This restores default theme, map style, units, and notification toggles.'
+            ? t('settings.data.clearConfirmBody')
+            : t('settings.data.resetConfirmBody')
         }
-        primaryLabel={acting ? 'Working…' : confirmAction === 'clear_cache' ? 'Clear cache' : 'Reset'}
+        primaryLabel={
+          acting
+            ? t('settings.data.working')
+            : confirmAction === 'clear_cache'
+              ? t('settings.data.clearConfirmAction')
+              : t('settings.data.resetConfirmAction')
+        }
         onPrimary={() => {
           if (!acting) {
             void handleConfirmAction();
           }
         }}
-        secondaryLabel="Cancel"
+        secondaryLabel={t('common.cancel')}
         onSecondary={() => {
           if (!acting) {
             setConfirmAction(null);
@@ -512,7 +581,7 @@ export function SettingsHomeScreen({ navigation }: Props) {
           <Pressable
             style={[styles.deleteBackdrop, { backgroundColor: colors.scrimHeavy }]}
             onPress={() => setDeleteVisible(false)}
-            accessibilityLabel="Dismiss"
+            accessibilityLabel={t('settings.deleteAccount.a11yDismiss')}
           />
           <View
             style={[
@@ -524,39 +593,47 @@ export function SettingsHomeScreen({ navigation }: Props) {
               },
             ]}
           >
-            <Text style={[styles.deleteTitle, { color: colors.error }]}>Delete Account</Text>
+            <Text style={[styles.deleteTitle, { color: colors.error }]}>
+              {t('settings.deleteAccount.title')}
+            </Text>
             <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
               {requiresPasswordForDeletion
-                ? `Enter your password twice and type ${DELETE_CONFIRM_TEXT} to confirm.`
-                : `Type ${DELETE_CONFIRM_TEXT} to permanently delete your account.`}
+                ? t('settings.deleteAccount.instructionPassword', {
+                    phrase: DELETE_ACCOUNT_CONFIRM_PHRASE,
+                  })
+                : t('settings.deleteAccount.instructionOAuth', {
+                    phrase: DELETE_ACCOUNT_CONFIRM_PHRASE,
+                  })}
             </Text>
 
             {requiresPasswordForDeletion ? (
               <>
                 <AppTextInput
-                  label="Password"
+                  label={t('auth.login.passwordLabel')}
                   value={deletePassword}
                   onChangeText={setDeletePassword}
                   secureTextEntry
                   autoComplete="password"
-                  placeholder="••••••••"
+                  placeholder={t('auth.login.passwordPlaceholder')}
                 />
                 <AppTextInput
-                  label="Confirm password"
+                  label={t('settings.deleteAccount.confirmPassword')}
                   value={deletePasswordConfirm}
                   onChangeText={setDeletePasswordConfirm}
                   secureTextEntry
                   autoComplete="password"
-                  placeholder="••••••••"
+                  placeholder={t('auth.login.passwordPlaceholder')}
                 />
               </>
             ) : null}
             <AppTextInput
-              label={`Type ${DELETE_CONFIRM_TEXT}`}
+              label={t('settings.deleteAccount.confirmLabel', {
+                phrase: DELETE_ACCOUNT_CONFIRM_PHRASE,
+              })}
               value={deleteConfirmText}
               onChangeText={setDeleteConfirmText}
               autoCapitalize="characters"
-              placeholder={DELETE_CONFIRM_TEXT}
+              placeholder={DELETE_ACCOUNT_CONFIRM_PHRASE}
             />
 
             {requiresPasswordForDeletion &&
@@ -564,7 +641,7 @@ export function SettingsHomeScreen({ navigation }: Props) {
             deletePasswordConfirm &&
             deletePassword !== deletePasswordConfirm ? (
               <Text style={[settingsStyles.error, { color: colors.error }]}>
-                Passwords do not match.
+                {t('settings.deleteAccount.passwordsDoNotMatch')}
               </Text>
             ) : null}
 
@@ -573,13 +650,17 @@ export function SettingsHomeScreen({ navigation }: Props) {
             ) : null}
 
             <AppButton
-              title={deleting ? 'Deleting…' : 'Delete my account'}
+              title={
+                deleting
+                  ? t('settings.deleteAccount.deleting')
+                  : t('settings.deleteAccount.deleteAction')
+              }
               onPress={handleDeleteAccount}
               disabled={!canDelete || deleting}
               style={{ backgroundColor: colors.error, borderColor: colors.error }}
             />
             <AppButton
-              title="Cancel"
+              title={t('common.cancel')}
               variant="secondary"
               onPress={() => setDeleteVisible(false)}
               disabled={deleting}

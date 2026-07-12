@@ -11,15 +11,19 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { devLog, devError } from '../utils/devLog';
 
 import { uploadProfileAvatar } from '../services/avatarService';
+import { ensureMediaPermission, openAppSettings } from '../services/appPermissionsService';
 import { duration, typography } from '../theme';
 import { useThemeColors } from '../theme/ThemeContext';
+import { localizeProfileMessage } from '../utils/profileMessages';
 
 const calmEasing = Easing.out(Easing.cubic);
 
 import { FeedbackModal } from './FeedbackModal';
+import { PermissionBlockedModal } from './PermissionBlockedModal';
 
 interface ProfileAvatarProps {
   displayName: string;
@@ -55,18 +59,18 @@ export function ProfileAvatar({
   onAvatarUpdated,
   onError,
 }: ProfileAvatarProps) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
   const [uploading, setUploading] = useState(false);
   const [localUri, setLocalUri] = useState<string | null>(null);
   const [errorVisible, setErrorVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('Could not update profile photo.');
+  const [errorMessage, setErrorMessage] = useState('profile.photo.updateFailed');
+  const [mediaBlockedVisible, setMediaBlockedVisible] = useState(false);
   const entranceOpacity = useRef(new Animated.Value(0)).current;
   const entranceScale = useRef(new Animated.Value(0.96)).current;
 
   useEffect(() => {
-    if (avatarUrl) {
-      setLocalUri(avatarUrl);
-    }
+    setLocalUri(avatarUrl ?? null);
   }, [avatarUrl]);
 
   useEffect(() => {
@@ -94,7 +98,7 @@ export function ProfileAvatar({
       devError('[Nice Place Profile] avatar upload failed:', message);
       setErrorMessage(message);
       setErrorVisible(true);
-      onError?.(message);
+      onError?.(localizeProfileMessage(message) ?? message);
     },
     [onError],
   );
@@ -107,13 +111,17 @@ export function ProfileAvatar({
     devLog('[Nice Place Profile] avatar pick started');
 
     if (!profileId || !authUserId) {
-      reportError('Sign in is required to change your profile photo.');
+      reportError('profile.auth.changePhoto');
       return;
     }
 
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      reportError('Photo library permission is required to change your avatar.');
+    const permission = await ensureMediaPermission();
+    if (!permission.granted) {
+      if (permission.shouldOpenSettings) {
+        setMediaBlockedVisible(true);
+      } else {
+        reportError('profile.photo.permissionRequired');
+      }
       return;
     }
 
@@ -145,7 +153,7 @@ export function ProfileAvatar({
 
     if (!uploadResult.success || !uploadResult.avatarUrl) {
       setLocalUri(avatarUrl ?? null);
-      reportError(uploadResult.error ?? 'Could not upload avatar.');
+      reportError(uploadResult.error ?? 'profile.photo.uploadFailed');
       return;
     }
 
@@ -228,7 +236,7 @@ export function ProfileAvatar({
           <Pressable
             onPress={handlePickAvatar}
             accessibilityRole="button"
-            accessibilityLabel="Change profile photo"
+            accessibilityLabel={t('profile.a11y.changePhoto')}
             disabled={uploading}
           >
             {content}
@@ -241,15 +249,25 @@ export function ProfileAvatar({
       <FeedbackModal
         visible={errorVisible}
         variant="error"
-        title="Photo upload failed"
-        subtitle={errorMessage}
-        primaryLabel="Try again"
+        title={t('profile.photo.uploadFailedTitle')}
+        subtitle={localizeProfileMessage(errorMessage) ?? errorMessage}
+        primaryLabel={t('common.tryAgain')}
         onPrimary={() => {
           setErrorVisible(false);
           void handlePickAvatar();
         }}
-        secondaryLabel="Cancel"
+        secondaryLabel={t('common.cancel')}
         onSecondary={() => setErrorVisible(false)}
+      />
+      <PermissionBlockedModal
+        visible={mediaBlockedVisible}
+        title={t('permissions.photos.blockedTitle')}
+        message={t('permissions.photos.blockedMessage')}
+        onCancel={() => setMediaBlockedVisible(false)}
+        onOpenSettings={() => {
+          setMediaBlockedVisible(false);
+          void openAppSettings();
+        }}
       />
     </>
   );

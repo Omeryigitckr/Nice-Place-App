@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, radius, spacing, typography } from '../../theme';
@@ -22,13 +23,14 @@ interface PlacePhotoGalleryProps {
 }
 
 export function PlacePhotoGallery({ images, onImagePress }: PlacePhotoGalleryProps) {
+  const { t } = useTranslation();
   if (images.length <= 1) {
     return null;
   }
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.sectionTitle}>Gallery</Text>
+      <Text style={styles.sectionTitle}>{t('placeDetail.gallery')}</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -40,7 +42,7 @@ export function PlacePhotoGallery({ images, onImagePress }: PlacePhotoGalleryPro
             onPress={() => onImagePress(index)}
             style={styles.thumbWrap}
             accessibilityRole="imagebutton"
-            accessibilityLabel={`View photo ${index + 1}`}
+            accessibilityLabel={t('placeDetail.photos.viewPhoto', { index: index + 1 })}
           >
             <CachedImage
               uri={uri}
@@ -70,6 +72,7 @@ export function PlacePhotoViewer({
   visible,
   onClose,
 }: PlacePhotoViewerProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -100,7 +103,7 @@ export function PlacePhotoViewer({
           onPress={onClose}
           style={[styles.viewerClose, { top: insets.top + spacing.sm }]}
           accessibilityRole="button"
-          accessibilityLabel="Close photo viewer"
+          accessibilityLabel={t('placeDetail.photos.closeViewer')}
         >
           <Ionicons name="close" size={22} color={colors.textPrimary} />
         </Pressable>

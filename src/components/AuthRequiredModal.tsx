@@ -1,4 +1,5 @@
 import { FeedbackModal } from './FeedbackModal';
+import { useTranslation } from 'react-i18next';
 
 interface AuthRequiredModalProps {
   visible: boolean;
@@ -11,17 +12,19 @@ export function AuthRequiredModal({
   visible,
   onSignIn,
   onCancel,
-  message = 'Sign in to use this feature. You can keep browsing as a guest.',
+  message,
 }: AuthRequiredModalProps) {
+  const { t } = useTranslation();
+
   return (
     <FeedbackModal
       visible={visible}
       variant="error"
-      title="Sign in required"
-      subtitle={message}
-      primaryLabel="Sign in"
+      title={t('common.authRequired.title')}
+      subtitle={message ?? t('common.authRequired.message')}
+      primaryLabel={t('common.signIn')}
       onPrimary={onSignIn}
-      secondaryLabel="Cancel"
+      secondaryLabel={t('common.cancel')}
       onSecondary={onCancel}
     />
   );

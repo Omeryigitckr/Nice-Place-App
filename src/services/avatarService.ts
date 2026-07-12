@@ -26,7 +26,7 @@ function buildAvatarStoragePath(authUserId: string): string {
 async function uriToArrayBuffer(uri: string): Promise<ArrayBuffer> {
   const response = await fetch(uri);
   if (!response.ok) {
-    throw new Error('Could not read the selected image.');
+    throw new Error('profile.photo.readFailed');
   }
   return response.arrayBuffer();
 }
@@ -39,11 +39,11 @@ export async function uploadProfileAvatar(
 ): Promise<UploadProfileAvatarResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: 'auth.errors.configMissing' };
   }
 
   if (!input.profileId || !input.authUserId || !input.imageUri) {
-    return { success: false, error: 'Missing data required for avatar upload.' };
+    return { success: false, error: 'profile.photo.missingData' };
   }
 
   const storagePath = buildAvatarStoragePath(input.authUserId);
@@ -60,7 +60,7 @@ export async function uploadProfileAvatar(
 
     if (uploadError) {
       devError('[Nice Place Profile] avatar upload failed:', uploadError.message);
-      return { success: false, error: uploadError.message };
+      return { success: false, error: 'profile.photo.uploadFailed' };
     }
 
     const { data: publicUrlData } = supabase.storage
@@ -71,7 +71,7 @@ export async function uploadProfileAvatar(
     if (!publicUrl) {
       await supabase.storage.from(PROFILE_AVATARS_BUCKET).remove([storagePath]);
       devError('[Nice Place Profile] avatar upload failed:', 'Missing public URL');
-      return { success: false, error: 'Could not resolve the uploaded avatar URL.' };
+      return { success: false, error: 'profile.photo.urlUnresolved' };
     }
 
     // Cache-bust so the UI refreshes without an app restart.
@@ -91,7 +91,7 @@ export async function uploadProfileAvatar(
     if (updateError) {
       devError('[Nice Place Profile] profile avatar update failed:', updateError.message);
       await supabase.storage.from(PROFILE_AVATARS_BUCKET).remove([storagePath]);
-      return { success: false, error: updateError.message };
+      return { success: false, error: 'profile.photo.saveFailed' };
     }
 
     // RLS can block updates with no error and 0 rows.
@@ -103,7 +103,7 @@ export async function uploadProfileAvatar(
       await supabase.storage.from(PROFILE_AVATARS_BUCKET).remove([storagePath]);
       return {
         success: false,
-        error: 'Could not save avatar to your profile. Please try again.',
+        error: 'profile.photo.saveFailed',
       };
     }
 
@@ -117,8 +117,113 @@ export async function uploadProfileAvatar(
       storagePath,
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Avatar upload failed.';
-    devError('[Nice Place Profile] avatar upload failed:', message);
+    const message =
+      error instanceof Error && error.message.startsWith('profile.')
+        ? error.message
+        : 'profile.photo.uploadFailed';
+    devError('[Nice Place Profile] avatar upload failed:', error);
     return { success: false, error: message };
+  }
+}
+
+export interface RemoveProfileAvatarInput {
+  profileId: string;
+  authUserId: string;
+  storagePath?: string | null;
+}
+
+export interface RemoveProfileAvatarResult {
+  success: boolean;
+  error?: string;
+}
+
+let removeAvatarInFlight = false;
+
+/**
+ * Clear the profile avatar in the database and delete the storage object when present.
+ * Safe when the user has no photo. Idempotent for concurrent calls.
+ */
+export async function removeProfileAvatar(
+  input: RemoveProfileAvatarInput,
+): Promise<RemoveProfileAvatarResult> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'auth.errors.configMissing' };
+  }
+
+  if (!input.profileId || !input.authUserId) {
+    return { success: false, error: 'profile.auth.removePhoto' };
+  }
+
+  if (removeAvatarInFlight) {
+    return { success: false, error: 'common.pleaseWait' };
+  }
+
+  removeAvatarInFlight = true;
+
+  try {
+    const { data: current, error: readError } = await supabase
+      .from('profiles')
+      .select('avatar_url, avatar_storage_path')
+      .eq('id', input.profileId)
+      .eq('auth_user_id', input.authUserId)
+      .maybeSingle();
+
+    if (readError) {
+      devError('[Nice Place Profile] avatar remove read failed:', readError.message);
+      return { success: false, error: 'profile.photo.removeFailed' };
+    }
+
+    const storagePath =
+      input.storagePath?.trim() ||
+      (current?.avatar_storage_path as string | null | undefined)?.trim() ||
+      null;
+    const hasAvatar = Boolean(
+      current?.avatar_url || storagePath,
+    );
+
+    if (!hasAvatar) {
+      return { success: true };
+    }
+
+    const { data: updated, error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        avatar_url: null,
+        avatar_storage_path: null,
+      })
+      .eq('id', input.profileId)
+      .eq('auth_user_id', input.authUserId)
+      .select('id, avatar_url')
+      .maybeSingle();
+
+    if (updateError) {
+      devError('[Nice Place Profile] avatar remove update failed:', updateError.message);
+      return { success: false, error: 'profile.photo.removeFailed' };
+    }
+
+    if (!updated) {
+      return {
+        success: false,
+        error: 'profile.photo.profileUpdateFailed',
+      };
+    }
+
+    if (storagePath) {
+      const { error: storageError } = await supabase.storage
+        .from(PROFILE_AVATARS_BUCKET)
+        .remove([storagePath]);
+      if (storageError) {
+        // DB is already cleared — surface a soft warning but treat as success for the UI.
+        devError('[Nice Place Profile] avatar storage delete failed:', storageError.message);
+      }
+    }
+
+    return { success: true };
+  } catch (error) {
+    devError('[Nice Place Profile] avatar remove failed:', error);
+    return { success: false, error: 'profile.photo.removeFailed' };
+  } finally {
+    removeAvatarInFlight = false;
   }
 }

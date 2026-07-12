@@ -3,6 +3,7 @@ import { markNetworkFailure, markNetworkSuccess } from '../network';
 import { devLog, devWarn } from '../utils/devLog';
 import { isOfflineOrNetworkError } from '../utils/networkErrors';
 
+import { dispatchPlaceLikedNotification } from './notificationIntegration';
 import { getSupabase } from './supabase';
 
 export interface LikeResult {
@@ -58,6 +59,66 @@ async function fetchPlaceLikeCountFromDb(placeId: string): Promise<number | null
   }
 
   return clampCount((data.like_count as number | null) ?? 0);
+}
+
+async function isOwnPlace(profileId: string, placeId: string): Promise<boolean> {
+  const supabase = getSupabase();
+  if (!supabase || !profileId || !placeId) {
+    return true;
+  }
+
+  const { data, error } = await supabase
+    .from('places')
+    .select('created_by')
+    .eq('id', placeId)
+    .maybeSingle();
+
+  if (error || !data?.created_by) {
+    return true;
+  }
+
+  const ownerKeys = await getProfileCreatedByKeys(profileId);
+  return ownerKeys.includes(data.created_by as string);
+}
+
+async function resolveActorDisplayName(profileId: string): Promise<string | undefined> {
+  const supabase = getSupabase();
+  if (!supabase || !profileId) {
+    return undefined;
+  }
+
+  const { data: actor } = await supabase
+    .from('profiles')
+    .select('full_name, username')
+    .eq('id', profileId)
+    .maybeSingle();
+
+  return (
+    (actor?.full_name as string | null)?.trim() ||
+    (actor?.username as string | null)?.trim() ||
+    undefined
+  );
+}
+
+function schedulePlaceLikedNotification(profileId: string, placeId: string): void {
+  void (async () => {
+    try {
+      const ownPlace = await isOwnPlace(profileId, placeId);
+      if (ownPlace) {
+        if (__DEV__) {
+          devLog('[likes] own-place notification skipped', { placeId });
+        }
+        return;
+      }
+
+      const actorName = await resolveActorDisplayName(profileId);
+      await dispatchPlaceLikedNotification({ placeId, actorName });
+    } catch (error: unknown) {
+      if (__DEV__) {
+        console.warn('[likes] notification dispatch failed', error);
+      }
+    }
+  })();
 }
 
 /** Place IDs the profile has liked. */
@@ -180,14 +241,14 @@ export async function likePlace(
 ): Promise<LikeResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: 'auth.errors.configMissing' };
   }
 
   if (!profileId) {
     return {
       success: false,
       requiresAuth: true,
-      error: 'Sign in to like places.',
+      error: 'place.errors.signInToLike',
     };
   }
 
@@ -198,7 +259,11 @@ export async function likePlace(
 
   if (error) {
     if (error.code === '23505') {
-      const likeCount = (await fetchPlaceLikeCountFromDb(placeId)) ?? (await getPlaceLikeCount(placeId));
+      // Already liked — confirm with DB count without blocking the happy path elsewhere.
+      const likeCount =
+        (await fetchPlaceLikeCountFromDb(placeId)) ??
+        (await getPlaceLikeCount(placeId)) ??
+        clampCount(currentCount);
       devLog('[Nice Place Likes] liked', placeId);
       return { success: true, liked: true, likeCount };
     }
@@ -209,9 +274,17 @@ export async function likePlace(
     return { success: false, error: error.message };
   }
 
-  const likeCount =
-    (await fetchPlaceLikeCountFromDb(placeId)) ?? clampCount(currentCount + 1);
+  // Return immediately with optimistic count — do not wait on a second count query.
+  const likeCount = clampCount(currentCount + 1);
+
+  if (__DEV__) {
+    devLog('[likes] database action completed', { action: 'like', placeId, likeCount });
+  }
   devLog('[Nice Place Likes] liked', placeId);
+
+  // Non-blocking: never await — failure must not undo the like or crash the UI.
+  schedulePlaceLikedNotification(profileId, placeId);
+
   return { success: true, liked: true, likeCount };
 }
 
@@ -222,14 +295,14 @@ export async function unlikePlace(
 ): Promise<LikeResult> {
   const supabase = getSupabase();
   if (!supabase) {
-    return { success: false, error: 'Supabase is not configured.' };
+    return { success: false, error: 'auth.errors.configMissing' };
   }
 
   if (!profileId) {
     return {
       success: false,
       requiresAuth: true,
-      error: 'Sign in to like places.',
+      error: 'place.errors.signInToLike',
     };
   }
 
@@ -247,8 +320,12 @@ export async function unlikePlace(
     return { success: false, error: error.message };
   }
 
-  const likeCount =
-    (await fetchPlaceLikeCountFromDb(placeId)) ?? clampCount(currentCount - 1);
+  // Return immediately — avoid a follow-up count round-trip that stalls the UI.
+  const likeCount = clampCount(currentCount - 1);
+
+  if (__DEV__) {
+    devLog('[likes] database action completed', { action: 'unlike', placeId, likeCount });
+  }
   devLog('[Nice Place Likes] unliked', placeId);
   return { success: true, liked: false, likeCount };
 }

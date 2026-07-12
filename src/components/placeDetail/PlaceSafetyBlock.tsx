@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
 import { radius, spacing, typography } from '../../theme';
@@ -10,6 +11,7 @@ interface PlaceSafetyBlockProps {
 
 export function PlaceSafetyBlock({ safetyNote }: PlaceSafetyBlockProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const trimmed = safetyNote.trim();
 
   if (!trimmed) {
@@ -28,7 +30,7 @@ export function PlaceSafetyBlock({ safetyNote }: PlaceSafetyBlockProps) {
     >
       <View style={styles.header}>
         <Ionicons name="shield-checkmark-outline" size={18} color={colors.primary} />
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Safety tips</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t('placeDetail.safetyTips')}</Text>
       </View>
       <Text style={[styles.body, { color: colors.textSecondary }]}>{trimmed}</Text>
     </View>

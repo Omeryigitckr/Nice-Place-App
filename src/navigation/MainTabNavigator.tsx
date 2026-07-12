@@ -1,10 +1,12 @@
 import { Bookmark, Compass } from 'lucide-react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TAB_ROUTES } from '../constants';
-import { SavedPlacesScreen } from '../screens';
+import { InitialPermissionsRunner } from '../providers/InitialPermissionsRunner';
+import { SavedStackNavigator } from './SavedStackNavigator';
 import {
   floatingTabBarLayout,
   iconSizes,
@@ -23,19 +25,15 @@ import { ProfileTabIcon } from './ProfileTabIcon';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const TAB_LABELS: Record<keyof MainTabParamList, string> = {
-  [TAB_ROUTES.EXPLORE]: 'Explore',
-  [TAB_ROUTES.SAVED]: 'Saved',
-  [TAB_ROUTES.ADD_PLACE]: 'Add Place',
-  [TAB_ROUTES.PROFILE]: 'Profile',
-};
-
 export function MainTabNavigator() {
   const insets = useSafeAreaInsets();
   const { colors, shadows, colorScheme } = useTheme();
+  const { t } = useTranslation();
 
   return (
-    <Tab.Navigator
+    <>
+      <InitialPermissionsRunner />
+      <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.tabActive,
@@ -85,23 +83,14 @@ export function MainTabNavigator() {
       <Tab.Screen
         name={TAB_ROUTES.EXPLORE}
         component={MapStackNavigator}
-        options={{ tabBarLabel: TAB_LABELS[TAB_ROUTES.EXPLORE] }}
+        options={{ tabBarLabel: t('navigation.explore') }}
       />
       <Tab.Screen
         name={TAB_ROUTES.SAVED}
-        component={SavedPlacesScreen}
+        component={SavedStackNavigator}
         options={{
-          tabBarLabel: TAB_LABELS[TAB_ROUTES.SAVED],
-          headerShown: true,
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.textPrimary,
-          headerShadowVisible: false,
-          headerTitleStyle: {
-            ...typography.screenTitle,
-            fontSize: 17,
-            color: colors.textPrimary,
-          },
-          title: 'Saved Places',
+          tabBarLabel: t('navigation.saved'),
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -115,9 +104,10 @@ export function MainTabNavigator() {
       <Tab.Screen
         name={TAB_ROUTES.PROFILE}
         component={ProfileStackNavigator}
-        options={{ tabBarLabel: TAB_LABELS[TAB_ROUTES.PROFILE] }}
+        options={{ tabBarLabel: t('navigation.profile') }}
       />
     </Tab.Navigator>
+    </>
   );
 }
 

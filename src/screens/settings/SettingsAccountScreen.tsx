@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import {
   AppButton,
@@ -13,7 +14,7 @@ import {
 import { useThemeColors } from '../../theme/ThemeContext';
 import { PROFILE_ROUTES } from '../../constants';
 import { useAuth } from '../../hooks';
-import { updateProfile } from '../../services';
+import { removeProfileAvatar, updateProfile } from '../../services';
 import { ProfileStackParamList } from '../../types';
 import {
   normalizeUsername,
@@ -21,11 +22,13 @@ import {
   validateDisplayName,
   validateUsername,
 } from '../../services/settingsService';
+import { localizeProfileMessage } from '../../utils/profileMessages';
 import { SettingsSection, settingsStyles } from './settingsShared';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, typeof PROFILE_ROUTES.SETTINGS_ACCOUNT>;
 
 export function SettingsAccountScreen(_props: Props) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
   const { user, profile, refresh } = useAuth();
   const [displayName, setDisplayName] = useState('');
@@ -33,9 +36,11 @@ export function SettingsAccountScreen(_props: Props) {
   const [bio, setBio] = useState('');
   const [accountError, setAccountError] = useState<string | null>(null);
   const [savingAccount, setSavingAccount] = useState(false);
+  const [removingPhoto, setRemovingPhoto] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const isGuest = !user || !profile;
+  const hasProfilePhoto = Boolean(profile?.avatar_url || profile?.avatar_storage_path);
 
   useEffect(() => {
     if (!profile) {
@@ -51,11 +56,11 @@ export function SettingsAccountScreen(_props: Props) {
     profile?.full_name?.trim() ||
     profile?.username?.trim() ||
     user?.email?.split('@')[0] ||
-    'Explorer';
+    t('profile.explorerFallback');
 
   const handleSaveAccount = async () => {
     if (!profile?.id) {
-      setAccountError('Sign in to edit your profile.');
+      setAccountError('profile.auth.edit');
       return;
     }
 
@@ -81,12 +86,57 @@ export function SettingsAccountScreen(_props: Props) {
     setSavingAccount(false);
 
     if (!result.success) {
-      setAccountError(result.error ?? 'Could not save profile.');
+      setAccountError(result.error ?? 'profile.edit.saveFailed');
       return;
     }
 
     await refresh();
-    setToastMessage('Profile updated.');
+    setToastMessage(t('profile.toasts.updated'));
+  };
+
+  const handleRemovePhoto = () => {
+    if (!profile?.id || !user?.id || removingPhoto) {
+      return;
+    }
+
+    if (!hasProfilePhoto) {
+      setToastMessage(t('profile.toasts.noPhotoToRemove'));
+      return;
+    }
+
+    Alert.alert(
+      t('profile.photo.removeTitle'),
+      t('profile.photo.removeMessage'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.remove'),
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              setRemovingPhoto(true);
+              const result = await removeProfileAvatar({
+                profileId: profile.id,
+                authUserId: user.id,
+                storagePath: profile.avatar_storage_path,
+              });
+              setRemovingPhoto(false);
+
+              if (!result.success) {
+                setToastMessage(
+                  localizeProfileMessage(result.error) ??
+                    t('profile.photo.removeFailed'),
+                );
+                return;
+              }
+
+              await refresh();
+              setToastMessage(t('profile.toasts.photoRemoved'));
+            })();
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -99,10 +149,10 @@ export function SettingsAccountScreen(_props: Props) {
         />
       ) : null}
 
-      <SettingsSection title="Profile photo" entranceIndex={0}>
+      <SettingsSection title={t('profile.photo.sectionTitle')} entranceIndex={0}>
         {isGuest ? (
           <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
-            Sign in to add a profile photo.
+            {t('profile.auth.addPhoto')}
           </Text>
         ) : (
           <View style={settingsStyles.form}>
@@ -116,55 +166,66 @@ export function SettingsAccountScreen(_props: Props) {
               editable
               onAvatarUpdated={async () => {
                 await refresh();
-                setToastMessage('Profile photo updated.');
+                setToastMessage(t('profile.toasts.photoUpdated'));
               }}
               onError={(message) => setToastMessage(message)}
             />
             <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
-              Tap your photo to choose a new avatar.
+              {t('profile.photo.tapHint')}
             </Text>
+            {hasProfilePhoto ? (
+              <AppButton
+                title={
+                  removingPhoto ? t('profile.photo.removing') : t('profile.photo.remove')
+                }
+                variant="secondary"
+                onPress={handleRemovePhoto}
+                disabled={removingPhoto || savingAccount}
+                fullWidth={false}
+              />
+            ) : null}
           </View>
         )}
       </SettingsSection>
 
-      <SettingsSection title="Account details" entranceIndex={1}>
+      <SettingsSection title={t('profile.edit.sectionTitle')} entranceIndex={1}>
         {isGuest ? (
           <Text style={[settingsStyles.helperText, { color: colors.textMuted }]}>
-            Sign in to edit your display name, username, and bio.
+            {t('profile.auth.editDetails')}
           </Text>
         ) : (
           <View style={settingsStyles.form}>
             <AppTextInput
-              label="Display name"
+              label={t('profile.edit.displayName')}
               value={displayName}
               onChangeText={setDisplayName}
-              placeholder="Your name"
+              placeholder={t('profile.edit.displayNamePlaceholder')}
               maxLength={60}
             />
             <AppTextInput
-              label="Username"
+              label={t('profile.edit.username')}
               value={username}
               onChangeText={(value) => setUsername(normalizeUsername(value))}
-              placeholder="your_username"
+              placeholder={t('profile.edit.usernamePlaceholder')}
               autoCapitalize="none"
               autoCorrect={false}
               maxLength={30}
             />
             <AppTextInput
-              label="Bio"
+              label={t('profile.edit.bio')}
               value={bio}
               onChangeText={setBio}
-              placeholder="A short line about your exploring style"
+              placeholder={t('profile.edit.bioPlaceholder')}
               multiline
               numberOfLines={3}
               style={settingsStyles.bioInput}
               maxLength={240}
             />
-            <AuthErrorMessage message={accountError} />
+            <AuthErrorMessage message={localizeProfileMessage(accountError)} />
             <AppButton
-              title={savingAccount ? 'Saving…' : 'Save account'}
+              title={savingAccount ? t('profile.edit.saving') : t('profile.edit.save')}
               onPress={handleSaveAccount}
-              disabled={savingAccount}
+              disabled={savingAccount || removingPhoto}
               fullWidth={false}
             />
           </View>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import {
   AppButton,
@@ -16,12 +17,14 @@ import { getCurrentSession, updatePassword } from '../services';
 import { spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { AuthStackParamList } from '../types';
+import { getLocalizedAuthError } from '../utils/authErrors';
 import { validatePasswordConfirmation } from '../utils/authValidation';
 
 type Props = NativeStackScreenProps<AuthStackParamList, typeof AUTH_ROUTES.RESET_PASSWORD>;
 
 export function ResetPasswordScreen({ navigation }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -43,11 +46,11 @@ export function ResetPasswordScreen({ navigation }: Props) {
     setLoading(false);
 
     if (!result.success) {
-      setError(result.error ?? 'Could not update password. Please try again.');
+      setError(getLocalizedAuthError(result.error, 'auth.errors.updatePasswordFailed'));
       return;
     }
 
-    setSuccess('Password updated successfully.');
+    setSuccess(t('auth.resetPassword.successMessage'));
 
     setTimeout(async () => {
       const session = await getCurrentSession();
@@ -63,20 +66,22 @@ export function ResetPasswordScreen({ navigation }: Props) {
     <AuthScreenLayout>
       <AppCard elevated style={styles.card}>
         <AuthStaggerItem index={0}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Set new password</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            {t('auth.resetPassword.title')}
+          </Text>
         </AuthStaggerItem>
 
         <AuthStaggerItem index={1}>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Choose a new password for your account.
+            {t('auth.resetPassword.subtitle')}
           </Text>
         </AuthStaggerItem>
 
         <View style={styles.form}>
           <AuthStaggerItem index={2}>
             <AppTextInput
-              label="New password"
-              placeholder="••••••••"
+              label={t('auth.resetPassword.newPasswordLabel')}
+              placeholder={t('auth.resetPassword.passwordPlaceholder')}
               secureTextEntry
               autoComplete="new-password"
               value={password}
@@ -86,8 +91,8 @@ export function ResetPasswordScreen({ navigation }: Props) {
           </AuthStaggerItem>
           <AuthStaggerItem index={3}>
             <AppTextInput
-              label="Confirm password"
-              placeholder="••••••••"
+              label={t('auth.resetPassword.confirmPasswordLabel')}
+              placeholder={t('auth.resetPassword.passwordPlaceholder')}
               secureTextEntry
               autoComplete="new-password"
               value={confirmPassword}
@@ -110,7 +115,9 @@ export function ResetPasswordScreen({ navigation }: Props) {
         <View style={styles.actions}>
           <AuthStaggerItem index={6}>
             <AppButton
-              title={loading ? 'Updating…' : 'Update password'}
+              title={
+                loading ? t('auth.resetPassword.submitting') : t('auth.resetPassword.submit')
+              }
               onPress={handleUpdatePassword}
               disabled={loading || success != null}
             />

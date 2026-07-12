@@ -1,5 +1,6 @@
 import { Place } from '../types/place';
 import { DISTANCE_UNAVAILABLE } from '../utils/distance';
+import { normalizePlaceCategories } from './placeCategories';
 
 type MockPlaceInput = Omit<
   Place,
@@ -13,7 +14,9 @@ type MockPlaceInput = Omit<
   | 'isCampAllowed'
   | 'isPicnicSuitable'
   | 'safetyNote'
+  | 'categories'
 > & {
+  categories?: string[];
   accessTypeSlug?: string;
   difficultySlug?: string;
   crowdLevelSlug?: string;
@@ -26,8 +29,12 @@ type MockPlaceInput = Omit<
 };
 
 function mockPlace(input: MockPlaceInput): Place {
+  const categories = input.categories?.length
+    ? normalizePlaceCategories(input.categories)
+    : normalizePlaceCategories([input.categorySlug]);
   return {
     ...input,
+    categories,
     distance: DISTANCE_UNAVAILABLE,
     accessTypeSlug: input.accessTypeSlug ?? 'walking',
     difficultySlug: input.difficultySlug ?? 'easy',

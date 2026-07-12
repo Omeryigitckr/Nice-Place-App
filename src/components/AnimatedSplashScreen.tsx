@@ -3,32 +3,59 @@ import {
   Animated,
   Easing,
   Image,
+  Platform,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { brand } from '../theme/brand';
 import { duration, fontFamily, spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 
-/** Branded app icon — matches native splash / launcher assets. */
-const BRAND_APP_ICON = require('../../assets/icon.png');
+/**
+ * Official Brand Kit app icon (green mark only — no baked-in black margin).
+ * Same artwork as auth; do not replace or redraw.
+ */
+const BRAND_APP_ICON = require('../../docs/BrandKit/logos/01_App_Icon.png');
 
-const ICON_SIZE = 120;
-const ICON_RADIUS = 28;
-const INITIAL_SCALE = 0.95;
-const INITIAL_TRANSLATE_Y = 10;
+/** ~22% corner radius matches modern app-icon rounding. */
+const ICON_RADIUS_RATIO = 0.222;
+/** ~25% larger than the previous 96–120 range. */
+const ICON_SIZE_MIN = 120;
+const ICON_SIZE_MAX = 152;
+const ICON_SIZE_BASE = 136;
+const INITIAL_SCALE = 0.96;
+const INITIAL_TRANSLATE_Y = 8;
+/** Optical nudge so the logo+title stack reads as true center. */
+const CONTENT_NUDGE_Y = -10;
 
 /** Entrance only — keep within 900–1200ms. */
-const ENTRANCE_MS = 1000;
+const ENTRANCE_MS = 900;
 const HOLD_MS = 160;
-const EXIT_MS = 280;
+const EXIT_MS = 240;
 const REDUCED_MOTION_MS = 400;
 
 const easeOut = Easing.out(Easing.cubic);
+
+/** Soft shadow for dark splash only — light theme stays flat (no elevation halo). */
+function softIconShadow(isLight: boolean) {
+  if (isLight) {
+    return {};
+  }
+  if (Platform.OS === 'android') {
+    return { elevation: 5 };
+  }
+  return {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+  };
+}
 
 export interface AnimatedSplashScreenProps {
   onFinish: () => void;
@@ -37,18 +64,29 @@ export interface AnimatedSplashScreenProps {
 
 /**
  * Minimal premium splash. Branding is unchanged; motion is subtle only.
- * Uses RN Animated + native driver (Reanimated is not a project dependency).
+ * Light theme: flat logo on design-system background, no tint/shadow artifacts.
+ * Dark theme: unchanged soft icon shadow treatment.
  */
 export function AnimatedSplashScreen({ onFinish, onReady }: AnimatedSplashScreenProps) {
-  const { colors } = useTheme();
+  const { colors, colorScheme, isThemeReady } = useTheme();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const [reduceMotion, setReduceMotion] = useState(false);
   const hasFinished = useRef(false);
+
+  const iconSize = useMemo(() => {
+    const scaled = Math.round(windowWidth * 0.34);
+    return Math.min(ICON_SIZE_MAX, Math.max(ICON_SIZE_MIN, scaled || ICON_SIZE_BASE));
+  }, [windowWidth]);
+  const iconRadius = Math.round(iconSize * ICON_RADIUS_RATIO);
+  const isLight = colorScheme === 'light';
 
   const screenOpacity = useRef(new Animated.Value(1)).current;
   const contentOpacity = useRef(new Animated.Value(0)).current;
   const contentScale = useRef(new Animated.Value(INITIAL_SCALE)).current;
-  const contentTranslateY = useRef(new Animated.Value(INITIAL_TRANSLATE_Y)).current;
+  const contentTranslateY = useRef(
+    new Animated.Value(INITIAL_TRANSLATE_Y + CONTENT_NUDGE_Y),
+  ).current;
 
   const finish = useCallback(() => {
     if (hasFinished.current) {
@@ -75,10 +113,17 @@ export function AnimatedSplashScreen({ onFinish, onReady }: AnimatedSplashScreen
   }, []);
 
   useEffect(() => {
+    if (!isThemeReady) {
+      return;
+    }
     onReady?.();
-  }, [onReady]);
+  }, [isThemeReady, onReady]);
 
   useEffect(() => {
+    if (!isThemeReady) {
+      return;
+    }
+
     let animation: Animated.CompositeAnimation | null = null;
     let cancelled = false;
 
@@ -90,7 +135,7 @@ export function AnimatedSplashScreen({ onFinish, onReady }: AnimatedSplashScreen
       if (reduceMotion) {
         contentOpacity.setValue(1);
         contentScale.setValue(1);
-        contentTranslateY.setValue(0);
+        contentTranslateY.setValue(CONTENT_NUDGE_Y);
 
         animation = Animated.sequence([
           Animated.delay(120),
@@ -110,7 +155,6 @@ export function AnimatedSplashScreen({ onFinish, onReady }: AnimatedSplashScreen
         return;
       }
 
-      // Logo + brand content fade, scale, and rise together (ease-out).
       animation = Animated.sequence([
         Animated.parallel([
           Animated.timing(contentOpacity, {
@@ -126,7 +170,7 @@ export function AnimatedSplashScreen({ onFinish, onReady }: AnimatedSplashScreen
             useNativeDriver: true,
           }),
           Animated.timing(contentTranslateY, {
-            toValue: 0,
+            toValue: CONTENT_NUDGE_Y,
             duration: ENTRANCE_MS,
             easing: easeOut,
             useNativeDriver: true,
@@ -148,7 +192,6 @@ export function AnimatedSplashScreen({ onFinish, onReady }: AnimatedSplashScreen
       });
     };
 
-    // One frame so the solid splash background is painted before native splash hides.
     const startTimer = setTimeout(run, 16);
     const fallback = setTimeout(
       finish,
@@ -170,6 +213,7 @@ export function AnimatedSplashScreen({ onFinish, onReady }: AnimatedSplashScreen
     contentScale,
     contentTranslateY,
     finish,
+    isThemeReady,
     reduceMotion,
     screenOpacity,
   ]);
@@ -187,31 +231,67 @@ export function AnimatedSplashScreen({ onFinish, onReady }: AnimatedSplashScreen
       ]}
       pointerEvents="auto"
     >
-      <Animated.View
-        style={[
-          styles.content,
-          {
-            opacity: contentOpacity,
-            transform: [{ translateY: contentTranslateY }, { scale: contentScale }],
-          },
-        ]}
-      >
-        <View style={styles.iconWrap}>
-          <Image
-            source={BRAND_APP_ICON}
-            style={styles.icon}
-            resizeMode="cover"
-            accessibilityIgnoresInvertColors
-            accessibilityLabel={brand.name}
-          />
-        </View>
+      <View style={styles.centerStage}>
+        <Animated.View
+          style={[
+            styles.content,
+            {
+              opacity: contentOpacity,
+              transform: [{ translateY: contentTranslateY }, { scale: contentScale }],
+            },
+          ]}
+        >
+          {/* Outer wrap carries shadow (dark only); inner clips rounded corners. */}
+          <View
+            style={[
+              styles.iconShadow,
+              {
+                width: iconSize,
+                height: iconSize,
+                borderRadius: iconRadius,
+                backgroundColor: isLight ? 'transparent' : undefined,
+                ...softIconShadow(isLight),
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.iconClip,
+                {
+                  width: iconSize,
+                  height: iconSize,
+                  borderRadius: iconRadius,
+                  backgroundColor: isLight ? colors.background : 'transparent',
+                },
+              ]}
+            >
+              <Image
+                source={BRAND_APP_ICON}
+                style={{
+                  width: iconSize,
+                  height: iconSize,
+                }}
+                resizeMode="cover"
+                accessibilityIgnoresInvertColors
+                accessibilityLabel={brand.name}
+              />
+            </View>
+          </View>
 
-        <Text style={[styles.brandName, { color: colors.textPrimary }]}>{brand.name}</Text>
-
-        <Text style={[styles.tagline, { color: colors.primary }]}>
-          DISCOVER • SHARE • REMEMBER
-        </Text>
-      </Animated.View>
+          <Text
+            style={[
+              styles.brandName,
+              {
+                color: colors.textPrimary,
+                // Light: slightly tighter optical weight against #F7F8FA
+                ...(isLight ? { letterSpacing: -0.5 } : null),
+              },
+            ]}
+          >
+            {brand.name}
+          </Text>
+        </Animated.View>
+      </View>
     </Animated.View>
   );
 }
@@ -219,39 +299,30 @@ export function AnimatedSplashScreen({ onFinish, onReady }: AnimatedSplashScreen
 const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFill,
+    zIndex: 100,
+  },
+  centerStage: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 100,
   },
   content: {
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
     maxWidth: 320,
   },
-  iconWrap: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    borderRadius: ICON_RADIUS,
-    overflow: 'hidden',
+  iconShadow: {
+    backgroundColor: 'transparent',
   },
-  icon: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    borderRadius: ICON_RADIUS,
+  iconClip: {
+    overflow: 'hidden',
   },
   brandName: {
     ...typography.h1,
     fontFamily: fontFamily.bold,
-    marginTop: spacing.xxl,
-    textAlign: 'center',
-  },
-  tagline: {
-    fontFamily: fontFamily.medium,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-    letterSpacing: 0.33,
-    textTransform: 'uppercase',
+    fontSize: 34,
+    lineHeight: 40,
+    letterSpacing: -0.4,
     marginTop: spacing.md,
     textAlign: 'center',
   },

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { iconSizes, radius, spacing, typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
@@ -28,7 +29,8 @@ export function CreatorAttributionRow({
   variant = 'card',
 }: CreatorAttributionRowProps) {
   const { colors, shadows } = useTheme();
-  const displayName = creator ? getPublicDisplayName(creator) : 'Nice Place community';
+  const { t } = useTranslation();
+  const displayName = creator ? getPublicDisplayName(creator) : t('placeDetail.communityFallback');
   const isInteractive = Boolean(creator && onPress);
 
   if (variant === 'compact') {
@@ -56,7 +58,7 @@ export function CreatorAttributionRow({
           )}
         </View>
         <Text style={[styles.compactText, { color: colors.textSecondary }]} numberOfLines={1}>
-          Discovered by{' '}
+          {t('placeDetail.discoveredBy')}{' '}
           <Text style={[styles.compactUsername, { color: colors.textPrimary }]}>
             {displayName}
           </Text>
@@ -76,7 +78,7 @@ export function CreatorAttributionRow({
         onPress={onPress}
         style={({ pressed }) => [pressed && styles.pressed]}
         accessibilityRole="button"
-        accessibilityLabel={`View profile of ${displayName}`}
+        accessibilityLabel={t('placeDetail.a11y.viewProfile', { name: displayName })}
       >
         {compactContent}
       </Pressable>
@@ -104,7 +106,7 @@ export function CreatorAttributionRow({
       </View>
 
       <View style={styles.textWrap}>
-        <Text style={[styles.label, { color: colors.textMuted }]}>Discovered by</Text>
+        <Text style={[styles.label, { color: colors.textMuted }]}>{t('placeDetail.discoveredBy')}</Text>
         <Text style={[styles.name, { color: colors.textPrimary }]} numberOfLines={1}>
           {displayName}
         </Text>
@@ -134,7 +136,7 @@ export function CreatorAttributionRow({
       onPress={onPress}
       style={({ pressed }) => [...cardStyle, pressed && styles.pressed]}
       accessibilityRole="button"
-      accessibilityLabel={`View profile of ${displayName}`}
+      accessibilityLabel={t('placeDetail.a11y.viewProfile', { name: displayName })}
     >
       {content}
     </Pressable>
